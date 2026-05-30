@@ -1,6 +1,18 @@
 import * as Joi from 'joi';
 
-export const envSchema = Joi.object({
+export interface EnvVars {
+  NODE_ENV: 'development' | 'test' | 'production';
+  PORT: number;
+  DATABASE_URL: string;
+  JWT_ACCESS_SECRET: string;
+  JWT_REFRESH_SECRET: string;
+  S3_ENDPOINT: string;
+  S3_ACCESS_KEY: string;
+  S3_SECRET_KEY: string;
+  S3_BUCKET: string;
+}
+
+export const envSchema = Joi.object<EnvVars, true>({
   NODE_ENV: Joi.string()
     .valid('development', 'test', 'production')
     .default('development'),
@@ -14,11 +26,11 @@ export const envSchema = Joi.object({
   S3_BUCKET: Joi.string().required(),
 });
 
-export function validateEnv(config: Record<string, unknown>) {
+export function validateEnv(config: Record<string, unknown>): EnvVars {
   const { error, value } = envSchema.validate(config, {
     allowUnknown: true,
     abortEarly: false,
-  });
+  }) as { error?: Joi.ValidationError; value: EnvVars };
   if (error) {
     throw new Error(`Config validation error: ${error.message}`);
   }
