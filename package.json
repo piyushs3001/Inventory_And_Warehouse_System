@@ -1,0 +1,19 @@
+{
+  "name": "inventory-warehouse-system",
+  "version": "0.0.0",
+  "private": true,
+  "workspaces": ["apps/*"],
+  "scripts": {
+    "dev:api": "npm run start:dev -w api",
+    "dev:web": "npm run dev -w web",
+    "build": "npm run build -w api && npm run build -w web",
+    "lint": "npm run lint -w api && npm run lint -w web",
+    "typecheck": "npm run typecheck -w api && npm run typecheck -w web",
+    "test": "npm run test -w api && npm run test -w web",
+    "test:e2e": "npm run test:e2e -w api",
+    "db:generate": "npm run db:generate -w api",
+    "db:migrate": "npm run db:migrate -w api",
+    "db:deploy": "npm run db:deploy -w api",
+    "db:studio": "npm run db:studio -w api"
+  }
+}
