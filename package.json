@@ -2,7 +2,9 @@
   "name": "inventory-warehouse-system",
   "version": "0.0.0",
   "private": true,
-  "workspaces": ["apps/*"],
+  "workspaces": [
+    "apps/*"
+  ],
   "scripts": {
     "dev:api": "npm run start:dev -w api",
     "dev:web": "npm run dev -w web",
@@ -14,6 +16,9 @@
     "db:generate": "npm run db:generate -w api",
     "db:migrate": "npm run db:migrate -w api",
     "db:deploy": "npm run db:deploy -w api",
-    "db:studio": "npm run db:studio -w api"
+    "db:studio": "npm run db:studio -w api",
+    "api:openapi": "npm run openapi -w api",
+    "web:client": "npm run client -w web",
+    "api:gen": "npm run api:openapi && npm run web:client"
   }
 }

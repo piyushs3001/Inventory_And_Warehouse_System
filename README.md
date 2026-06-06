@@ -27,6 +27,10 @@ _Deferred to later phases: pgvector (AI), MinIO/S3 object storage (file uploads)
 | Prisma Studio | `npm run db:studio` |
 | Typecheck / lint / build | `npm run typecheck` / `npm run lint` / `npm run build` |
 | Unit tests / e2e | `npm test` / `npm run test:e2e` |
+| Swagger UI | open `http://localhost:3001/api/v1/docs` (run `npm run dev:api`) |
+| Regenerate OpenAPI spec | `npm run api:openapi` |
+| Regenerate API client | `npm run web:client` |
+| Regenerate spec + client | `npm run api:gen` |
 
 ## Layout
 ```
