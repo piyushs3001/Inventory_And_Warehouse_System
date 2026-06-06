@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import type { Server } from 'node:http';
 import request from 'supertest';
-import { Role } from '@prisma/client';
+import { Role, WarehouseStatus } from '@prisma/client';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { UsersService } from '../src/users/users.service';
@@ -75,6 +75,20 @@ describe('Warehouses (e2e)', () => {
     }
     const names = body.map((w) => w.name);
     expect(names).toEqual([...names].sort((a, b) => a.localeCompare(b)));
+  });
+
+  it('excludes INACTIVE warehouses from the response', async () => {
+    await prisma.warehouse.create({
+      data: { name: 'Archived Depot', status: WarehouseStatus.INACTIVE },
+    });
+    const token = await loginAsSuperAdmin();
+    const res = await request(http)
+      .get('/api/v1/warehouses')
+      .set('Authorization', `Bearer ${token}`)
+      .expect(200);
+    const names = (res.body as { name: string }[]).map((w) => w.name);
+    expect(names).toContain('Central Warehouse');
+    expect(names).not.toContain('Archived Depot');
   });
 
   it('returns 401 with no token', async () => {
