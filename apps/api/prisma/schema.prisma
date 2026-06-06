@@ -1,5 +1,5 @@
 // Prisma schema — see https://pris.ly/d/prisma-schema
-// pgvector is deferred to the AI phase; reintroduce postgresqlExtensions + extensions=[vector] there.
+// pgvector deferred to the AI phase.
 
 generator client {
   provider = "prisma-client-js"
@@ -8,4 +8,47 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  WAREHOUSE_MANAGER
+  STAFF
+  SUPPLIER
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum WarehouseStatus {
+  ACTIVE
+  INACTIVE
+}
+
+model User {
+  id                 String      @id @default(uuid())
+  name               String
+  email              String      @unique
+  passwordHash       String      @map("password_hash")
+  role               Role        @default(STAFF)
+  status             UserStatus  @default(ACTIVE)
+  hashedRefreshToken String?     @map("hashed_refresh_token")
+  warehouses         Warehouse[] @relation("UserWarehouses")
+  createdAt          DateTime    @default(now()) @map("created_at")
+  updatedAt          DateTime    @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Warehouse {
+  id        String          @id @default(uuid())
+  name      String
+  status    WarehouseStatus @default(ACTIVE)
+  users     User[]          @relation("UserWarehouses")
+  createdAt DateTime        @default(now()) @map("created_at")
+  updatedAt DateTime        @updatedAt @map("updated_at")
+
+  @@map("warehouses")
 }
