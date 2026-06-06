@@ -5,7 +5,9 @@ import { RolesGuard } from './roles.guard';
 
 function ctxWithUser(role: Role | undefined): ExecutionContext {
   return {
-    switchToHttp: () => ({ getRequest: () => ({ user: role ? { role } : undefined }) }),
+    switchToHttp: () => ({
+      getRequest: () => ({ user: role ? { role } : undefined }),
+    }),
     getHandler: () => undefined,
     getClass: () => undefined,
   } as unknown as ExecutionContext;
@@ -13,7 +15,9 @@ function ctxWithUser(role: Role | undefined): ExecutionContext {
 
 describe('RolesGuard', () => {
   it('allows when no roles are required', () => {
-    const reflector = { getAllAndOverride: jest.fn().mockReturnValue(undefined) };
+    const reflector = {
+      getAllAndOverride: jest.fn().mockReturnValue(undefined),
+    };
     const guard = new RolesGuard(reflector as unknown as Reflector);
     expect(guard.canActivate(ctxWithUser(Role.STAFF))).toBe(true);
   });

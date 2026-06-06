@@ -18,10 +18,12 @@ function makeService(user: UserRow | null) {
   const prisma = {
     user: {
       findUnique: jest.fn().mockResolvedValue(store.user),
-      update: jest.fn().mockImplementation(({ data }: { data: Partial<UserRow> }) => {
-        if (store.user) Object.assign(store.user, data);
-        return Promise.resolve(store.user);
-      }),
+      update: jest
+        .fn()
+        .mockImplementation(({ data }: { data: Partial<UserRow> }) => {
+          if (store.user) Object.assign(store.user, data);
+          return Promise.resolve(store.user);
+        }),
     },
   };
   const jwt = new JwtService({ secret: 'test' });
