@@ -1,11 +1,19 @@
-import { AppTitle } from '@/components/app-title';
-import { Button } from '@/components/ui/button';
+'use client';
 
-export default function Home() {
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-6 p-8">
-      <AppTitle />
-      <Button>Get started</Button>
-    </main>
-  );
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/auth/auth-context';
+
+export default function RootPage() {
+  const { status, user } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (status === 'unauthenticated') router.replace('/login');
+    else if (status === 'authenticated') {
+      router.replace(user?.role === 'SUPER_ADMIN' ? '/users' : '/home');
+    }
+  }, [status, user, router]);
+
+  return <main className="flex min-h-screen items-center justify-center">Loading…</main>;
 }
