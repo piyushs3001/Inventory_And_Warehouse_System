@@ -15,7 +15,9 @@ describe('Users (e2e)', () => {
       imports: [AppModule],
     }).compile();
     app = moduleRef.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+    app.useGlobalPipes(
+      new ValidationPipe({ whitelist: true, transform: true }),
+    );
     await app.init();
     prisma = moduleRef.get(PrismaService);
     users = moduleRef.get(UsersService);
