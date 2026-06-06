@@ -6,6 +6,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import MockAdapter from 'axios-mock-adapter';
 import { AXIOS_INSTANCE } from '@/lib/api/axios';
 import { UserFormDialog } from './user-form-dialog';
+import { Role, UserStatus } from '@/lib/api/generated/model';
+import type { UserDto } from '@/lib/api/generated/model';
 
 let mock: MockAdapter;
 beforeEach(() => { mock = new MockAdapter(AXIOS_INSTANCE); });
@@ -31,6 +33,46 @@ describe('UserFormDialog (create)', () => {
     await waitFor(() => expect(onClose).toHaveBeenCalled());
     expect(JSON.parse(mock.history.post[0].data)).toMatchObject({
       name: 'Jane Staff', email: 'jane@iws.local',
+    });
+  });
+});
+
+describe('UserFormDialog (edit)', () => {
+  it('patches existing user and closes', async () => {
+    const onClose = vi.fn();
+    const existingUser: UserDto = {
+      id: '1',
+      name: 'Alice Manager',
+      email: 'alice@iws.local',
+      role: Role.WAREHOUSE_MANAGER,
+      status: UserStatus.ACTIVE,
+      warehouses: [],
+      createdAt: '2024-01-01T00:00:00.000Z',
+      updatedAt: '2024-01-01T00:00:00.000Z',
+    };
+    mock.onPatch('/users/1').reply(200, { ...existingUser, name: 'Alice Updated' });
+    mock.onGet('/users').reply(200, []);
+
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <UserFormDialog user={existingUser} onClose={onClose} />
+      </QueryClientProvider>,
+    );
+
+    // Edit mode: email/password fields not shown; name pre-filled
+    const nameInput = screen.getByLabelText(/name/i);
+    expect(nameInput).toHaveValue('Alice Manager');
+    expect(screen.queryByLabelText(/email/i)).not.toBeInTheDocument();
+
+    await userEvent.clear(nameInput);
+    await userEvent.type(nameInput, 'Alice Updated');
+    await userEvent.click(screen.getByRole('button', { name: /save/i }));
+
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    expect(mock.history.patch).toHaveLength(1);
+    expect(JSON.parse(mock.history.patch[0].data)).toMatchObject({
+      name: 'Alice Updated',
+      role: Role.WAREHOUSE_MANAGER,
     });
   });
 });

@@ -1,7 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { useUsersControllerFindAll } from '@/lib/api/generated/users/users';
+import { useQueryClient } from '@tanstack/react-query';
+import {
+  useUsersControllerFindAll,
+  useUsersControllerDeactivate,
+  getUsersControllerFindAllQueryKey,
+} from '@/lib/api/generated/users/users';
 import { UserStatus } from '@/lib/api/generated/model';
 import type { UserDto } from '@/lib/api/generated/model';
 import { Button } from '@/components/ui/button';
@@ -17,6 +22,13 @@ export default function UsersPage() {
   const [editing, setEditing] = useState<UserDto | null>(null);
   const [creating, setCreating] = useState(false);
   const [assigning, setAssigning] = useState<UserDto | null>(null);
+
+  const queryClient = useQueryClient();
+  const deactivate = useUsersControllerDeactivate();
+  const onDeactivate = async (id: string): Promise<void> => {
+    await deactivate.mutateAsync({ id });
+    await queryClient.invalidateQueries({ queryKey: getUsersControllerFindAllQueryKey() });
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -54,6 +66,9 @@ export default function UsersPage() {
                 <TableCell className="space-x-2 text-right">
                   <Button variant="outline" size="sm" onClick={() => setEditing(u)}>Edit</Button>
                   <Button variant="outline" size="sm" onClick={() => setAssigning(u)}>Scope</Button>
+                  {u.status === UserStatus.ACTIVE && (
+                    <Button variant="outline" size="sm" onClick={() => onDeactivate(u.id)}>Deactivate</Button>
+                  )}
                 </TableCell>
               </TableRow>
             ))}

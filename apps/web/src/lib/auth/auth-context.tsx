@@ -59,14 +59,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('iws:logout', clearAuthState);
   }, [clearAuthState]);
 
-  const login = async (email: string, password: string): Promise<void> => {
+  const login = useCallback(async (email: string, password: string): Promise<void> => {
     const tokens = await authControllerLogin({ email, password });
     tokenStore.set(tokens);
     setHasToken(true);
     await queryClient.invalidateQueries({ queryKey: getAuthControllerMeQueryKey() });
-  };
+  }, [queryClient]);
 
-  const logout = async (): Promise<void> => {
+  const logout = useCallback(async (): Promise<void> => {
     try {
       await authControllerLogout();
     } finally {
@@ -74,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setHasToken(false);
       queryClient.clear();
     }
-  };
+  }, [queryClient]);
 
   let status: Status;
   if (!hasToken) status = 'unauthenticated';
