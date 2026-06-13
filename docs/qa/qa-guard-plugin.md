@@ -21,13 +21,16 @@ restart and called out below.
 | 6 | `git commit` with only non-ts (README) → guard allows | Positive | Passed |
 | 7 | `git commit` with only a spec file → guard allows | Positive | Passed |
 | 8 | `git log --grep commit` → not treated as a commit, allows | Negative (no false trigger) | Passed |
-| 9 | Husky probe hook aborts a commit (`exit 1`) | Negative | Passed |
-| 10 | `git commit --no-verify` bypasses the Husky wall | Negative (escape) | Passed |
-| 11 | Real `qa:gate` wall runs + passes on a green tree (wall commit `45e59c3`) | Positive | Passed |
-| 12 | Plugin loads (`qa-guard@skills-dir`), `qa-before-commit` skill listed, live in-session PreToolUse deny, `${CLAUDE_PLUGIN_ROOT}` resolves | Positive | **Pending** (needs fresh session) |
+| 9 | `git commit` with web source `.tsx`, no test → guard denies | Negative | Passed |
+| 10 | `git commit` with web `.test.tsx` present → guard allows (web test naming) | Positive | Passed |
+| 11 | Husky probe hook aborts a commit (`exit 1`) | Negative | Passed |
+| 12 | `git commit --no-verify` bypasses the Husky wall | Negative (escape) | Passed |
+| 13 | Real `qa:gate` wall runs + passes on a green tree (wall commit `45e59c3`) | Positive | Passed |
+| 14 | Plugin loads (`qa-guard@skills-dir`), `qa-before-commit` skill listed, live in-session PreToolUse deny, `${CLAUDE_PLUGIN_ROOT}` resolves | Positive | **Pending** (needs fresh session) |
 
-Scenarios 1–8 are the automated guard suite (`precommit-guard.test.sh`, 8/8 pass).
-Scenarios 9–11 were observed live during execution (probe fired + aborted; `--no-verify`
+Scenarios 1–10 are the automated guard suite (`precommit-guard.test.sh`, 10/10 pass) — the
+suite covers both api (`*.spec.ts`) and web (`*.test.tsx`) test-file naming.
+Scenarios 11–13 were observed live during execution (probe fired + aborted; `--no-verify`
 bypassed; the wall commit ran the full gate — typecheck/lint/unit/build/e2e — before landing).
 
 ## Build gate
