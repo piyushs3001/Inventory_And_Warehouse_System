@@ -14,6 +14,7 @@ interface NavItem {
 const ITEMS: NavItem[] = [
   { href: '/home', label: 'Home', roles: [RoleConst.STAFF, RoleConst.WAREHOUSE_MANAGER, RoleConst.SUPER_ADMIN] },
   { href: '/admin/users', label: 'Users', roles: [RoleConst.SUPER_ADMIN] },
+  { href: '/admin/warehouses', label: 'Warehouses', roles: [RoleConst.SUPER_ADMIN] },
 ];
 
 export function Nav({ role }: { role: Role }) {

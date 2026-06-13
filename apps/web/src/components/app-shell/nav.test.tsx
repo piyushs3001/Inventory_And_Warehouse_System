@@ -17,4 +17,16 @@ describe('Nav', () => {
     render(<Nav role="STAFF" />);
     expect(screen.queryByRole('link', { name: /users/i })).not.toBeInTheDocument();
   });
+
+  it('shows Warehouses link for Super Admin', () => {
+    render(<Nav role="SUPER_ADMIN" />);
+    const link = screen.getByRole('link', { name: /warehouses/i });
+    expect(link).toBeInTheDocument();
+    expect(link).toHaveAttribute('href', '/admin/warehouses');
+  });
+
+  it('hides Warehouses link for Staff', () => {
+    render(<Nav role="STAFF" />);
+    expect(screen.queryByRole('link', { name: /warehouses/i })).not.toBeInTheDocument();
+  });
 });

@@ -6,15 +6,21 @@
  * OpenAPI spec version: 1.0
  */
 
+export * from './assignStaffDto';
 export * from './assignWarehousesDto';
 export * from './createUserDto';
 export * from './createUserDtoRole';
+export * from './createWarehouseDto';
 export * from './loginDto';
 export * from './role';
 export * from './tokensDto';
 export * from './updateUserDto';
 export * from './updateUserDtoRole';
 export * from './updateUserDtoStatus';
+export * from './updateWarehouseDto';
 export * from './userDto';
 export * from './userStatus';
+export * from './warehouseDto';
 export * from './warehouseRefDto';
+export * from './warehousesControllerListParams';
+export * from './warehouseStatus';
