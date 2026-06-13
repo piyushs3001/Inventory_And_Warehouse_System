@@ -83,7 +83,7 @@ export class WarehousesController {
 
   @Post(':id/staff')
   @Roles(Role.SUPER_ADMIN)
-  @ApiOkResponse({ type: WarehouseDto })
+  @ApiCreatedResponse({ type: WarehouseDto })
   assignStaff(
     @Param('id') id: string,
     @Body() dto: AssignStaffDto,
