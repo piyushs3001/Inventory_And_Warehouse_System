@@ -60,7 +60,7 @@ describe('Warehouses (e2e)', () => {
     return loginAs('admin@test.local', 'password123');
   }
 
-  it('returns 200 with an array of warehouses for Super Admin', async () => {
+  it('returns 200 with an array of ACTIVE warehouses for Super Admin', async () => {
     const token = await loginAsSuperAdmin();
     const res = await request(http)
       .get('/api/v1/warehouses')
@@ -95,7 +95,12 @@ describe('Warehouses (e2e)', () => {
     await request(http).get('/api/v1/warehouses').expect(401);
   });
 
-  it('returns 403 for a STAFF user', async () => {
+  /**
+   * GET /warehouses is now any-authenticated + scope-filtered (not SUPER_ADMIN-only).
+   * A Staff user with no warehouse assignments gets 200 with an empty array — the
+   * scope filter collapses to { id: { in: [] } } which matches nothing (fail-closed).
+   */
+  it('returns 200 with an empty array for a STAFF user with no warehouse assignments', async () => {
     await users.create({
       name: 'Staff User',
       email: 'staff@test.local',
@@ -103,9 +108,10 @@ describe('Warehouses (e2e)', () => {
       role: Role.STAFF,
     });
     const token = await loginAs('staff@test.local', 'password123');
-    await request(http)
+    const res = await request(http)
       .get('/api/v1/warehouses')
       .set('Authorization', `Bearer ${token}`)
-      .expect(403);
+      .expect(200);
+    expect(res.body).toEqual([]);
   });
 });
