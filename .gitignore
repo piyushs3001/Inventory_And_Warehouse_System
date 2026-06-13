@@ -83,4 +83,7 @@ temp/
 CLAUDE.md
 
 # ---- Project docs (PRD / internal blueprint) ----
-docs/
+# Ignore docs/ contents, but TRACK QA reports (docs/qa/) — they are
+# Definition-of-Done evidence and the Stop-hook QA gate looks for them in git.
+docs/*
+!docs/qa/
