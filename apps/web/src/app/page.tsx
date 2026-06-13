@@ -11,7 +11,7 @@ export default function RootPage() {
   useEffect(() => {
     if (status === 'unauthenticated') router.replace('/login');
     else if (status === 'authenticated') {
-      router.replace(user?.role === 'SUPER_ADMIN' ? '/users' : '/home');
+      router.replace(user?.role === 'SUPER_ADMIN' ? '/admin' : '/home');
     }
   }, [status, user, router]);
 
