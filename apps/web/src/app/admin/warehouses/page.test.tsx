@@ -9,6 +9,26 @@ import WarehousesPage from './page';
 let mock: MockAdapter;
 beforeEach(() => { mock = new MockAdapter(AXIOS_INSTANCE); });
 
+const ACTIVE_WAREHOUSE = {
+  id: 'w1',
+  name: 'Central Warehouse',
+  status: 'ACTIVE',
+  capacity: 500,
+  contactPerson: 'Alice',
+  address: '1 Main St',
+  createdAt: '',
+};
+
+const INACTIVE_WAREHOUSE = {
+  id: 'w2',
+  name: 'North Depot',
+  status: 'INACTIVE',
+  capacity: null,
+  contactPerson: null,
+  address: null,
+  createdAt: '',
+};
+
 const renderPage = () =>
   render(
     <QueryClientProvider client={new QueryClient()}>
@@ -18,26 +38,8 @@ const renderPage = () =>
 
 describe('WarehousesPage', () => {
   it('renders warehouses from the API', async () => {
-    mock.onGet('/warehouses').reply(200, [
-      {
-        id: 'w1',
-        name: 'Central Warehouse',
-        status: 'ACTIVE',
-        capacity: 500,
-        contactPerson: 'Alice',
-        address: '1 Main St',
-        createdAt: '',
-      },
-      {
-        id: 'w2',
-        name: 'North Depot',
-        status: 'INACTIVE',
-        capacity: null,
-        contactPerson: null,
-        address: null,
-        createdAt: '',
-      },
-    ]);
+    mock.onGet('/warehouses').reply(200, [ACTIVE_WAREHOUSE, INACTIVE_WAREHOUSE]);
+    mock.onGet('/users').reply(200, []);
     renderPage();
     await waitFor(() => expect(screen.getByText('Central Warehouse')).toBeInTheDocument());
     expect(screen.getByText('North Depot')).toBeInTheDocument();
@@ -45,21 +47,19 @@ describe('WarehousesPage', () => {
     expect(screen.getByText('INACTIVE')).toBeInTheDocument();
   });
 
-  it('does not show archived warehouses by default (INACTIVE excluded from mock)', async () => {
-    mock.onGet('/warehouses').reply(200, [
-      {
-        id: 'w1',
-        name: 'Central Warehouse',
-        status: 'ACTIVE',
-        capacity: null,
-        contactPerson: null,
-        address: null,
-        createdAt: '',
-      },
-    ]);
+  it('shows Archive action only for ACTIVE rows, not for INACTIVE rows', async () => {
+    mock.onGet('/warehouses').reply(200, [ACTIVE_WAREHOUSE, INACTIVE_WAREHOUSE]);
+    mock.onGet('/users').reply(200, []);
     renderPage();
+
     await waitFor(() => expect(screen.getByText('Central Warehouse')).toBeInTheDocument());
-    // Archive button only shown for ACTIVE rows
-    expect(screen.getByRole('button', { name: /archive/i })).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText('North Depot')).toBeInTheDocument());
+
+    // Exactly one Archive button — only the ACTIVE row gets it
+    const archiveButtons = screen.getAllByRole('button', { name: /archive/i });
+    expect(archiveButtons).toHaveLength(1);
+
+    // The INACTIVE row shows its status badge
+    expect(screen.getByText('INACTIVE')).toBeInTheDocument();
   });
 });

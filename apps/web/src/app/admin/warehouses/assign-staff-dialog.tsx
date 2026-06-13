@@ -1,9 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import {
-  useWarehousesControllerAssignStaff,
-} from '@/lib/api/generated/warehouses/warehouses';
+import { useWarehousesControllerAssignStaff } from '@/lib/api/generated/warehouses/warehouses';
 import { useUsersControllerFindAll } from '@/lib/api/generated/users/users';
 import type { WarehouseDto } from '@/lib/api/generated/model';
 import { Button } from '@/components/ui/button';
@@ -17,16 +15,20 @@ import {
 
 export function AssignStaffDialog({
   warehouse,
+  currentStaffIds,
   onClose,
   onSuccess,
 }: {
   warehouse: WarehouseDto;
+  currentStaffIds: string[];
   onClose: () => void;
   onSuccess: () => Promise<void>;
 }) {
   const { data: users } = useUsersControllerFindAll();
   const assignStaff = useWarehousesControllerAssignStaff();
-  const [selected, setSelected] = useState<Set<string>>(() => new Set());
+  const [selected, setSelected] = useState<Set<string>>(
+    () => new Set(currentStaffIds),
+  );
 
   const toggle = (id: string): void => {
     setSelected((prev) => {

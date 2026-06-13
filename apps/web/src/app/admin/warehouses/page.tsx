@@ -7,6 +7,7 @@ import {
   useWarehousesControllerArchive,
   getWarehousesControllerListQueryKey,
 } from '@/lib/api/generated/warehouses/warehouses';
+import { useUsersControllerFindAll } from '@/lib/api/generated/users/users';
 import { WarehouseStatus } from '@/lib/api/generated/model';
 import type { WarehouseDto } from '@/lib/api/generated/model';
 import { Button } from '@/components/ui/button';
@@ -22,6 +23,7 @@ export default function WarehousesPage() {
   const { data: warehouses, isLoading } = useWarehousesControllerList(
     includeArchived ? { includeArchived: true } : undefined,
   );
+  const { data: users } = useUsersControllerFindAll();
   const [editing, setEditing] = useState<WarehouseDto | null>(null);
   const [creating, setCreating] = useState(false);
   const [assigning, setAssigning] = useState<WarehouseDto | null>(null);
@@ -117,6 +119,11 @@ export default function WarehousesPage() {
       {assigning && (
         <AssignStaffDialog
           warehouse={assigning}
+          currentStaffIds={
+            (users ?? [])
+              .filter((u) => u.warehouses.some((w) => w.id === assigning.id))
+              .map((u) => u.id)
+          }
           onClose={() => setAssigning(null)}
           onSuccess={invalidateList}
         />
