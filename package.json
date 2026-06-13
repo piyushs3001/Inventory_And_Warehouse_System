@@ -19,6 +19,11 @@
     "db:studio": "npm run db:studio -w api",
     "api:openapi": "npm run openapi -w api",
     "web:client": "npm run client -w web",
-    "api:gen": "npm run api:openapi && npm run web:client"
+    "api:gen": "npm run api:openapi && npm run web:client",
+    "qa:gate": "npm run typecheck && npm run lint && npm run test && npm run build && npm run test:e2e",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7"
   }
 }

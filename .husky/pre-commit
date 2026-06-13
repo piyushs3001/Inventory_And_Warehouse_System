@@ -1,0 +1,8 @@
+#!/usr/bin/env sh
+# qa-guard — hard pre-commit wall. Runs the full QA gate; aborts the commit on
+# any failure. Escape hatches (use only for genuine WIP/docs/chore):
+#   git commit --no-verify        (git-native; skips the hook entirely)
+#   QA_GUARD_SKIP=1 git commit ...
+[ "$QA_GUARD_SKIP" = "1" ] && { echo "qa-guard: QA_GUARD_SKIP=1 — skipping gate"; exit 0; }
+echo "qa-guard: running npm run qa:gate …"
+npm run qa:gate
