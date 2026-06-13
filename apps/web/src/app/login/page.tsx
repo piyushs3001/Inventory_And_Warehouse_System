@@ -25,8 +25,18 @@ export default function LoginPage() {
     try {
       await login(email, password);
       router.replace('/');
-    } catch {
-      setError('Invalid credentials');
+    } catch (err) {
+      // Only a real 401 means the credentials are wrong. A network/CORS failure
+      // (or a 5xx) has no response.status — don't mislabel it as bad credentials.
+      const status =
+        typeof err === 'object' && err !== null && 'response' in err
+          ? (err as { response?: { status?: number } }).response?.status
+          : undefined;
+      setError(
+        status === 401
+          ? 'Invalid credentials'
+          : 'Unable to reach the server. Please try again.',
+      );
     } finally {
       setSubmitting(false);
     }

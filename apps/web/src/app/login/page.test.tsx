@@ -22,6 +22,27 @@ describe('LoginPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /sign in/i }));
     expect(login).toHaveBeenCalledWith('admin@iws.local', 'Admin@12345');
   });
+
+  it('shows "Invalid credentials" only on a real 401', async () => {
+    login.mockRejectedValueOnce({ response: { status: 401 } });
+    render(<LoginPage />);
+    await userEvent.type(screen.getByLabelText(/email/i), 'admin@iws.local');
+    await userEvent.type(screen.getByLabelText('Password'), 'whatever');
+    await userEvent.click(screen.getByRole('button', { name: /sign in/i }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Invalid credentials');
+  });
+
+  it('shows a network message (not "Invalid credentials") when the API is unreachable', async () => {
+    // No response.status — mimics a CORS/network failure (axios "Failed to fetch").
+    login.mockRejectedValueOnce(new Error('Network Error'));
+    render(<LoginPage />);
+    await userEvent.type(screen.getByLabelText(/email/i), 'admin@iws.local');
+    await userEvent.type(screen.getByLabelText('Password'), 'Admin@12345');
+    await userEvent.click(screen.getByRole('button', { name: /sign in/i }));
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(/unable to reach the server/i);
+    expect(alert).not.toHaveTextContent(/invalid credentials/i);
+  });
 });
 
 describe('LoginPage password visibility toggle', () => {
