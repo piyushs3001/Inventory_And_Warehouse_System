@@ -3,6 +3,7 @@ import * as Joi from 'joi';
 export interface EnvVars {
   NODE_ENV: 'development' | 'test' | 'production';
   PORT: number;
+  CORS_ORIGIN: string;
   DATABASE_URL: string;
   JWT_ACCESS_SECRET: string;
   JWT_REFRESH_SECRET: string;
@@ -17,6 +18,7 @@ export const envSchema = Joi.object<EnvVars, true>({
     .valid('development', 'test', 'production')
     .default('development'),
   PORT: Joi.number().default(3001),
+  CORS_ORIGIN: Joi.string().default('http://localhost:3000'),
   DATABASE_URL: Joi.string().required(),
   JWT_ACCESS_SECRET: Joi.string().required(),
   JWT_REFRESH_SECRET: Joi.string().required(),
