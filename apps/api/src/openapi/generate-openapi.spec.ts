@@ -108,15 +108,18 @@ describe('OpenAPI document', () => {
     expect(Object.keys(doc.paths['/warehouses/{id}'].get!.responses)).toEqual(
       expect.arrayContaining(['200', '401', '404']),
     );
+    expect(
+      Object.keys(doc.paths['/warehouses/{id}'].get!.responses),
+    ).not.toContain('403');
     expect(Object.keys(doc.paths['/warehouses'].post!.responses)).toEqual(
       expect.arrayContaining(['201', '400', '401', '403']),
     );
     expect(Object.keys(doc.paths['/warehouses/{id}'].patch!.responses)).toEqual(
       expect.arrayContaining(['200', '400', '401', '403', '404']),
     );
-    expect(Object.keys(doc.paths['/warehouses/{id}'].delete!.responses)).toEqual(
-      expect.arrayContaining(['200', '401', '403', '404']),
-    );
+    expect(
+      Object.keys(doc.paths['/warehouses/{id}'].delete!.responses),
+    ).toEqual(expect.arrayContaining(['200', '401', '403', '404']));
     expect(
       Object.keys(doc.paths['/warehouses/{id}/staff'].post!.responses),
     ).toEqual(expect.arrayContaining(['201', '400', '401', '403', '404']));

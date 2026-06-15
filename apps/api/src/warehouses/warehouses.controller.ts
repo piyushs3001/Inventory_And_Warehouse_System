@@ -81,21 +81,21 @@ export class WarehousesController {
 
   @Post()
   @Roles(Role.SUPER_ADMIN)
-  @ApiAuthErrors()
-  @ApiValidationError()
   @ApiOperation({ summary: 'Create a warehouse' })
   @ApiCreatedResponse({ type: WarehouseDto })
+  @ApiAuthErrors()
+  @ApiValidationError()
   create(@Body() dto: CreateWarehouseDto): Promise<WarehouseDto> {
     return this.warehouses.create(dto);
   }
 
   @Patch(':id')
   @Roles(Role.SUPER_ADMIN)
-  @ApiAuthErrors()
-  @ApiValidationError()
   @ApiOperation({ summary: 'Update a warehouse' })
   @ApiParam({ name: 'id', description: 'Warehouse id (UUID).' })
   @ApiOkResponse({ type: WarehouseDto })
+  @ApiAuthErrors()
+  @ApiValidationError()
   @ApiNotFoundResponse({
     type: ErrorResponseDto,
     description: 'Warehouse not found.',
@@ -109,13 +109,13 @@ export class WarehousesController {
 
   @Delete(':id')
   @Roles(Role.SUPER_ADMIN)
-  @ApiAuthErrors()
   @ApiOperation({
     summary: 'Archive a warehouse',
-    description: 'Soft-deletes the warehouse (status => INACTIVE).',
+    description: 'Soft-deletes the warehouse (status → INACTIVE).',
   })
   @ApiParam({ name: 'id', description: 'Warehouse id (UUID).' })
   @ApiOkResponse({ type: WarehouseDto })
+  @ApiAuthErrors()
   @ApiNotFoundResponse({
     type: ErrorResponseDto,
     description: 'Warehouse not found.',
@@ -126,11 +126,11 @@ export class WarehousesController {
 
   @Post(':id/staff')
   @Roles(Role.SUPER_ADMIN)
-  @ApiAuthErrors()
-  @ApiValidationError()
   @ApiOperation({ summary: 'Assign staff to a warehouse (sets their scope)' })
   @ApiParam({ name: 'id', description: 'Warehouse id (UUID).' })
   @ApiCreatedResponse({ type: WarehouseDto })
+  @ApiAuthErrors()
+  @ApiValidationError()
   @ApiNotFoundResponse({
     type: ErrorResponseDto,
     description: 'Warehouse not found.',
