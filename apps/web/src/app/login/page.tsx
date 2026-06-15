@@ -45,6 +45,8 @@ export default function LoginPage() {
     <main className="grid min-h-screen lg:grid-cols-[1.1fr_1fr]">
       {/* Brand panel — decorative, hidden under lg */}
       <aside className="relative hidden flex-col justify-between overflow-hidden bg-primary p-12 text-primary-foreground lg:flex">
+        {/* Brand gradient. color-mix toward BLACK is hue-safe — the design rule
+            only forbids mixing toward WHITE (which rotates blue → pink). */}
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0"
@@ -81,6 +83,7 @@ export default function LoginPage() {
             ))}
           </ul>
         </div>
+        {/* Decorative sample figures for the marketing panel — not live data. */}
         <div className="relative flex gap-8 text-xs opacity-80">
           <div><span className="block font-mono text-xl font-semibold">2</span>Warehouses</div>
           <div><span className="block font-mono text-xl font-semibold">1,284</span>SKUs tracked</div>
