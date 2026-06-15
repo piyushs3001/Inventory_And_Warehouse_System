@@ -188,9 +188,11 @@ All tests run after each task; full gate (typecheck/lint/unit/build) at D6. **Br
 | 18 | ▼ No `text-red-600` or other hardcoded colour tokens in login/users/warehouses/home pages | grep | **Passed** |
 
 ### Build gate
-typecheck ✓ · lint ✓ · unit **api 53 / web 57** ✓ (web = 57 baseline from Slice C; Slice D adds no new spec files — screen files are already covered by their existing page tests) · build (api + web, all 6 routes) ✓. *(e2e not re-run — api unchanged; runs at Slice E with dev-DB reseed.)*
+typecheck ✓ · lint ✓ · unit **api 53 / web 58** ✓ (web 57 from Slice C + 1 home render test added in review follow-up) · build (api + web, all 6 routes) ✓. *(e2e not re-run — api unchanged; runs at Slice E with dev-DB reseed.)*
 
 ### Reviews
+- **Spec compliance:** ✅ — all 5 tasks match; **zero data-logic drift** confirmed adversarially; scope = 9 files (4 screens + 4 building blocks + QA doc); tokens correct; no tests weakened.
+- **Code quality:** ✅ **Approve** — no Critical/Important; no `any`/dead code; a11y preserved; design.md §5/§8/§9 alignment confirmed. Three low-priority follow-ups applied (home render test for parity; comments marking the login gradient's `color-mix→black` as hue-safe and the stat strip as decorative). One minor tracked below.
 - **Data logic unchanged (confirmed by diff):** all generated TanStack-Query hooks, `useAuth` calls, `onSubmit` error handling, `queryClient.invalidateQueries`, dialog props (`onClose`/`onSuccess`/`currentStaffIds`) are byte-for-byte identical across D2–D5.
 - **Token compliance:** zero hardcoded colours; `text-destructive` now correct in the login error; status tones map to registered palette (`ok`/`muted`); mono-numeric uses registered `font-mono tabular-nums`.
 
@@ -199,9 +201,10 @@ typecheck ✓ · lint ✓ · unit **api 53 / web 57** ✓ (web = 57 baseline fro
 
 ### Pending / deferred
 - **Comprehensive Playwright-MCP browser QA (light + dark, positive + negative)** over all 4 retrofitted screens → **Slice E**. That pass also clears the pending Phase 1.5 auth/user-management and Phase 2 warehouses browser-QA gates.
+- **Tracked minor (code review):** the loading-`Skeleton` + empty-`EmptyState` + card-frame triad is now duplicated across `/admin/users` and `/admin/warehouses` — acceptable at two call-sites; extract a `TableSkeleton`/`TableCard` helper when the **third** list screen (products/suppliers) lands.
 
 ### Commits (branch `design-system-foundation`)
-`3a7e26a` D1 props polish · `b8d40c7` D2 login brand panel · `5c36e8a` D3 users retrofit · `9985e50` D4 warehouses retrofit · `4153713` D5 staff home retrofit.
+`3a7e26a` D1 props polish · `b8d40c7` D2 login brand panel · `5c36e8a` D3 users retrofit · `9985e50` D4 warehouses retrofit · `4153713` D5 staff home retrofit · review follow-up (home test + clarifying comments).
 
 ---
 
