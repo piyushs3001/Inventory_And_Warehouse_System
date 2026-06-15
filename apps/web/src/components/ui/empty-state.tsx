@@ -1,17 +1,21 @@
-import type { ReactNode } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
-export function EmptyState({
-  icon, title, description, action, className,
-}: {
-  icon?: ReactNode; title: string; description?: string; action?: ReactNode; className?: string;
-}) {
+type EmptyStateProps = Omit<ComponentProps<'div'>, 'title'> & {
+  icon?: ReactNode;
+  title: string;
+  description?: string;
+  action?: ReactNode;
+};
+
+export function EmptyState({ icon, title, description, action, className, ...props }: EmptyStateProps) {
   return (
     <div
       className={cn(
         'flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-border px-6 py-12 text-center',
         className,
       )}
+      {...props}
     >
       {icon ? (
         <div className="flex size-10 items-center justify-center rounded-lg bg-surface-2 text-muted-foreground">{icon}</div>

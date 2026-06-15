@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { ComponentProps, ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
 type Tone = 'brand' | 'ok' | 'warn' | 'reserved' | 'transit';
@@ -11,6 +11,14 @@ const iconTone: Record<Tone, string> = {
   transit: 'bg-transit-tint text-transit',
 };
 
+type StatCardProps = ComponentProps<'div'> & {
+  icon?: ReactNode;
+  label: string;
+  value: ReactNode;
+  tone?: Tone;
+  trend?: ReactNode;
+};
+
 export function StatCard({
   icon,
   label,
@@ -18,20 +26,15 @@ export function StatCard({
   tone = 'brand',
   trend,
   className,
-}: {
-  icon?: ReactNode;
-  label: string;
-  value: ReactNode;
-  tone?: Tone;
-  trend?: ReactNode;
-  className?: string;
-}) {
+  ...props
+}: StatCardProps) {
   return (
     <div
       className={cn(
         'flex flex-col gap-3 rounded-xl bg-card p-5 text-card-foreground ring-1 ring-foreground/10 transition-shadow hover:shadow-md',
         className,
       )}
+      {...props}
     >
       {icon ? (
         <div className={cn('flex size-9 items-center justify-center rounded-lg', iconTone[tone])}>
