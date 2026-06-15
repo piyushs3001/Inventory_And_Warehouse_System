@@ -3,14 +3,18 @@ import '@testing-library/jest-dom/vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 
 const setTheme = vi.fn();
+let resolvedTheme = 'light';
 vi.mock('next-themes', () => ({
-  useTheme: () => ({ resolvedTheme: 'light', setTheme }),
+  useTheme: () => ({ resolvedTheme, setTheme }),
 }));
 
 import { ThemeToggle } from './theme-toggle';
 
 describe('ThemeToggle', () => {
-  beforeEach(() => setTheme.mockClear());
+  beforeEach(() => {
+    setTheme.mockClear();
+    resolvedTheme = 'light';
+  });
 
   it('renders a non-submitting button with a dark-mode aria-label in light mode', () => {
     render(<ThemeToggle />);
@@ -22,5 +26,12 @@ describe('ThemeToggle', () => {
     render(<ThemeToggle />);
     fireEvent.click(screen.getByRole('button', { name: /dark mode/i }));
     expect(setTheme).toHaveBeenCalledWith('dark');
+  });
+
+  it('switches to light when clicked while in dark mode', () => {
+    resolvedTheme = 'dark';
+    render(<ThemeToggle />);
+    fireEvent.click(screen.getByRole('button', { name: /light mode/i }));
+    expect(setTheme).toHaveBeenCalledWith('light');
   });
 });
