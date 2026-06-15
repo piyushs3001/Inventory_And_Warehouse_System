@@ -7,6 +7,8 @@
  */
 
 export interface WarehouseRefDto {
+  /** Warehouse id (UUID). */
   id: string;
+  /** Warehouse name. */
   name: string;
 }

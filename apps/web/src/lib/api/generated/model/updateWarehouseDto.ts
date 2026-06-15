@@ -8,10 +8,17 @@
 import type { WarehouseStatus } from './warehouseStatus';
 
 export interface UpdateWarehouseDto {
+  /** Warehouse name. */
   name?: string;
+  /** Street address. */
   address?: string;
+  /** On-site contact person. */
   contactPerson?: string;
-  /** @minimum 0 */
+  /**
+     * Storage capacity (units).
+     * @minimum 0
+     */
   capacity?: number;
+  /** Warehouse status. */
   status?: WarehouseStatus;
 }

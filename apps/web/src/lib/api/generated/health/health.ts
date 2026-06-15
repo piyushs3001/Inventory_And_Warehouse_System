@@ -20,6 +20,10 @@ import type {
   UseQueryResult
 } from '@tanstack/react-query';
 
+import type {
+  HealthDto
+} from '../model';
+
 import { customInstance } from '../../axios';
 import type { ErrorType } from '../../axios';
 
@@ -28,13 +32,17 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
 
+/**
+ * Returns `{ status: "ok" }` when the API is up. Public.
+ * @summary Liveness probe
+ */
 export const healthControllerCheck = (
 
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
 
 
-      return customInstance<void>(
+      return customInstance<HealthDto>(
       {url: `/health`, method: 'GET', signal
     },
       options);
@@ -96,6 +104,9 @@ export function useHealthControllerCheck<TData = Awaited<ReturnType<typeof healt
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof healthControllerCheck>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Liveness probe
+ */
 
 export function useHealthControllerCheck<TData = Awaited<ReturnType<typeof healthControllerCheck>>, TError = ErrorType<unknown>>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof healthControllerCheck>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}

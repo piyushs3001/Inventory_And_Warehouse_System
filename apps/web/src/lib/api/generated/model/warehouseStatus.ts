@@ -6,6 +6,9 @@
  * OpenAPI spec version: 1.0
  */
 
+/**
+ * Warehouse status.
+ */
 export type WarehouseStatus = typeof WarehouseStatus[keyof typeof WarehouseStatus];
 
 

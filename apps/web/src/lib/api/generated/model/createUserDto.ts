@@ -5,13 +5,21 @@
  * REST API for the Inventory & Warehouse System
  * OpenAPI spec version: 1.0
  */
-import type { CreateUserDtoRole } from './createUserDtoRole';
+import type { Role } from './role';
 
 export interface CreateUserDto {
-  /** @minLength 1 */
+  /**
+     * Full name.
+     * @minLength 1
+     */
   name: string;
+  /** Unique login email. */
   email: string;
-  /** @minLength 8 */
+  /**
+     * Initial password (min 8 chars).
+     * @minLength 8
+     */
   password: string;
-  role?: CreateUserDtoRole;
+  /** Role; defaults to STAFF when omitted. */
+  role?: Role;
 }

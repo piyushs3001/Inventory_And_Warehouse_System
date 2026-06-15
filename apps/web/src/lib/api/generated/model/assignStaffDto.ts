@@ -7,5 +7,6 @@
  */
 
 export interface AssignStaffDto {
+  /** User ids to assign as staff/managers of this warehouse. */
   userIds: string[];
 }

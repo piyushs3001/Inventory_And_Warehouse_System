@@ -8,14 +8,27 @@
 import type { WarehouseStatus } from './warehouseStatus';
 
 export interface WarehouseDto {
+  /** Warehouse id (UUID). */
   id: string;
+  /** Warehouse name. */
   name: string;
-  /** @nullable */
+  /**
+     * Street address.
+     * @nullable
+     */
   address?: string | null;
-  /** @nullable */
+  /**
+     * On-site contact person.
+     * @nullable
+     */
   contactPerson?: string | null;
-  /** @nullable */
+  /**
+     * Storage capacity (units).
+     * @nullable
+     */
   capacity?: number | null;
+  /** Warehouse status. */
   status: WarehouseStatus;
+  /** Creation timestamp. */
   createdAt: string;
 }

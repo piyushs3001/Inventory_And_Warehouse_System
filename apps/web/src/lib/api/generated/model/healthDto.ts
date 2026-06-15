@@ -6,7 +6,7 @@
  * OpenAPI spec version: 1.0
  */
 
-export interface AssignWarehousesDto {
-  /** Full set of warehouse ids the user is scoped to (replaces existing). */
-  warehouseIds: string[];
+export interface HealthDto {
+  /** Service liveness flag. */
+  status: string;
 }

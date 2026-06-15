@@ -7,6 +7,8 @@
  */
 
 export interface TokensDto {
+  /** Short-lived JWT for the Authorization header. */
   accessToken: string;
+  /** Long-lived JWT used to rotate the pair at /auth/refresh. */
   refreshToken: string;
 }

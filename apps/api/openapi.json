@@ -3,15 +3,24 @@
   "paths": {
     "/health": {
       "get": {
+        "description": "Returns `{ status: \"ok\" }` when the API is up. Public.",
         "operationId": "HealthController_check",
         "parameters": [],
         "responses": {
           "200": {
-            "description": ""
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthDto"
+                }
+              }
+            }
           }
         },
+        "summary": "Liveness probe",
         "tags": [
-          "Health"
+          "health"
         ]
       }
     },
@@ -39,6 +48,46 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Request body or parameters failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Email already in use.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -46,6 +95,7 @@
             "access-token": []
           }
         ],
+        "summary": "Create a user",
         "tags": [
           "users"
         ]
@@ -66,6 +116,26 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -73,6 +143,7 @@
             "access-token": []
           }
         ],
+        "summary": "List all users",
         "tags": [
           "users"
         ]
@@ -86,6 +157,7 @@
             "name": "id",
             "required": true,
             "in": "path",
+            "description": "User id (UUID).",
             "schema": {
               "type": "string"
             }
@@ -101,6 +173,36 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -108,6 +210,7 @@
             "access-token": []
           }
         ],
+        "summary": "Get a user by id",
         "tags": [
           "users"
         ]
@@ -119,6 +222,7 @@
             "name": "id",
             "required": true,
             "in": "path",
+            "description": "User id (UUID).",
             "schema": {
               "type": "string"
             }
@@ -144,6 +248,46 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Request body or parameters failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -151,17 +295,20 @@
             "access-token": []
           }
         ],
+        "summary": "Update a user",
         "tags": [
           "users"
         ]
       },
       "delete": {
+        "description": "Soft-deactivates the user (status → INACTIVE).",
         "operationId": "UsersController_deactivate",
         "parameters": [
           {
             "name": "id",
             "required": true,
             "in": "path",
+            "description": "User id (UUID).",
             "schema": {
               "type": "string"
             }
@@ -177,6 +324,36 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -184,6 +361,7 @@
             "access-token": []
           }
         ],
+        "summary": "Deactivate a user",
         "tags": [
           "users"
         ]
@@ -191,12 +369,14 @@
     },
     "/users/{id}/warehouses": {
       "put": {
+        "description": "Replaces the full set of warehouses assigned to the user.",
         "operationId": "UsersController_setWarehouses",
         "parameters": [
           {
             "name": "id",
             "required": true,
             "in": "path",
+            "description": "User id (UUID).",
             "schema": {
               "type": "string"
             }
@@ -222,6 +402,46 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Request body or parameters failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -229,6 +449,7 @@
             "access-token": []
           }
         ],
+        "summary": "Set a user's warehouse scope",
         "tags": [
           "users"
         ]
@@ -236,6 +457,7 @@
     },
     "/auth/login": {
       "post": {
+        "description": "Exchange email + password for an access/refresh token pair.",
         "operationId": "AuthController_login",
         "parameters": [],
         "requestBody": {
@@ -258,8 +480,29 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Request body or parameters failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid email or password.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
+        "summary": "Log in",
         "tags": [
           "auth"
         ]
@@ -267,6 +510,7 @@
     },
     "/auth/refresh": {
       "post": {
+        "description": "Rotate the token pair using a valid refresh token (sent as the bearer token).",
         "operationId": "AuthController_refresh",
         "parameters": [],
         "responses": {
@@ -279,6 +523,16 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Missing, invalid, or expired refresh token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -286,6 +540,7 @@
             "access-token": []
           }
         ],
+        "summary": "Refresh tokens",
         "tags": [
           "auth"
         ]
@@ -293,11 +548,22 @@
     },
     "/auth/logout": {
       "post": {
+        "description": "Invalidate the stored refresh token for the current user.",
         "operationId": "AuthController_logout",
         "parameters": [],
         "responses": {
           "204": {
             "description": ""
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -305,6 +571,7 @@
             "access-token": []
           }
         ],
+        "summary": "Log out",
         "tags": [
           "auth"
         ]
@@ -312,6 +579,7 @@
     },
     "/auth/me": {
       "get": {
+        "description": "Return the authenticated user with their warehouse scope.",
         "operationId": "AuthController_me",
         "parameters": [],
         "responses": {
@@ -324,6 +592,16 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -331,6 +609,7 @@
             "access-token": []
           }
         ],
+        "summary": "Current user",
         "tags": [
           "auth"
         ]
@@ -338,6 +617,7 @@
     },
     "/warehouses": {
       "get": {
+        "description": "Returns warehouses within the caller's scope (Super Admin: all).",
         "operationId": "WarehousesController_list",
         "parameters": [
           {
@@ -362,6 +642,16 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -369,6 +659,7 @@
             "access-token": []
           }
         ],
+        "summary": "List warehouses in scope",
         "tags": [
           "warehouses"
         ]
@@ -396,6 +687,36 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Request body or parameters failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -403,6 +724,7 @@
             "access-token": []
           }
         ],
+        "summary": "Create a warehouse",
         "tags": [
           "warehouses"
         ]
@@ -416,6 +738,7 @@
             "name": "id",
             "required": true,
             "in": "path",
+            "description": "Warehouse id (UUID).",
             "schema": {
               "type": "string"
             }
@@ -431,6 +754,26 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found, or outside the caller's scope (fail-closed).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -438,6 +781,7 @@
             "access-token": []
           }
         ],
+        "summary": "Get a warehouse by id (within scope)",
         "tags": [
           "warehouses"
         ]
@@ -449,6 +793,7 @@
             "name": "id",
             "required": true,
             "in": "path",
+            "description": "Warehouse id (UUID).",
             "schema": {
               "type": "string"
             }
@@ -474,6 +819,46 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Request body or parameters failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Warehouse not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -481,17 +866,20 @@
             "access-token": []
           }
         ],
+        "summary": "Update a warehouse",
         "tags": [
           "warehouses"
         ]
       },
       "delete": {
+        "description": "Soft-deletes the warehouse (status → INACTIVE).",
         "operationId": "WarehousesController_archive",
         "parameters": [
           {
             "name": "id",
             "required": true,
             "in": "path",
+            "description": "Warehouse id (UUID).",
             "schema": {
               "type": "string"
             }
@@ -507,6 +895,36 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Warehouse not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -514,6 +932,7 @@
             "access-token": []
           }
         ],
+        "summary": "Archive a warehouse",
         "tags": [
           "warehouses"
         ]
@@ -527,6 +946,7 @@
             "name": "id",
             "required": true,
             "in": "path",
+            "description": "Warehouse id (UUID).",
             "schema": {
               "type": "string"
             }
@@ -552,6 +972,46 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "Request body or parameters failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Warehouse not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
           }
         },
         "security": [
@@ -559,6 +1019,7 @@
             "access-token": []
           }
         ],
+        "summary": "Assign staff to a warehouse (sets their scope)",
         "tags": [
           "warehouses"
         ]
@@ -586,35 +1047,64 @@
       }
     },
     "schemas": {
-      "CreateUserDto": {
+      "HealthDto": {
         "type": "object",
         "properties": {
-          "name": {
+          "status": {
             "type": "string",
-            "minLength": 1
-          },
-          "email": {
-            "type": "string",
-            "format": "email"
-          },
-          "password": {
-            "type": "string",
-            "minLength": 8
-          },
-          "role": {
-            "type": "string",
-            "enum": [
-              "SUPER_ADMIN",
-              "WAREHOUSE_MANAGER",
-              "STAFF",
-              "SUPPLIER"
-            ]
+            "description": "Service liveness flag.",
+            "example": "ok"
           }
         },
         "required": [
-          "name",
-          "email",
-          "password"
+          "status"
+        ]
+      },
+      "ErrorResponseDto": {
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "number",
+            "description": "HTTP status code.",
+            "example": 403
+          },
+          "error": {
+            "type": "string",
+            "description": "Short HTTP error label.",
+            "example": "Forbidden"
+          },
+          "message": {
+            "description": "Human-readable message, or an array of validation messages for 400s.",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ],
+            "example": "Out of scope"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO-8601 timestamp when the error was produced.",
+            "example": "2026-06-15T10:00:00.000Z"
+          },
+          "path": {
+            "type": "string",
+            "description": "Request path that produced the error.",
+            "example": "/api/v1/warehouses/9c1b…"
+          }
+        },
+        "required": [
+          "statusCode",
+          "error",
+          "message",
+          "timestamp",
+          "path"
         ]
       },
       "Role": {
@@ -624,6 +1114,44 @@
           "WAREHOUSE_MANAGER",
           "STAFF",
           "SUPPLIER"
+        ],
+        "description": "Role; defaults to STAFF when omitted."
+      },
+      "CreateUserDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Full name.",
+            "example": "Jane Doe"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Unique login email.",
+            "example": "jane@iws.local"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "description": "Initial password (min 8 chars).",
+            "example": "S3curePass!"
+          },
+          "role": {
+            "description": "Role; defaults to STAFF when omitted.",
+            "example": "STAFF",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Role"
+              }
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "email",
+          "password"
         ]
       },
       "UserStatus": {
@@ -631,16 +1159,21 @@
         "enum": [
           "ACTIVE",
           "INACTIVE"
-        ]
+        ],
+        "description": "Account status."
       },
       "WarehouseRefDto": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
+            "type": "string",
+            "description": "Warehouse id (UUID).",
+            "example": "9c1b2d34-5678-90ab-cdef-1234567890ab"
           },
           "name": {
-            "type": "string"
+            "type": "string",
+            "description": "Warehouse name.",
+            "example": "Main Depot"
           }
         },
         "required": [
@@ -652,15 +1185,23 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
+            "type": "string",
+            "description": "User id (UUID).",
+            "example": "9c1b2d34-5678-90ab-cdef-1234567890ab"
           },
           "name": {
-            "type": "string"
+            "type": "string",
+            "description": "Full name.",
+            "example": "Jane Doe"
           },
           "email": {
-            "type": "string"
+            "type": "string",
+            "description": "Login email.",
+            "example": "jane@iws.local"
           },
           "role": {
+            "description": "Authorization role.",
+            "example": "STAFF",
             "allOf": [
               {
                 "$ref": "#/components/schemas/Role"
@@ -668,6 +1209,8 @@
             ]
           },
           "status": {
+            "description": "Account status.",
+            "example": "ACTIVE",
             "allOf": [
               {
                 "$ref": "#/components/schemas/UserStatus"
@@ -676,13 +1219,18 @@
           },
           "createdAt": {
             "format": "date-time",
-            "type": "string"
+            "type": "string",
+            "description": "Account creation timestamp.",
+            "example": "2026-06-15T10:00:00.000Z"
           },
           "updatedAt": {
             "format": "date-time",
-            "type": "string"
+            "type": "string",
+            "description": "Last update timestamp.",
+            "example": "2026-06-15T10:00:00.000Z"
           },
           "warehouses": {
+            "description": "Warehouses in the user's scope.",
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/WarehouseRefDto"
@@ -705,22 +1253,25 @@
         "properties": {
           "name": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "description": "Full name.",
+            "example": "Jane Doe"
           },
           "role": {
-            "type": "string",
-            "enum": [
-              "SUPER_ADMIN",
-              "WAREHOUSE_MANAGER",
-              "STAFF",
-              "SUPPLIER"
+            "description": "New role for the user.",
+            "example": "WAREHOUSE_MANAGER",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/Role"
+              }
             ]
           },
           "status": {
-            "type": "string",
-            "enum": [
-              "ACTIVE",
-              "INACTIVE"
+            "example": "ACTIVE",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserStatus"
+              }
             ]
           }
         }
@@ -730,6 +1281,10 @@
         "properties": {
           "warehouseIds": {
             "uniqueItems": true,
+            "description": "Full set of warehouse ids the user is scoped to (replaces existing).",
+            "example": [
+              "9c1b2d34-5678-90ab-cdef-1234567890ab"
+            ],
             "type": "array",
             "items": {
               "type": "string",
@@ -746,11 +1301,15 @@
         "properties": {
           "email": {
             "type": "string",
-            "format": "email"
+            "format": "email",
+            "description": "Account email.",
+            "example": "admin@iws.local"
           },
           "password": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "description": "Account password.",
+            "example": "Admin@12345"
           }
         },
         "required": [
@@ -762,10 +1321,14 @@
         "type": "object",
         "properties": {
           "accessToken": {
-            "type": "string"
+            "type": "string",
+            "description": "Short-lived JWT for the Authorization header.",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9…"
           },
           "refreshToken": {
-            "type": "string"
+            "type": "string",
+            "description": "Long-lived JWT used to rotate the pair at /auth/refresh.",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9…"
           }
         },
         "required": [
@@ -778,30 +1341,43 @@
         "enum": [
           "ACTIVE",
           "INACTIVE"
-        ]
+        ],
+        "description": "Warehouse status."
       },
       "WarehouseDto": {
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
+            "type": "string",
+            "description": "Warehouse id (UUID).",
+            "example": "9c1b2d34-5678-90ab-cdef-1234567890ab"
           },
           "name": {
-            "type": "string"
+            "type": "string",
+            "description": "Warehouse name.",
+            "example": "Central Warehouse"
           },
           "address": {
             "type": "string",
-            "nullable": true
+            "nullable": true,
+            "description": "Street address.",
+            "example": "12 Dock Rd"
           },
           "contactPerson": {
             "type": "string",
-            "nullable": true
+            "nullable": true,
+            "description": "On-site contact person.",
+            "example": "Sam Lee"
           },
           "capacity": {
             "type": "number",
-            "nullable": true
+            "nullable": true,
+            "description": "Storage capacity (units).",
+            "example": 5000
           },
           "status": {
+            "description": "Warehouse status.",
+            "example": "ACTIVE",
             "allOf": [
               {
                 "$ref": "#/components/schemas/WarehouseStatus"
@@ -810,7 +1386,9 @@
           },
           "createdAt": {
             "format": "date-time",
-            "type": "string"
+            "type": "string",
+            "description": "Creation timestamp.",
+            "example": "2026-06-15T10:00:00.000Z"
           }
         },
         "required": [
@@ -824,17 +1402,25 @@
         "type": "object",
         "properties": {
           "name": {
-            "type": "string"
+            "type": "string",
+            "description": "Warehouse name.",
+            "example": "Central Warehouse"
           },
           "address": {
-            "type": "string"
+            "type": "string",
+            "description": "Street address.",
+            "example": "12 Dock Rd"
           },
           "contactPerson": {
-            "type": "string"
+            "type": "string",
+            "description": "On-site contact person.",
+            "example": "Sam Lee"
           },
           "capacity": {
             "type": "number",
-            "minimum": 0
+            "minimum": 0,
+            "description": "Storage capacity (units).",
+            "example": 5000
           }
         },
         "required": [
@@ -845,19 +1431,29 @@
         "type": "object",
         "properties": {
           "name": {
-            "type": "string"
+            "type": "string",
+            "description": "Warehouse name.",
+            "example": "Central Warehouse"
           },
           "address": {
-            "type": "string"
+            "type": "string",
+            "description": "Street address.",
+            "example": "12 Dock Rd"
           },
           "contactPerson": {
-            "type": "string"
+            "type": "string",
+            "description": "On-site contact person.",
+            "example": "Sam Lee"
           },
           "capacity": {
             "type": "number",
-            "minimum": 0
+            "minimum": 0,
+            "description": "Storage capacity (units).",
+            "example": 5000
           },
           "status": {
+            "description": "Warehouse status.",
+            "example": "INACTIVE",
             "allOf": [
               {
                 "$ref": "#/components/schemas/WarehouseStatus"
@@ -870,6 +1466,10 @@
         "type": "object",
         "properties": {
           "userIds": {
+            "description": "User ids to assign as staff/managers of this warehouse.",
+            "example": [
+              "9c1b2d34-5678-90ab-cdef-1234567890ab"
+            ],
             "type": "array",
             "items": {
               "type": "string",

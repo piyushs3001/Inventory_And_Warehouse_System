@@ -6,6 +6,9 @@
  * OpenAPI spec version: 1.0
  */
 
+/**
+ * Role; defaults to STAFF when omitted.
+ */
 export type Role = typeof Role[keyof typeof Role];
 
 

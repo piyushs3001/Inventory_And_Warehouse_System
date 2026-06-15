@@ -25,6 +25,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  ErrorResponseDto,
   LoginDto,
   TokensDto,
   UserDto
@@ -38,6 +39,10 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
 
+/**
+ * Exchange email + password for an access/refresh token pair.
+ * @summary Log in
+ */
 export const authControllerLogin = (
     loginDto: BodyType<LoginDto>,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
@@ -54,7 +59,7 @@ export const authControllerLogin = (
 
 
 
-export const getAuthControllerLoginMutationOptions = <TError = ErrorType<unknown>,
+export const getAuthControllerLoginMutationOptions = <TError = ErrorType<ErrorResponseDto>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof authControllerLogin>>, TError,{data: BodyType<LoginDto>}, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof authControllerLogin>>, TError,{data: BodyType<LoginDto>}, TContext> => {
 
@@ -83,9 +88,12 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type AuthControllerLoginMutationResult = NonNullable<Awaited<ReturnType<typeof authControllerLogin>>>
     export type AuthControllerLoginMutationBody = BodyType<LoginDto>
-    export type AuthControllerLoginMutationError = ErrorType<unknown>
+    export type AuthControllerLoginMutationError = ErrorType<ErrorResponseDto>
 
-    export const useAuthControllerLogin = <TError = ErrorType<unknown>,
+    /**
+ * @summary Log in
+ */
+export const useAuthControllerLogin = <TError = ErrorType<ErrorResponseDto>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof authControllerLogin>>, TError,{data: BodyType<LoginDto>}, TContext>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof authControllerLogin>>,
@@ -95,7 +103,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getAuthControllerLoginMutationOptions(options), queryClient);
     }
-    export const authControllerRefresh = (
+    /**
+ * Rotate the token pair using a valid refresh token (sent as the bearer token).
+ * @summary Refresh tokens
+ */
+export const authControllerRefresh = (
 
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
@@ -109,7 +121,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-export const getAuthControllerRefreshMutationOptions = <TError = ErrorType<unknown>,
+export const getAuthControllerRefreshMutationOptions = <TError = ErrorType<ErrorResponseDto>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof authControllerRefresh>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof authControllerRefresh>>, TError,void, TContext> => {
 
@@ -138,9 +150,12 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type AuthControllerRefreshMutationResult = NonNullable<Awaited<ReturnType<typeof authControllerRefresh>>>
 
-    export type AuthControllerRefreshMutationError = ErrorType<unknown>
+    export type AuthControllerRefreshMutationError = ErrorType<ErrorResponseDto>
 
-    export const useAuthControllerRefresh = <TError = ErrorType<unknown>,
+    /**
+ * @summary Refresh tokens
+ */
+export const useAuthControllerRefresh = <TError = ErrorType<ErrorResponseDto>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof authControllerRefresh>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof authControllerRefresh>>,
@@ -150,7 +165,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getAuthControllerRefreshMutationOptions(options), queryClient);
     }
-    export const authControllerLogout = (
+    /**
+ * Invalidate the stored refresh token for the current user.
+ * @summary Log out
+ */
+export const authControllerLogout = (
 
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
@@ -164,7 +183,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-export const getAuthControllerLogoutMutationOptions = <TError = ErrorType<unknown>,
+export const getAuthControllerLogoutMutationOptions = <TError = ErrorType<ErrorResponseDto>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof authControllerLogout>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof authControllerLogout>>, TError,void, TContext> => {
 
@@ -193,9 +212,12 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type AuthControllerLogoutMutationResult = NonNullable<Awaited<ReturnType<typeof authControllerLogout>>>
 
-    export type AuthControllerLogoutMutationError = ErrorType<unknown>
+    export type AuthControllerLogoutMutationError = ErrorType<ErrorResponseDto>
 
-    export const useAuthControllerLogout = <TError = ErrorType<unknown>,
+    /**
+ * @summary Log out
+ */
+export const useAuthControllerLogout = <TError = ErrorType<ErrorResponseDto>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof authControllerLogout>>, TError,void, TContext>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof authControllerLogout>>,
@@ -205,7 +227,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getAuthControllerLogoutMutationOptions(options), queryClient);
     }
-    export const authControllerMe = (
+    /**
+ * Return the authenticated user with their warehouse scope.
+ * @summary Current user
+ */
+export const authControllerMe = (
 
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
@@ -227,7 +253,7 @@ export const getAuthControllerMeQueryKey = () => {
     }
 
 
-export const getAuthControllerMeQueryOptions = <TData = Awaited<ReturnType<typeof authControllerMe>>, TError = ErrorType<unknown>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof authControllerMe>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getAuthControllerMeQueryOptions = <TData = Awaited<ReturnType<typeof authControllerMe>>, TError = ErrorType<ErrorResponseDto>>( options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof authControllerMe>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -246,10 +272,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type AuthControllerMeQueryResult = NonNullable<Awaited<ReturnType<typeof authControllerMe>>>
-export type AuthControllerMeQueryError = ErrorType<unknown>
+export type AuthControllerMeQueryError = ErrorType<ErrorResponseDto>
 
 
-export function useAuthControllerMe<TData = Awaited<ReturnType<typeof authControllerMe>>, TError = ErrorType<unknown>>(
+export function useAuthControllerMe<TData = Awaited<ReturnType<typeof authControllerMe>>, TError = ErrorType<ErrorResponseDto>>(
   options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof authControllerMe>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof authControllerMe>>,
@@ -259,7 +285,7 @@ export function useAuthControllerMe<TData = Awaited<ReturnType<typeof authContro
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAuthControllerMe<TData = Awaited<ReturnType<typeof authControllerMe>>, TError = ErrorType<unknown>>(
+export function useAuthControllerMe<TData = Awaited<ReturnType<typeof authControllerMe>>, TError = ErrorType<ErrorResponseDto>>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof authControllerMe>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof authControllerMe>>,
@@ -269,12 +295,15 @@ export function useAuthControllerMe<TData = Awaited<ReturnType<typeof authContro
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useAuthControllerMe<TData = Awaited<ReturnType<typeof authControllerMe>>, TError = ErrorType<unknown>>(
+export function useAuthControllerMe<TData = Awaited<ReturnType<typeof authControllerMe>>, TError = ErrorType<ErrorResponseDto>>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof authControllerMe>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Current user
+ */
 
-export function useAuthControllerMe<TData = Awaited<ReturnType<typeof authControllerMe>>, TError = ErrorType<unknown>>(
+export function useAuthControllerMe<TData = Awaited<ReturnType<typeof authControllerMe>>, TError = ErrorType<ErrorResponseDto>>(
   options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof authControllerMe>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {

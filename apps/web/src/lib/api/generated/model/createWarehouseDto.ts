@@ -7,9 +7,15 @@
  */
 
 export interface CreateWarehouseDto {
+  /** Warehouse name. */
   name: string;
+  /** Street address. */
   address?: string;
+  /** On-site contact person. */
   contactPerson?: string;
-  /** @minimum 0 */
+  /**
+     * Storage capacity (units).
+     * @minimum 0
+     */
   capacity?: number;
 }

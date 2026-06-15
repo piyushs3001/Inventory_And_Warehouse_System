@@ -10,12 +10,20 @@ import type { UserStatus } from './userStatus';
 import type { WarehouseRefDto } from './warehouseRefDto';
 
 export interface UserDto {
+  /** User id (UUID). */
   id: string;
+  /** Full name. */
   name: string;
+  /** Login email. */
   email: string;
+  /** Authorization role. */
   role: Role;
+  /** Account status. */
   status: UserStatus;
+  /** Account creation timestamp. */
   createdAt: string;
+  /** Last update timestamp. */
   updatedAt: string;
+  /** Warehouses in the user's scope. */
   warehouses: WarehouseRefDto[];
 }

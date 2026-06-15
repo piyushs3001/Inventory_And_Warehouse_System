@@ -27,6 +27,7 @@ import type {
 import type {
   AssignStaffDto,
   CreateWarehouseDto,
+  ErrorResponseDto,
   UpdateWarehouseDto,
   WarehouseDto,
   WarehousesControllerListParams
@@ -40,6 +41,10 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
 
+/**
+ * Returns warehouses within the caller's scope (Super Admin: all).
+ * @summary List warehouses in scope
+ */
 export const warehousesControllerList = (
     params?: WarehousesControllerListParams,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
@@ -63,7 +68,7 @@ export const getWarehousesControllerListQueryKey = (params?: WarehousesControlle
     }
 
 
-export const getWarehousesControllerListQueryOptions = <TData = Awaited<ReturnType<typeof warehousesControllerList>>, TError = ErrorType<unknown>>(params?: WarehousesControllerListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof warehousesControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getWarehousesControllerListQueryOptions = <TData = Awaited<ReturnType<typeof warehousesControllerList>>, TError = ErrorType<ErrorResponseDto>>(params?: WarehousesControllerListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof warehousesControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -82,10 +87,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type WarehousesControllerListQueryResult = NonNullable<Awaited<ReturnType<typeof warehousesControllerList>>>
-export type WarehousesControllerListQueryError = ErrorType<unknown>
+export type WarehousesControllerListQueryError = ErrorType<ErrorResponseDto>
 
 
-export function useWarehousesControllerList<TData = Awaited<ReturnType<typeof warehousesControllerList>>, TError = ErrorType<unknown>>(
+export function useWarehousesControllerList<TData = Awaited<ReturnType<typeof warehousesControllerList>>, TError = ErrorType<ErrorResponseDto>>(
  params: undefined |  WarehousesControllerListParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof warehousesControllerList>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof warehousesControllerList>>,
@@ -95,7 +100,7 @@ export function useWarehousesControllerList<TData = Awaited<ReturnType<typeof wa
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useWarehousesControllerList<TData = Awaited<ReturnType<typeof warehousesControllerList>>, TError = ErrorType<unknown>>(
+export function useWarehousesControllerList<TData = Awaited<ReturnType<typeof warehousesControllerList>>, TError = ErrorType<ErrorResponseDto>>(
  params?: WarehousesControllerListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof warehousesControllerList>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof warehousesControllerList>>,
@@ -105,12 +110,15 @@ export function useWarehousesControllerList<TData = Awaited<ReturnType<typeof wa
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useWarehousesControllerList<TData = Awaited<ReturnType<typeof warehousesControllerList>>, TError = ErrorType<unknown>>(
+export function useWarehousesControllerList<TData = Awaited<ReturnType<typeof warehousesControllerList>>, TError = ErrorType<ErrorResponseDto>>(
  params?: WarehousesControllerListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof warehousesControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary List warehouses in scope
+ */
 
-export function useWarehousesControllerList<TData = Awaited<ReturnType<typeof warehousesControllerList>>, TError = ErrorType<unknown>>(
+export function useWarehousesControllerList<TData = Awaited<ReturnType<typeof warehousesControllerList>>, TError = ErrorType<ErrorResponseDto>>(
  params?: WarehousesControllerListParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof warehousesControllerList>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -127,6 +135,9 @@ export function useWarehousesControllerList<TData = Awaited<ReturnType<typeof wa
 
 
 
+/**
+ * @summary Create a warehouse
+ */
 export const warehousesControllerCreate = (
     createWarehouseDto: BodyType<CreateWarehouseDto>,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
@@ -143,7 +154,7 @@ export const warehousesControllerCreate = (
 
 
 
-export const getWarehousesControllerCreateMutationOptions = <TError = ErrorType<unknown>,
+export const getWarehousesControllerCreateMutationOptions = <TError = ErrorType<ErrorResponseDto>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof warehousesControllerCreate>>, TError,{data: BodyType<CreateWarehouseDto>}, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof warehousesControllerCreate>>, TError,{data: BodyType<CreateWarehouseDto>}, TContext> => {
 
@@ -172,9 +183,12 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type WarehousesControllerCreateMutationResult = NonNullable<Awaited<ReturnType<typeof warehousesControllerCreate>>>
     export type WarehousesControllerCreateMutationBody = BodyType<CreateWarehouseDto>
-    export type WarehousesControllerCreateMutationError = ErrorType<unknown>
+    export type WarehousesControllerCreateMutationError = ErrorType<ErrorResponseDto>
 
-    export const useWarehousesControllerCreate = <TError = ErrorType<unknown>,
+    /**
+ * @summary Create a warehouse
+ */
+export const useWarehousesControllerCreate = <TError = ErrorType<ErrorResponseDto>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof warehousesControllerCreate>>, TError,{data: BodyType<CreateWarehouseDto>}, TContext>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof warehousesControllerCreate>>,
@@ -184,7 +198,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getWarehousesControllerCreateMutationOptions(options), queryClient);
     }
-    export const warehousesControllerFindOne = (
+    /**
+ * @summary Get a warehouse by id (within scope)
+ */
+export const warehousesControllerFindOne = (
     id: string,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
@@ -206,7 +223,7 @@ export const getWarehousesControllerFindOneQueryKey = (id: string,) => {
     }
 
 
-export const getWarehousesControllerFindOneQueryOptions = <TData = Awaited<ReturnType<typeof warehousesControllerFindOne>>, TError = ErrorType<unknown>>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof warehousesControllerFindOne>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+export const getWarehousesControllerFindOneQueryOptions = <TData = Awaited<ReturnType<typeof warehousesControllerFindOne>>, TError = ErrorType<ErrorResponseDto>>(id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof warehousesControllerFindOne>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
@@ -225,10 +242,10 @@ const {query: queryOptions, request: requestOptions} = options ?? {};
 }
 
 export type WarehousesControllerFindOneQueryResult = NonNullable<Awaited<ReturnType<typeof warehousesControllerFindOne>>>
-export type WarehousesControllerFindOneQueryError = ErrorType<unknown>
+export type WarehousesControllerFindOneQueryError = ErrorType<ErrorResponseDto>
 
 
-export function useWarehousesControllerFindOne<TData = Awaited<ReturnType<typeof warehousesControllerFindOne>>, TError = ErrorType<unknown>>(
+export function useWarehousesControllerFindOne<TData = Awaited<ReturnType<typeof warehousesControllerFindOne>>, TError = ErrorType<ErrorResponseDto>>(
  id: string, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof warehousesControllerFindOne>>, TError, TData>> & Pick<
         DefinedInitialDataOptions<
           Awaited<ReturnType<typeof warehousesControllerFindOne>>,
@@ -238,7 +255,7 @@ export function useWarehousesControllerFindOne<TData = Awaited<ReturnType<typeof
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useWarehousesControllerFindOne<TData = Awaited<ReturnType<typeof warehousesControllerFindOne>>, TError = ErrorType<unknown>>(
+export function useWarehousesControllerFindOne<TData = Awaited<ReturnType<typeof warehousesControllerFindOne>>, TError = ErrorType<ErrorResponseDto>>(
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof warehousesControllerFindOne>>, TError, TData>> & Pick<
         UndefinedInitialDataOptions<
           Awaited<ReturnType<typeof warehousesControllerFindOne>>,
@@ -248,12 +265,15 @@ export function useWarehousesControllerFindOne<TData = Awaited<ReturnType<typeof
       >, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
-export function useWarehousesControllerFindOne<TData = Awaited<ReturnType<typeof warehousesControllerFindOne>>, TError = ErrorType<unknown>>(
+export function useWarehousesControllerFindOne<TData = Awaited<ReturnType<typeof warehousesControllerFindOne>>, TError = ErrorType<ErrorResponseDto>>(
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof warehousesControllerFindOne>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
   ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Get a warehouse by id (within scope)
+ */
 
-export function useWarehousesControllerFindOne<TData = Awaited<ReturnType<typeof warehousesControllerFindOne>>, TError = ErrorType<unknown>>(
+export function useWarehousesControllerFindOne<TData = Awaited<ReturnType<typeof warehousesControllerFindOne>>, TError = ErrorType<ErrorResponseDto>>(
  id: string, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof warehousesControllerFindOne>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient
  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
@@ -270,6 +290,9 @@ export function useWarehousesControllerFindOne<TData = Awaited<ReturnType<typeof
 
 
 
+/**
+ * @summary Update a warehouse
+ */
 export const warehousesControllerUpdate = (
     id: string,
     updateWarehouseDto: BodyType<UpdateWarehouseDto>,
@@ -287,7 +310,7 @@ export const warehousesControllerUpdate = (
 
 
 
-export const getWarehousesControllerUpdateMutationOptions = <TError = ErrorType<unknown>,
+export const getWarehousesControllerUpdateMutationOptions = <TError = ErrorType<ErrorResponseDto>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof warehousesControllerUpdate>>, TError,{id: string;data: BodyType<UpdateWarehouseDto>}, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof warehousesControllerUpdate>>, TError,{id: string;data: BodyType<UpdateWarehouseDto>}, TContext> => {
 
@@ -316,9 +339,12 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type WarehousesControllerUpdateMutationResult = NonNullable<Awaited<ReturnType<typeof warehousesControllerUpdate>>>
     export type WarehousesControllerUpdateMutationBody = BodyType<UpdateWarehouseDto>
-    export type WarehousesControllerUpdateMutationError = ErrorType<unknown>
+    export type WarehousesControllerUpdateMutationError = ErrorType<ErrorResponseDto>
 
-    export const useWarehousesControllerUpdate = <TError = ErrorType<unknown>,
+    /**
+ * @summary Update a warehouse
+ */
+export const useWarehousesControllerUpdate = <TError = ErrorType<ErrorResponseDto>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof warehousesControllerUpdate>>, TError,{id: string;data: BodyType<UpdateWarehouseDto>}, TContext>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof warehousesControllerUpdate>>,
@@ -328,7 +354,11 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getWarehousesControllerUpdateMutationOptions(options), queryClient);
     }
-    export const warehousesControllerArchive = (
+    /**
+ * Soft-deletes the warehouse (status → INACTIVE).
+ * @summary Archive a warehouse
+ */
+export const warehousesControllerArchive = (
     id: string,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
 ) => {
@@ -342,7 +372,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-export const getWarehousesControllerArchiveMutationOptions = <TError = ErrorType<unknown>,
+export const getWarehousesControllerArchiveMutationOptions = <TError = ErrorType<ErrorResponseDto>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof warehousesControllerArchive>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof warehousesControllerArchive>>, TError,{id: string}, TContext> => {
 
@@ -371,9 +401,12 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type WarehousesControllerArchiveMutationResult = NonNullable<Awaited<ReturnType<typeof warehousesControllerArchive>>>
 
-    export type WarehousesControllerArchiveMutationError = ErrorType<unknown>
+    export type WarehousesControllerArchiveMutationError = ErrorType<ErrorResponseDto>
 
-    export const useWarehousesControllerArchive = <TError = ErrorType<unknown>,
+    /**
+ * @summary Archive a warehouse
+ */
+export const useWarehousesControllerArchive = <TError = ErrorType<ErrorResponseDto>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof warehousesControllerArchive>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof warehousesControllerArchive>>,
@@ -383,7 +416,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       > => {
       return useMutation(getWarehousesControllerArchiveMutationOptions(options), queryClient);
     }
-    export const warehousesControllerAssignStaff = (
+    /**
+ * @summary Assign staff to a warehouse (sets their scope)
+ */
+export const warehousesControllerAssignStaff = (
     id: string,
     assignStaffDto: BodyType<AssignStaffDto>,
  options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
@@ -400,7 +436,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-export const getWarehousesControllerAssignStaffMutationOptions = <TError = ErrorType<unknown>,
+export const getWarehousesControllerAssignStaffMutationOptions = <TError = ErrorType<ErrorResponseDto>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof warehousesControllerAssignStaff>>, TError,{id: string;data: BodyType<AssignStaffDto>}, TContext>, request?: SecondParameter<typeof customInstance>}
 ): UseMutationOptions<Awaited<ReturnType<typeof warehousesControllerAssignStaff>>, TError,{id: string;data: BodyType<AssignStaffDto>}, TContext> => {
 
@@ -429,9 +465,12 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type WarehousesControllerAssignStaffMutationResult = NonNullable<Awaited<ReturnType<typeof warehousesControllerAssignStaff>>>
     export type WarehousesControllerAssignStaffMutationBody = BodyType<AssignStaffDto>
-    export type WarehousesControllerAssignStaffMutationError = ErrorType<unknown>
+    export type WarehousesControllerAssignStaffMutationError = ErrorType<ErrorResponseDto>
 
-    export const useWarehousesControllerAssignStaff = <TError = ErrorType<unknown>,
+    /**
+ * @summary Assign staff to a warehouse (sets their scope)
+ */
+export const useWarehousesControllerAssignStaff = <TError = ErrorType<ErrorResponseDto>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof warehousesControllerAssignStaff>>, TError,{id: string;data: BodyType<AssignStaffDto>}, TContext>, request?: SecondParameter<typeof customInstance>}
  , queryClient?: QueryClient): UseMutationResult<
         Awaited<ReturnType<typeof warehousesControllerAssignStaff>>,

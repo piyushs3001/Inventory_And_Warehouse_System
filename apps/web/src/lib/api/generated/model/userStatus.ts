@@ -6,6 +6,9 @@
  * OpenAPI spec version: 1.0
  */
 
+/**
+ * Account status.
+ */
 export type UserStatus = typeof UserStatus[keyof typeof UserStatus];
 
 

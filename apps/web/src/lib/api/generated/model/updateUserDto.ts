@@ -5,12 +5,16 @@
  * REST API for the Inventory & Warehouse System
  * OpenAPI spec version: 1.0
  */
-import type { UpdateUserDtoRole } from './updateUserDtoRole';
-import type { UpdateUserDtoStatus } from './updateUserDtoStatus';
+import type { Role } from './role';
+import type { UserStatus } from './userStatus';
 
 export interface UpdateUserDto {
-  /** @minLength 1 */
+  /**
+     * Full name.
+     * @minLength 1
+     */
   name?: string;
-  role?: UpdateUserDtoRole;
-  status?: UpdateUserDtoStatus;
+  /** New role for the user. */
+  role?: Role;
+  status?: UserStatus;
 }
