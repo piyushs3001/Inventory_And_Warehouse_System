@@ -23,7 +23,27 @@ describe('LoginPage', () => {
     expect(login).toHaveBeenCalledWith('admin@iws.local', 'Admin@12345');
   });
 
-  it('shows "Invalid credentials" only on a real 401', async () => {
+  it('shows the API message on a real 401 with a body', async () => {
+    login.mockRejectedValueOnce({
+      response: {
+        status: 401,
+        data: {
+          statusCode: 401,
+          error: 'Unauthorized',
+          message: 'Invalid email or password',
+          timestamp: '2026-06-15T10:00:00.000Z',
+          path: '/auth/login',
+        },
+      },
+    });
+    render(<LoginPage />);
+    await userEvent.type(screen.getByLabelText(/email/i), 'admin@iws.local');
+    await userEvent.type(screen.getByLabelText('Password'), 'whatever');
+    await userEvent.click(screen.getByRole('button', { name: /sign in/i }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Invalid email or password');
+  });
+
+  it('falls back to "Invalid credentials" on a 401 with no body message', async () => {
     login.mockRejectedValueOnce({ response: { status: 401 } });
     render(<LoginPage />);
     await userEvent.type(screen.getByLabelText(/email/i), 'admin@iws.local');

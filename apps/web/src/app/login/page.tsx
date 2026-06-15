@@ -4,6 +4,8 @@ import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-context';
+import type { ErrorResponseDto } from '@/lib/api/generated/model';
+import type { ErrorType } from '@/lib/api/axios';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -28,13 +30,15 @@ export default function LoginPage() {
     } catch (err) {
       // Only a real 401 means the credentials are wrong. A network/CORS failure
       // (or a 5xx) has no response.status — don't mislabel it as bad credentials.
-      const status =
-        typeof err === 'object' && err !== null && 'response' in err
-          ? (err as { response?: { status?: number } }).response?.status
+      const e = err as ErrorType<ErrorResponseDto>;
+      const status = e.response?.status;
+      const apiMessage =
+        typeof e.response?.data?.message === 'string'
+          ? e.response.data.message
           : undefined;
       setError(
         status === 401
-          ? 'Invalid credentials'
+          ? (apiMessage ?? 'Invalid credentials')
           : 'Unable to reach the server. Please try again.',
       );
     } finally {

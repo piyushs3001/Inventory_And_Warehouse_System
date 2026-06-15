@@ -15,8 +15,7 @@ import {
   authControllerLogin,
   authControllerLogout,
 } from '../api/generated/auth/auth';
-import type { UserDto, ErrorResponseDto } from '../api/generated/model';
-import type { ErrorType } from '../api/axios';
+import type { UserDto } from '../api/generated/model';
 import { tokenStore } from './token-store';
 
 type Status = 'loading' | 'authenticated' | 'unauthenticated';
@@ -61,19 +60,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [clearAuthState]);
 
   const login = useCallback(async (email: string, password: string): Promise<void> => {
-    try {
-      const tokens = await authControllerLogin({ email, password });
-      tokenStore.set(tokens);
-      setHasToken(true);
-      await queryClient.invalidateQueries({ queryKey: getAuthControllerMeQueryKey() });
-    } catch (e) {
-      const err = e as ErrorType<ErrorResponseDto>;
-      const message =
-        typeof err.response?.data?.message === 'string'
-          ? err.response.data.message
-          : 'Login failed';
-      throw new Error(message);
-    }
+    const tokens = await authControllerLogin({ email, password });
+    tokenStore.set(tokens);
+    setHasToken(true);
+    await queryClient.invalidateQueries({ queryKey: getAuthControllerMeQueryKey() });
   }, [queryClient]);
 
   const logout = useCallback(async (): Promise<void> => {

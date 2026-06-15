@@ -1,7 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 import { render, screen, waitFor } from '@testing-library/react';
-import { useState, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import MockAdapter from 'axios-mock-adapter';
 import { AXIOS_INSTANCE } from '../api/axios';
@@ -47,7 +46,7 @@ describe('AuthProvider', () => {
     );
   });
 
-  it('surfaces the API error message on a failed login', async () => {
+  it('rejects with the AxiosError (response intact) on a failed login', async () => {
     mock.onPost('/auth/login').reply(401, {
       statusCode: 401,
       error: 'Unauthorized',
@@ -56,30 +55,33 @@ describe('AuthProvider', () => {
       path: '/auth/login',
     });
 
-    // Component that attempts login on mount and surfaces the caught error message.
-    function LoginAttempt() {
+    // Spy captures the rejection from login() via an onError callback prop.
+    const onError = vi.fn();
+
+    function LoginAttemptOnMount() {
       const { login } = useAuth();
-      const [errorMsg, setErrorMsg] = useState<string>('pending');
-      useEffect(() => {
-        login('bad@example.com', 'wrongpassword').catch((e: Error) => {
-          setErrorMsg(e.message);
-        });
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-      }, []);
-      return <div data-testid="error-msg">{errorMsg}</div>;
+      return (
+        <button
+          onClick={() => {
+            login('bad@example.com', 'wrongpassword').catch(onError);
+          }}
+        >
+          attempt
+        </button>
+      );
     }
 
-    render(
+    const { getByRole } = render(
       <QueryClientProvider client={new QueryClient()}>
         <AuthProvider>
-          <LoginAttempt />
+          <LoginAttemptOnMount />
         </AuthProvider>
       </QueryClientProvider>,
     );
 
-    await waitFor(() =>
-      expect(screen.getByTestId('error-msg')).not.toHaveTextContent('pending'),
-    );
-    expect(screen.getByTestId('error-msg')).toHaveTextContent('Invalid email or password');
+    getByRole('button', { name: 'attempt' }).click();
+
+    await waitFor(() => expect(onError).toHaveBeenCalled());
+    expect(onError.mock.calls[0][0]).toMatchObject({ response: { status: 401 } });
   });
 });
