@@ -10,7 +10,10 @@ import {
 import { UserStatus } from '@/lib/api/generated/model';
 import type { UserDto } from '@/lib/api/generated/model';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { PageHead } from '@/components/ui/page-head';
+import { StatusBadge } from '@/components/ui/status-badge';
+import { EmptyState } from '@/components/ui/empty-state';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
@@ -32,48 +35,55 @@ export default function UsersPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Users</h1>
-        <Button onClick={() => setCreating(true)}>New user</Button>
-      </div>
+      <PageHead title="Users" actions={<Button onClick={() => setCreating(true)}>New user</Button>} />
 
       {isLoading ? (
-        <p>Loading…</p>
+        <div className="flex flex-col gap-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-12 w-full" />
+          ))}
+        </div>
+      ) : (users ?? []).length === 0 ? (
+        <EmptyState
+          title="No users yet"
+          description="Create your first user to get started."
+          action={<Button onClick={() => setCreating(true)}>New user</Button>}
+        />
       ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Role</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Warehouses</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {(users ?? []).map((u) => (
-              <TableRow key={u.id}>
-                <TableCell>{u.name}</TableCell>
-                <TableCell>{u.email}</TableCell>
-                <TableCell>{u.role}</TableCell>
-                <TableCell>
-                  <Badge variant={u.status === UserStatus.ACTIVE ? 'default' : 'secondary'}>
-                    {u.status}
-                  </Badge>
-                </TableCell>
-                <TableCell>{u.warehouses.map((w) => w.name).join(', ') || '—'}</TableCell>
-                <TableCell className="space-x-2 text-right">
-                  <Button variant="outline" size="sm" onClick={() => setEditing(u)}>Edit</Button>
-                  <Button variant="outline" size="sm" onClick={() => setAssigning(u)}>Scope</Button>
-                  {u.status === UserStatus.ACTIVE && (
-                    <Button variant="outline" size="sm" onClick={() => onDeactivate(u.id)}>Deactivate</Button>
-                  )}
-                </TableCell>
+        <div className="rounded-xl bg-card ring-1 ring-foreground/10 overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Warehouses</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {(users ?? []).map((u) => (
+                <TableRow key={u.id}>
+                  <TableCell>{u.name}</TableCell>
+                  <TableCell>{u.email}</TableCell>
+                  <TableCell>{u.role}</TableCell>
+                  <TableCell>
+                    <StatusBadge tone={u.status === UserStatus.ACTIVE ? 'ok' : 'muted'}>{u.status}</StatusBadge>
+                  </TableCell>
+                  <TableCell>{u.warehouses.map((w) => w.name).join(', ') || '—'}</TableCell>
+                  <TableCell className="space-x-2 text-right">
+                    <Button variant="outline" size="sm" onClick={() => setEditing(u)}>Edit</Button>
+                    <Button variant="outline" size="sm" onClick={() => setAssigning(u)}>Scope</Button>
+                    {u.status === UserStatus.ACTIVE && (
+                      <Button variant="outline" size="sm" onClick={() => onDeactivate(u.id)}>Deactivate</Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       )}
 
       {creating && <UserFormDialog onClose={() => setCreating(false)} />}
