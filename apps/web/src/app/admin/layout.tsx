@@ -5,6 +5,7 @@ import { useRequireAuth } from '@/lib/auth/use-require-auth';
 import { Role } from '@/lib/api/generated/model';
 import { Nav } from '@/components/app-shell/nav';
 import { UserMenu } from '@/components/app-shell/user-menu';
+import { ThemeToggle } from '@/components/app-shell/theme-toggle';
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   const { user, status } = useRequireAuth({ roles: [Role.SUPER_ADMIN] });
@@ -18,7 +19,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         <Nav role={user.role} />
       </aside>
       <div className="flex flex-1 flex-col">
-        <header className="flex items-center justify-end border-b p-4">
+        <header className="flex items-center justify-end gap-2 border-b p-4">
+          <ThemeToggle />
           <UserMenu />
         </header>
         <main className="flex-1 p-6">{children}</main>
