@@ -5,7 +5,7 @@ import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { configureApp } from '../src/app.setup';
 
-const WEB_ORIGIN = 'http://localhost:3000';
+const WEB_ORIGIN = 'http://localhost:5000';
 
 describe('CORS (e2e)', () => {
   let app: INestApplication;

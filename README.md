@@ -21,13 +21,13 @@ _Deferred to later phases: pgvector (AI), MinIO/S3 object storage (file uploads)
 ## Useful commands
 | Action | Command |
 |---|---|
-| API dev (→ /api/v1/health) | `npm run dev:api` |
-| Web dev | `npm run dev:web` |
+| API dev (→ `:5001/api/v1/health`) | `npm run dev:api` |
+| Web dev (→ `:5000`) | `npm run dev:web` |
 | Migrate (dev) | `npm run db:migrate` |
 | Prisma Studio | `npm run db:studio` |
 | Typecheck / lint / build | `npm run typecheck` / `npm run lint` / `npm run build` |
 | Unit tests / e2e | `npm test` / `npm run test:e2e` |
-| Swagger UI | open `http://localhost:3001/api/v1/docs` (run `npm run dev:api`) |
+| Swagger UI | open `http://localhost:5001/api/v1/docs` (run `npm run dev:api`) |
 | Regenerate OpenAPI spec | `npm run api:openapi` |
 | Regenerate API client | `npm run web:client` |
 | Regenerate spec + client | `npm run api:gen` |

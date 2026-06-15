@@ -16,7 +16,7 @@ declare module 'axios' {
   }
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1';
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5001/api/v1';
 
 export const AXIOS_INSTANCE = Axios.create({ baseURL: BASE_URL });
 

@@ -24,7 +24,7 @@
 
 ## Live server re-verification (running instance — 2026-06-13)
 
-Re-verified independently against the **actual running API** (`npm run dev:api`, port 3001), not just the supertest app — confirms the `APP_FILTER` is active in the real bootstrap path:
+Re-verified independently against the **actual running API** (`npm run dev:api`, port 5001), not just the supertest app — confirms the `APP_FILTER` is active in the real bootstrap path:
 
 | # | Scenario (▼ negative) | Request | Observed | Result |
 |---|---|---|---|---|

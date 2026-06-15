@@ -10,7 +10,7 @@ export interface AppSetupOptions {
  * bootstrap (`main.ts`) and e2e tests so they never drift. Applies the global
  * `/api/v1` prefix, the strict validation pipe, and CORS.
  *
- * CORS is required because the web app (`:3000`) and API (`:3001`) are different
+ * CORS is required because the web app (`:5000`) and API (`:5001`) are different
  * origins; without it the browser blocks every request and the SPA surfaces the
  * failure as a generic error. `credentials: true` is set for future cookie/refresh
  * flows; the JWT is currently sent via the Authorization header.

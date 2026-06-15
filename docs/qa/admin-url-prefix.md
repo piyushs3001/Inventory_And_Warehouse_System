@@ -24,10 +24,10 @@ Verified via **unit tests** (routing behavior), the **production build** (route-
 | 3 | ▲ Root `/` redirects a non-admin to `/home` | unit (`page.test.tsx`) | **Passed** |
 | 4 | ▼ Root `/` sends an unauthenticated visitor to `/login` | unit (`page.test.tsx`) | **Passed** |
 | 5 | ▲ Production build emits routes `/`, `/admin`, `/admin/users`, `/home`, `/login` | `next build` | **Passed** |
-| 6 | ▲ Live: `GET /admin/users` reachable | curl `:3000` | **Passed** (200) |
-| 7 | ▲ Live: `GET /admin` reachable (→ `/admin/users`) | curl `:3000` | **Passed** (200) |
-| 8 | ▲ Live: `GET /home`, `/login` reachable | curl `:3000` | **Passed** (200) |
-| 9 | ▼ Live: old `GET /users` no longer a route | curl `:3000` | **Passed** (404) |
+| 6 | ▲ Live: `GET /admin/users` reachable | curl `:5000` | **Passed** (200) |
+| 7 | ▲ Live: `GET /admin` reachable (→ `/admin/users`) | curl `:5000` | **Passed** (200) |
+| 8 | ▲ Live: `GET /home`, `/login` reachable | curl `:5000` | **Passed** (200) |
+| 9 | ▼ Live: old `GET /users` no longer a route | curl `:5000` | **Passed** (404) |
 | 10 | ▲ Admin role gating + moved component tests intact | vitest full suite | **Passed** (30/30) |
 
 ## Build gate (web)
