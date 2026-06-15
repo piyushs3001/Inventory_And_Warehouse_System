@@ -7,14 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-
-interface ErrorBody {
-  statusCode: number;
-  error: string;
-  message: string | string[];
-  timestamp: string;
-  path: string;
-}
+import { ErrorResponseDto } from '../dto/error-response.dto';
 
 /**
  * Global exception filter. Normalizes every error into a consistent body and,
@@ -57,7 +50,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       );
     }
 
-    const body: ErrorBody = {
+    const body: ErrorResponseDto = {
       statusCode: status,
       error,
       message,

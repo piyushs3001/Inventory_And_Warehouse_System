@@ -78,4 +78,12 @@ describe('AllExceptionsFilter', () => {
 
     errorSpy.mockRestore();
   });
+
+  it('emits exactly the ErrorResponseDto envelope keys', () => {
+    const { host, body } = mockHost('/auth/login');
+    filter.catch(new ForbiddenException('nope'), host);
+    expect(Object.keys(body() ?? {}).sort()).toEqual(
+      ['error', 'message', 'path', 'statusCode', 'timestamp'].sort(),
+    );
+  });
 });
