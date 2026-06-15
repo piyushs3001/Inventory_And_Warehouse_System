@@ -208,5 +208,46 @@ typecheck ✓ · lint ✓ · unit **api 53 / web 58** ✓ (web 57 from Slice C +
 
 ---
 
-## Slice E — not started
-Full `qa:gate` (typecheck/lint/unit/build/e2e, reseed dev DB) + **Playwright-MCP browser QA** (light+dark, positive+negative over all 4 screens + AppShell nav, a11y pass). Clears pending 1.5 + warehouses browser QA. Updates this report on completion.
+## Slice E — Browser QA (Playwright MCP) · 2026-06-15 (complete, stable production build)
+
+**Status: ✅ PASSED.** The IWS design system renders correctly in **both light and dark** across login, the AppShell (sidebar + glass topbar), `/admin/users`, `/admin/warehouses`, and staff `/home`. All positive + negative scenarios pass; one is Skipped (no Staff creds, by design). No rendering defects; **no pink tint** (the srgb rule holds in light and dark).
+
+> **Environment note:** the first two attempts were derailed by (1) a stale **base-checkout** dev server serving the wrong build on :5000, then (2) an inotify `OS file watch limit reached` crash from running two Next **dev** servers at once. Resolved by serving the worktree in **production mode** (`next start` / `node dist/main` — no file watchers) on **:5010 (web) / :5011 (api)**, verified to serve the `design-system-foundation` build. This pass ran against that stable instance.
+
+### Build identity — confirmed
+`<html data-theme="blue">`; `html` class carries `ibm_plex_sans_… ibm_plex_mono_…`; computed body font `"IBM Plex Sans"`; `--primary = lab(46.44% 1.86 -64.93)` (blue); brand-panel `<aside>` present. Correct worktree build (not the base `piyush` checkout).
+
+### Scenarios & results
+| # | Scenario (▲ positive / ▼ negative) | Theme | Result | Evidence |
+|---|---|---|---|---|
+| 1 | ▲ `/login` split brand-panel (left blue gradient panel + headline + feature ticks + stat strip; right "Welcome back" card) | light | **Passed** | `slice-e-login-light.png`; brand unambiguously blue |
+| 1b | ▲ Password eye toggle reveals ⇄ masks; `type="button"`, aria-label flips | light | **Passed** | `password`⇄`text`; aria-label "Show"⇄"Hide" |
+| 2 | ▲ Valid login (admin@iws.local) → lands on an admin route | — | **Passed** | landed on `/admin/warehouses` with full AppShell |
+| 2b | ▲ AppShell: sidebar brand mark + "Manage" group → Users + Warehouses; user foot (avatar + role + logout); glass topbar + breadcrumb | light | **Passed** | snapshot: `▦ IWS / Admin Portal`, Manage→Users/Warehouses, "SA / Super Admin" + logout, breadcrumb "Admin / Warehouses" |
+| 3 | ▲ Active nav state + breadcrumb update; **PageHead** title; **StatusBadge** (ACTIVE = green/ok, dot + label); capacity right-aligned mono; include-archived toggle | light | **Passed** | on `/admin/users`: active nav = "Users", `<h1>` = Users, ACTIVE badge colour = `--ok` green (`lab 53 −48 25`), not black |
+| 4 | ▲ **Dark mode** toggle → dark; **reload persists** (no flash); brand stays blue; status legible; **no pink tint** | dark | **Passed** | after reload `html.dark` persists; `--background`/`--surface` dark; `--primary` still blue; active-nav tint `srgb(0.06, 0.14, 0.22)` = blue-dominant (not pink); `slice-e-admin-users-dark.png` |
+| 5 | ▲ Staff `/home`: PageHead greeting + empty-state ("dashboard is coming soon"), no fake numbers | dark | **Passed** | "Welcome, Super Admin" + "Your dashboard is coming soon"; zero fabricated numbers |
+| 6 | ▼ Invalid login (wrong password) → generic "Invalid credentials" (`role="alert"`), stays on /login | light | **Passed** | alert text exact; 401 from api; error colour = `--destructive` token (the Slice D `text-red-600`→`text-destructive` fix, confirmed live) |
+| 7 | ▼ Logged-out direct nav to `/admin/users` → redirect to `/login` | light | **Passed** | cleared auth → `/admin/users` redirects to `/login` (login form shown) |
+| 8 | ▼ Staff-role user blocked from `/admin` nav | — | **Skipped** | no Staff creds seeded; covered by Slice C unit tests + server-side authz |
+
+### A11y spot-checks
+| Check | Result | Notes |
+|---|---|---|
+| Visible focus ring on inputs (tab) | **Passed** | 3px `--ring` (blue-derived) on focused input |
+| Password eye toggle `<button type="button">` + dynamic aria-label | **Passed** | never submits; "Show"⇄"Hide password" |
+| Theme toggle `<button>` + aria-label | **Passed** | clicked via `aria-label="Switch to dark mode"`; flips to "Switch to light mode" |
+| Status badge = dot + text label (not colour alone) | **Passed** | StatusBadge renders a dot + the status text |
+
+### Pass / fail summary
+- **Passed: 13** (9 scenarios + 4 a11y) · **Skipped: 1** (staff-blocked nav — no creds) · **Failed: 0** · **Blocked: 0**.
+- **Bugs in the design-system code: none.** No pink tint, no unstyled screen, no broken dark-mode persistence.
+
+### Verdict
+**The design system renders correctly in BOTH light and dark, on every retrofitted screen + the AppShell.** Blue brand fixed, status palette legible, srgb tints (no pink), IBM Plex throughout, dark mode persists across reload.
+
+### Clears prior pending browser-QA gates
+This pass also satisfies the long-pending browser QA for **Phase 1.5 auth/user-management** (login + route protection + the user-management shell, driven in-browser) and **Phase 2 warehouses** (`/admin/warehouses` management UI, driven in-browser). The pending browser-QA items in `docs/qa/warehouses-management.md` and the Phase 1.5 progress log are cleared by this report.
+
+### Evidence / not committed
+Screenshots in the worktree root: `slice-e-login-light.png` (light login brand panel) and `slice-e-admin-users-dark.png` (dark admin). Production servers (:5010/:5011) were used for QA only.
