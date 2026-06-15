@@ -91,12 +91,17 @@ TDD (RED→GREEN for all new components except B2 which is a one-line additive e
 ### Build gate
 typecheck ✓ · lint ✓ · unit **api 53 / web 52** ✓ (web = 42 baseline + 10 new Slice B tests) · build (api + web) ✓. *(e2e not re-run — api unchanged; runs at Slice E with dev-DB reseed.)*
 
+### Reviews
+- **Spec compliance:** ✅ — all 6 components present; danger correctly uses `text-destructive`/`border-destructive` (no unregistered `--color-danger`); `badge.tsx` + all other base components untouched (StatusBadge is a separate file); no deferred components; no screen/layout changes.
+- **Code quality:** ✅ **Approve-with-minor** — no Critical/Important; `any`-free; cva/derived-type patterns match the repo; tests assert real output. The EmptyState/ErrorState shape overlap was judged **not** worth factoring. Two consistency minors **deferred to Slice D** (see below).
+
 ### Bugs found / fixed
 None. All components were implemented correctly on first pass. TDD RED→GREEN confirmed for B1 and B3.
 
 ### Pending / deferred
 - **Comprehensive Playwright-MCP browser QA (light + dark, positive + negative)** → **Slice E** (after Slices C AppShell + D screen retrofit land).
 - Table mono-numeric/SKU-chip treatments are usage-level classNames applied in Slice D, not component changes.
+- **Deferred code-quality minors (→ Slice D, when these components are consumed):** (1) the four plain-`div` components (`StatCard`/`EmptyState`/`ErrorState`/`PageHead`) don't forward `...props` — extend `ComponentProps<'div'>` + spread when a caller needs `id`/`aria-*` (note the `title`-prop vs HTML-`title` collision to handle then); (2) align their prop-typing/formatting to the repo's named-type + one-prop-per-line convention. Both low-urgency per the reviewer.
 
 ### Commits (branch `design-system-foundation`)
 `e589b88` StatusBadge · `26b264c` accent button variant · `7a72e07` StatCard · `97cfc22` EmptyState/ErrorState/Skeleton/PageHead.
