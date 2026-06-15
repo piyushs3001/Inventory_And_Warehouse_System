@@ -45,8 +45,22 @@ describe('OpenAPI document', () => {
     const get = doc.paths['/health'].get!;
     expect(get.tags).toContain('health');
     expect(
-      (get.responses['200'] as { content?: Record<string, { schema: { $ref?: string } }> })
-        .content?.['application/json'].schema.$ref,
+      (
+        get.responses['200'] as {
+          content?: Record<string, { schema: { $ref?: string } }>;
+        }
+      ).content?.['application/json'].schema.$ref,
     ).toContain('HealthDto');
+  });
+
+  it('documents auth error responses', () => {
+    const doc = buildOpenApiDocument(app);
+    expect(Object.keys(doc.paths['/auth/login'].post!.responses)).toEqual(
+      expect.arrayContaining(['200', '400', '401']),
+    );
+    expect(Object.keys(doc.paths['/auth/me'].get!.responses)).toEqual(
+      expect.arrayContaining(['200', '401']),
+    );
+    expect(doc.paths['/auth/login'].post!.summary).toBeTruthy();
   });
 });
