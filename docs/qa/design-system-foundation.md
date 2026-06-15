@@ -152,5 +152,58 @@ typecheck ✓ · lint ✓ · unit **api 53 / web 57** ✓ · build ✓.
 
 ---
 
-## Slices D–E — not started
-D (screen retrofit: login brand panel + users/warehouses tables + staff home) · E (full `qa:gate` + Playwright browser QA, light+dark, +/- ; a11y pass; clears pending 1.5 + warehouses browser QA). Each updates this report on completion.
+## Slice D — Screen retrofit · 2026-06-15
+
+### What was built
+- **D1** `page-head.tsx` / `empty-state.tsx` / `error-state.tsx` — `Omit<ComponentProps<'div'>, 'title'>` named prop types + `...props` spread; `stat-card.tsx` — `ComponentProps<'div'>` (no `title` collision) + `...props` spread. No behaviour change; existing component tests stayed green.
+- **D2** `login/page.tsx` — replaced the Card-wrapped centered form with a two-column brand-panel layout (`lg:grid-cols-[1.1fr_1fr]`): left `<aside>` (brand mark, headline, feature checklist, stat strip — decorative, `hidden lg:flex`); right auth card (`<h1>Welcome back`, `<p>Sign in to…`). Fixed the one token violation: `text-red-600` → `text-destructive`. State hooks (`email`, `password`, `showPassword`, `error`, `submitting`) + full `onSubmit` logic kept byte-for-byte. Dropped unused `Card*` imports; added `Check` to the lucide import. Sign-in only (no register tab).
+- **D3** `admin/users/page.tsx` — `<PageHead title="Users" actions={<Button>New user</Button>}>` replaces the inline header. `<Badge variant>` → `<StatusBadge tone={ACTIVE→'ok', else 'muted'}>`. Loading state → 5 `<Skeleton className="h-12 w-full" />` rows; loaded-empty → `<EmptyState title="No users yet" …>`; else `<Table>` wrapped in `<div className="rounded-xl bg-card ring-1 ring-foreground/10 overflow-hidden">`. All hooks/handlers/dialogs untouched.
+- **D4** `admin/warehouses/page.tsx` — same pattern: `<PageHead title="Warehouses" actions={<>label toggle + New warehouse button</>}>`. Status → `<StatusBadge tone>`. Capacity column: `<TableHead className="text-right">` + `<TableCell className="text-right font-mono tabular-nums">`. Loading/empty/card-frame states. All hooks/handlers/dialogs untouched.
+- **D5** `(staff)/home/page.tsx` — replaced the inline heading with `<PageHead title="Welcome, {name}">` + `<EmptyState icon={<Inbox>} title="Your dashboard is coming soon" description="…">`. No fake numbers. `useAuth` call kept.
+
+### Verification method
+All tests run after each task; full gate (typecheck/lint/unit/build) at D6. **Browser (Playwright-MCP) QA → Slice E** (comprehensive light+dark, +/- paths over all retrofitted screens).
+
+### Scenarios & results
+
+| # | Scenario (▲ positive / ▼ negative) | Layer | Result |
+|---|---|---|---|
+| 1 | ▲ D1: `page-head`/`empty-state`/`error-state` forward `...props`; `stat-card` too; `Omit<…,'title'>` avoids HTML collision | typecheck + unit | **Passed** |
+| 2 | ▲ D1: all 7 existing component tests stay green (no behaviour change) | unit | **Passed** |
+| 3 | ▲ D2: login brand panel renders at `lg` with mark + headline + checklist + stat strip | build | **Passed** |
+| 4 | ▼ D2: `text-red-600` removed — error uses `text-destructive` | grep + code review | **Passed** |
+| 5 | ▲ D2: `onSubmit` logic byte-for-byte identical; `Card*` imports removed; `Check` added | code review | **Passed** |
+| 6 | ▲ D2: all 6 login tests pass — email/password fields, eye-toggle aria-labels, 401 vs network error, `role="alert"`, type="button" | unit | **Passed** |
+| 7 | ▲ D3: `PageHead` header; `New user` button still findable `getByRole('button', {name:/new user/i})` | unit | **Passed** |
+| 8 | ▲ D3: status cell renders `StatusBadge` with ACTIVE→`ok` / INACTIVE→`muted` tone | unit | **Passed** |
+| 9 | ▲ D3: `Skeleton` loading state; `EmptyState` for zero rows; card-framed `Table` | build + code review | **Passed** |
+| 10 | ▼ D3: all generated hooks (`useUsersControllerFindAll`, `useUsersControllerDeactivate`, `getUsersControllerFindAllQueryKey`, `queryClient.invalidateQueries`, dialogs) untouched | git diff | **Passed** |
+| 11 | ▲ D4: `PageHead` with include-archived toggle + `New warehouse` button in actions | unit | **Passed** |
+| 12 | ▲ D4: Capacity column header + cell `text-right font-mono tabular-nums` | build + code review | **Passed** |
+| 13 | ▲ D4: Archive button still present only for ACTIVE rows (1 of 2) | unit | **Passed** |
+| 14 | ▼ D4: all generated hooks + `invalidateList` + `onArchive` + dialogs (`currentStaffIds`, `onSuccess`) untouched | git diff | **Passed** |
+| 15 | ▲ D5: `PageHead` with dynamic welcome title + `EmptyState` with `Inbox` icon | typecheck + build | **Passed** |
+| 16 | ▼ D5: no fake stat numbers in the empty-state | code review | **Passed** |
+| 17 | ▲ D6 full gate: typecheck + lint + unit (api 53 / web 57) + build — all PASS | D6 gate | **Passed** |
+| 18 | ▼ No `text-red-600` or other hardcoded colour tokens in login/users/warehouses/home pages | grep | **Passed** |
+
+### Build gate
+typecheck ✓ · lint ✓ · unit **api 53 / web 57** ✓ (web = 57 baseline from Slice C; Slice D adds no new spec files — screen files are already covered by their existing page tests) · build (api + web, all 6 routes) ✓. *(e2e not re-run — api unchanged; runs at Slice E with dev-DB reseed.)*
+
+### Reviews
+- **Data logic unchanged (confirmed by diff):** all generated TanStack-Query hooks, `useAuth` calls, `onSubmit` error handling, `queryClient.invalidateQueries`, dialog props (`onClose`/`onSuccess`/`currentStaffIds`) are byte-for-byte identical across D2–D5.
+- **Token compliance:** zero hardcoded colours; `text-destructive` now correct in the login error; status tones map to registered palette (`ok`/`muted`); mono-numeric uses registered `font-mono tabular-nums`.
+
+### Bugs found / fixed
+- None. All tasks passed on first run. The one pre-existing token violation (`text-red-600`) was the planned fix in D2.
+
+### Pending / deferred
+- **Comprehensive Playwright-MCP browser QA (light + dark, positive + negative)** over all 4 retrofitted screens → **Slice E**. That pass also clears the pending Phase 1.5 auth/user-management and Phase 2 warehouses browser-QA gates.
+
+### Commits (branch `design-system-foundation`)
+`3a7e26a` D1 props polish · `b8d40c7` D2 login brand panel · `5c36e8a` D3 users retrofit · `9985e50` D4 warehouses retrofit · `4153713` D5 staff home retrofit.
+
+---
+
+## Slice E — not started
+Full `qa:gate` (typecheck/lint/unit/build/e2e, reseed dev DB) + **Playwright-MCP browser QA** (light+dark, positive+negative over all 4 screens + AppShell nav, a11y pass). Clears pending 1.5 + warehouses browser QA. Updates this report on completion.
