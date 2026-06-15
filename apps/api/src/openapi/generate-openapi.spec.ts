@@ -84,6 +84,17 @@ describe('OpenAPI document', () => {
     expect(Object.keys(doc.paths['/users/{id}'].get!.responses)).toEqual(
       expect.arrayContaining(['200', '401', '403', '404']),
     );
-    expect(doc.paths['/users/{id}'].get!.parameters).toBeDefined();
+    expect(doc.paths['/users/{id}'].get!.parameters).toEqual(
+      expect.arrayContaining([expect.objectContaining({ name: 'id', in: 'path' })]),
+    );
+    expect(Object.keys(doc.paths['/users/{id}'].patch!.responses)).toEqual(
+      expect.arrayContaining(['400', '404']),
+    );
+    expect(Object.keys(doc.paths['/users/{id}'].delete!.responses)).toEqual(
+      expect.arrayContaining(['404']),
+    );
+    expect(Object.keys(doc.paths['/users/{id}/warehouses'].put!.responses)).toEqual(
+      expect.arrayContaining(['400', '404']),
+    );
   });
 });
