@@ -55,11 +55,18 @@
   --color-transit: var(--transit);    --color-transit-tint: var(--transit-tint);
   --color-warn: var(--warn);          --color-warn-ink: var(--warn-ink);  --color-warn-tint: var(--warn-tint);
   --color-danger-tint: var(--danger-tint);
-  /* brand surfaces */
+  /* stockpilot brand/AI surfaces */
   --color-primary-tint: var(--primary-tint);
   --color-primary-tint-2: var(--primary-tint-2);
   --color-brand-accent: var(--brand-accent);
   --color-brand-accent-foreground: var(--brand-accent-foreground);
+  --color-brand-glow: var(--brand-glow);
+  --color-brand-weak: var(--brand-weak);
+  --color-brand-border: var(--brand-border);
+  --color-ai-1: var(--ai-1);
+  --color-ai-2: var(--ai-2);
+  --color-avatar-from: var(--avatar-from);
+  --color-avatar-to: var(--avatar-to);
   /* shadows */
   --shadow-xs: var(--shadow-xs);
   --shadow-sm: var(--shadow-sm);
@@ -85,6 +92,14 @@
   --danger: oklch(0.56 0.21 25);
   --warn: oklch(0.72 0.15 80);
   --warn-ink: oklch(0.47 0.12 70);
+  /* stockpilot additive tokens (light) */
+  --brand-glow: oklch(0.515 0.226 277 / 0.28);
+  --brand-weak: color-mix(in srgb, var(--primary) 9%, var(--surface));
+  --brand-border: color-mix(in srgb, var(--primary) 22%, var(--surface));
+  --ai-1: color-mix(in srgb, var(--primary) 7%, var(--surface));
+  --ai-2: color-mix(in srgb, oklch(0.62 0.20 312) 7%, var(--surface));
+  --avatar-from: oklch(0.585 0.205 277); /* fixed decorative avatar gradient — same in light/dark */
+  --avatar-to: oklch(0.62 0.20 312);
   --radius: 0.7rem;
   /* shadows (cool-tinted) */
   --shadow-xs: 0 1px 2px oklch(0.2 0.03 285/.06);
@@ -109,17 +124,25 @@
   --danger: oklch(0.70 0.18 25);
   --warn: oklch(0.82 0.14 82);
   --warn-ink: oklch(0.86 0.13 82);
+  /* stockpilot additive tokens (dark) */
+  --brand-glow: oklch(0.66 0.17 280 / 0.40);
+  --brand-weak: color-mix(in srgb, var(--primary) 16%, var(--surface));
+  --brand-border: color-mix(in srgb, var(--primary) 30%, var(--surface));
+  --ai-1: oklch(0.21 0.04 280); /* fixed dark AI surfaces (blue theme) */
+  --ai-2: oklch(0.21 0.05 320);
   --shadow-xs: 0 1px 2px oklch(0 0 0/.35);
   --shadow-sm: 0 1px 3px oklch(0 0 0/.45);
   --shadow-md: 0 10px 28px -8px oklch(0 0 0/.55);
   --shadow-lg: 0 34px 64px -18px oklch(0 0 0/.65);
 }
 
-[data-theme="blue"]   { --primary: oklch(0.55 0.195 250); --primary-2: oklch(0.48 0.205 250); --primary-foreground: oklch(0.99 0.01 250); --brand-accent: oklch(0.80 0.15 80);  --brand-accent-foreground: oklch(0.28 0.08 80); }
+[data-theme="blue"]   { --primary: oklch(0.515 0.226 277); --primary-2: oklch(0.585 0.205 277); --primary-foreground: oklch(0.99 0.01 277); --brand-accent: oklch(0.80 0.15 80);  --brand-accent-foreground: oklch(0.28 0.08 80); }
 [data-theme="violet"] { --primary: oklch(0.56 0.21 292);  --primary-2: oklch(0.50 0.22 292); --primary-foreground: oklch(0.99 0.01 292); --brand-accent: oklch(0.80 0.15 85);  --brand-accent-foreground: oklch(0.28 0.08 85); }
 [data-theme="plum"]   { --primary: oklch(0.56 0.22 350);  --primary-2: oklch(0.50 0.23 350); --primary-foreground: oklch(0.99 0.01 350); --brand-accent: oklch(0.78 0.14 62);  --brand-accent-foreground: oklch(0.28 0.07 62); }
 [data-theme="teal"]   { --primary: oklch(0.60 0.125 192); --primary-2: oklch(0.53 0.13 192); --primary-foreground: oklch(0.99 0.01 192); --brand-accent: oklch(0.70 0.18 38);  --brand-accent-foreground: oklch(0.28 0.08 38); }
 [data-theme="slate"]  { --primary: oklch(0.46 0.045 280); --primary-2: oklch(0.39 0.05 280); --primary-foreground: oklch(0.99 0.005 280); --brand-accent: oklch(0.58 0.22 292); --brand-accent-foreground: oklch(0.99 0.01 292); }
+/* dark-mode brand lightens — must appear after [data-theme] to win via source order */
+.dark[data-theme="blue"] { --primary: oklch(0.72 0.14 280); --primary-2: oklch(0.66 0.17 280); }
 
 :root, .dark {
   /* brand/status surfaces — srgb so blue stays blue when lightened (design.md rule #1) */
