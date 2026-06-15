@@ -16,7 +16,25 @@ declare module 'axios' {
   }
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:5001/api/v1';
+// Resolve the API base URL.
+//  1. An explicit NEXT_PUBLIC_API_URL always wins (e.g. production, or a remote
+//     API host) — it is inlined at build time.
+//  2. Otherwise, in the browser, follow the page's own host so the app works
+//     identically whether opened via http://localhost:5000 or the machine's LAN
+//     IP (e.g. http://172.16.17.132:5000). The API runs on the same host, :5001.
+//  3. SSR / non-browser fallback: localhost.
+const API_PORT = '5001';
+function resolveBaseUrl(): string {
+  const configured = process.env.NEXT_PUBLIC_API_URL;
+  if (configured) return configured;
+  if (typeof window !== 'undefined') {
+    const { protocol, hostname } = window.location;
+    return `${protocol}//${hostname}:${API_PORT}/api/v1`;
+  }
+  return `http://localhost:${API_PORT}/api/v1`;
+}
+
+const BASE_URL = resolveBaseUrl();
 
 export const AXIOS_INSTANCE = Axios.create({ baseURL: BASE_URL });
 
