@@ -85,7 +85,9 @@ describe('OpenAPI document', () => {
       expect.arrayContaining(['200', '401', '403', '404']),
     );
     expect(doc.paths['/users/{id}'].get!.parameters).toEqual(
-      expect.arrayContaining([expect.objectContaining({ name: 'id', in: 'path' })]),
+      expect.arrayContaining([
+        expect.objectContaining({ name: 'id', in: 'path' }),
+      ]),
     );
     expect(Object.keys(doc.paths['/users/{id}'].patch!.responses)).toEqual(
       expect.arrayContaining(['400', '404']),
@@ -93,8 +95,30 @@ describe('OpenAPI document', () => {
     expect(Object.keys(doc.paths['/users/{id}'].delete!.responses)).toEqual(
       expect.arrayContaining(['404']),
     );
-    expect(Object.keys(doc.paths['/users/{id}/warehouses'].put!.responses)).toEqual(
-      expect.arrayContaining(['400', '404']),
+    expect(
+      Object.keys(doc.paths['/users/{id}/warehouses'].put!.responses),
+    ).toEqual(expect.arrayContaining(['400', '404']));
+  });
+
+  it('documents warehouses error responses', () => {
+    const doc = buildOpenApiDocument(app);
+    const listResponses = Object.keys(doc.paths['/warehouses'].get!.responses);
+    expect(listResponses).toEqual(expect.arrayContaining(['200', '401']));
+    expect(listResponses).not.toContain('403'); // list is scope-filtered, not role-gated
+    expect(Object.keys(doc.paths['/warehouses/{id}'].get!.responses)).toEqual(
+      expect.arrayContaining(['200', '401', '404']),
     );
+    expect(Object.keys(doc.paths['/warehouses'].post!.responses)).toEqual(
+      expect.arrayContaining(['201', '400', '401', '403']),
+    );
+    expect(Object.keys(doc.paths['/warehouses/{id}'].patch!.responses)).toEqual(
+      expect.arrayContaining(['200', '400', '401', '403', '404']),
+    );
+    expect(Object.keys(doc.paths['/warehouses/{id}'].delete!.responses)).toEqual(
+      expect.arrayContaining(['200', '401', '403', '404']),
+    );
+    expect(
+      Object.keys(doc.paths['/warehouses/{id}/staff'].post!.responses),
+    ).toEqual(expect.arrayContaining(['201', '400', '401', '403', '404']));
   });
 });
