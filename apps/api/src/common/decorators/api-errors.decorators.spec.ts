@@ -1,7 +1,11 @@
 import { Test } from '@nestjs/testing';
 import { Controller, Get, INestApplication } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-import { ApiAuthErrors, ApiValidationError } from './api-errors.decorators';
+import {
+  ApiAuthErrors,
+  ApiUnauthorizedTokenError,
+  ApiValidationError,
+} from './api-errors.decorators';
 
 @Controller('probe')
 class ProbeController {
@@ -9,6 +13,12 @@ class ProbeController {
   @ApiAuthErrors()
   @ApiValidationError()
   hit(): string {
+    return 'ok';
+  }
+
+  @Get('token-only')
+  @ApiUnauthorizedTokenError()
+  tokenOnly(): string {
     return 'ok';
   }
 }
@@ -40,5 +50,20 @@ describe('api-errors decorators', () => {
         responses[code].content?.['application/json'].schema.$ref,
       ).toContain('ErrorResponseDto');
     }
+  });
+
+  it('ApiUnauthorizedTokenError declares a 401 referencing ErrorResponseDto', () => {
+    const doc = SwaggerModule.createDocument(
+      app,
+      new DocumentBuilder().build(),
+    );
+    const responses = doc.paths['/probe/token-only'].get!.responses as Record<
+      string,
+      { content?: { 'application/json': { schema: { $ref?: string } } } }
+    >;
+    expect(responses['401']).toBeDefined();
+    expect(
+      responses['401'].content?.['application/json'].schema.$ref,
+    ).toContain('ErrorResponseDto');
   });
 });

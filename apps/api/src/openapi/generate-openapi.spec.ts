@@ -61,6 +61,18 @@ describe('OpenAPI document', () => {
     expect(Object.keys(doc.paths['/auth/me'].get!.responses)).toEqual(
       expect.arrayContaining(['200', '401']),
     );
+    expect(Object.keys(doc.paths['/auth/refresh'].post!.responses)).toEqual(
+      expect.arrayContaining(['200', '401']),
+    );
+    expect(Object.keys(doc.paths['/auth/logout'].post!.responses)).toEqual(
+      expect.arrayContaining(['401']),
+    );
     expect(doc.paths['/auth/login'].post!.summary).toBeTruthy();
+    const login401 = doc.paths['/auth/login'].post!.responses['401'] as {
+      content?: Record<string, { schema: { $ref?: string } }>;
+    };
+    expect(login401.content?.['application/json'].schema.$ref).toContain(
+      'ErrorResponseDto',
+    );
   });
 });

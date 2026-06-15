@@ -15,7 +15,17 @@ export const ApiAuthErrors = () =>
     }),
     ApiForbiddenResponse({
       type: ErrorResponseDto,
-      description: 'Authenticated, but the role or warehouse scope is not allowed.',
+      description:
+        'Authenticated, but the role or warehouse scope is not allowed.',
+    }),
+  );
+
+/** 401 for routes guarded only by authentication (no role gate). */
+export const ApiUnauthorizedTokenError = () =>
+  applyDecorators(
+    ApiUnauthorizedResponse({
+      type: ErrorResponseDto,
+      description: 'Missing or invalid access token.',
     }),
   );
 

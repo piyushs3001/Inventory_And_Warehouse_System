@@ -23,7 +23,10 @@ import { UserDto } from '../users/dto/user.dto';
 import { JwtAccessGuard } from './guards/jwt-access.guard';
 import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
-import { ApiValidationError } from '../common/decorators/api-errors.decorators';
+import {
+  ApiUnauthorizedTokenError,
+  ApiValidationError,
+} from '../common/decorators/api-errors.decorators';
 import { ErrorResponseDto } from '../common/dto/error-response.dto';
 import type { JwtPayload, RequestUserWithRefresh, Tokens } from './auth.types';
 
@@ -78,10 +81,7 @@ export class AuthController {
     description: 'Invalidate the stored refresh token for the current user.',
   })
   @ApiNoContentResponse()
-  @ApiUnauthorizedResponse({
-    type: ErrorResponseDto,
-    description: 'Missing or invalid access token.',
-  })
+  @ApiUnauthorizedTokenError()
   async logout(@CurrentUser() user: JwtPayload): Promise<void> {
     await this.auth.logout(user.sub);
   }
@@ -94,10 +94,7 @@ export class AuthController {
     description: 'Return the authenticated user with their warehouse scope.',
   })
   @ApiOkResponse({ type: UserDto })
-  @ApiUnauthorizedResponse({
-    type: ErrorResponseDto,
-    description: 'Missing or invalid access token.',
-  })
+  @ApiUnauthorizedTokenError()
   me(@CurrentUser() user: JwtPayload) {
     return this.users.findOne(user.sub);
   }
