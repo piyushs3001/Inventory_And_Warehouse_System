@@ -56,5 +56,52 @@ typecheck ✓ · lint ✓ · unit **api 53 / web 42** ✓ (web = 39 baseline + 3
 
 ---
 
-## Slices B–E — not started
-B (component layer) · C (AppShell) · D (screen retrofit) · E (full `qa:gate` + Playwright browser QA + a11y pass). Each updates this report on completion.
+## Slice B — Component layer · 2026-06-15
+
+### What was built
+- **B1** `status-badge.tsx` (+ test) — IWS status colour vocabulary as pill badges: `ok / reserved / transit / warn / danger / muted / brand` tones. Uses `bg-ok-tint text-ok`, `bg-warn-tint text-warn-ink`, `bg-danger-tint text-destructive / border-destructive` (no unregistered `--color-danger`), `bg-primary-tint text-primary`. Dot + label (colour is never the sole differentiator).
+- **B2** `button.tsx` — added `accent` variant (`bg-brand-accent text-brand-accent-foreground hover:bg-brand-accent/90`). No other changes to existing variants.
+- **B3** `stat-card.tsx` (+ test) — tinted icon chip + label + big mono value + optional trend. Tones: `brand / ok / warn / reserved / transit`.
+- **B4** `empty-state.tsx` (+ test) — dashed border container; icon chip + title + description + optional CTA.
+- **B4** `error-state.tsx` (+ test) — `TriangleAlertIcon` + `text-destructive` title + description + optional CTA; `bg-danger-tint / border-destructive/20`.
+- **B4** `skeleton.tsx` (+ test) — `animate-pulse rounded-md bg-surface-2`, `data-slot="skeleton"`.
+- **B4** `page-head.tsx` (+ test) — `<h1>` + description + right-aligned actions slot; `mb-6 flex items-start gap-4`.
+- **Not modified:** `card.tsx`, `input.tsx`, `label.tsx`, `table.tsx`, `dialog.tsx`, `select.tsx`, `sonner.tsx`, `badge.tsx` — already token-driven from Slice A. No screens or layouts touched.
+
+### Verification method
+TDD (RED→GREEN for all new components except B2 which is a one-line additive edit) + typecheck + lint + unit + build. **Browser (Playwright-MCP) QA deferred to Slice E** — components are built but screens are not yet retrofitted (Slice D), so visual browser QA belongs after screen retrofit.
+
+### Scenarios & results
+
+| # | Scenario (▲ positive / ▼ negative) | Layer | Result |
+|---|---|---|---|
+| 1 | ▲ `StatusBadge tone="ok"` renders its label text | unit | **Passed** |
+| 2 | ▲ `StatusBadge tone="warn"` applies `text-warn-ink` class | unit | **Passed** |
+| 3 | ▼ `--color-danger` NOT used (unregistered token guard) — danger uses `text-destructive / border-destructive / bg-danger-tint` | code review | **Passed** |
+| 4 | ▲ Dot + label always present (colour not sole differentiator) | code review | **Passed** |
+| 5 | ▲ `Button variant="accent"` added without breaking existing variants | typecheck + build | **Passed** |
+| 6 | ▲ `StatCard` renders label and numeric value | unit | **Passed** |
+| 7 | ▲ `EmptyState` renders title and description | unit | **Passed** |
+| 8 | ▲ `ErrorState` renders default title; custom title override works | unit | **Passed** |
+| 9 | ▲ `Skeleton` has `animate-pulse` class | unit | **Passed** |
+| 10 | ▲ `PageHead` renders `<h1>` + description + action nodes | unit | **Passed** |
+| 11 | ▼ `card.tsx / input.tsx / label.tsx / table.tsx / dialog.tsx / select.tsx / sonner.tsx / badge.tsx` NOT modified | git diff review | **Passed** |
+| 12 | ▼ No deferred components built (CompositionBar, Stepper, ScanBar, etc.) | git diff review | **Passed** |
+
+### Build gate
+typecheck ✓ · lint ✓ · unit **api 53 / web 52** ✓ (web = 42 baseline + 10 new Slice B tests) · build (api + web) ✓. *(e2e not re-run — api unchanged; runs at Slice E with dev-DB reseed.)*
+
+### Bugs found / fixed
+None. All components were implemented correctly on first pass. TDD RED→GREEN confirmed for B1 and B3.
+
+### Pending / deferred
+- **Comprehensive Playwright-MCP browser QA (light + dark, positive + negative)** → **Slice E** (after Slices C AppShell + D screen retrofit land).
+- Table mono-numeric/SKU-chip treatments are usage-level classNames applied in Slice D, not component changes.
+
+### Commits (branch `design-system-foundation`)
+`e589b88` StatusBadge · `26b264c` accent button variant · `7a72e07` StatCard · `97cfc22` EmptyState/ErrorState/Skeleton/PageHead.
+
+---
+
+## Slices C–E — not started
+C (AppShell) · D (screen retrofit) · E (full `qa:gate` + Playwright browser QA + a11y pass). Each updates this report on completion.
