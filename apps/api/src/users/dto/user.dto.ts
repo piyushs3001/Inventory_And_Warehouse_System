@@ -41,10 +41,16 @@ export class UserDto {
   })
   status!: UserStatus;
 
-  @ApiProperty({ description: 'Account creation timestamp.', example: '2026-06-15T10:00:00.000Z' })
+  @ApiProperty({
+    description: 'Account creation timestamp.',
+    example: '2026-06-15T10:00:00.000Z',
+  })
   createdAt!: Date;
 
-  @ApiProperty({ description: 'Last update timestamp.', example: '2026-06-15T10:00:00.000Z' })
+  @ApiProperty({
+    description: 'Last update timestamp.',
+    example: '2026-06-15T10:00:00.000Z',
+  })
   updatedAt!: Date;
 
   @ApiProperty({

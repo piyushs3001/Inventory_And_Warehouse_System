@@ -14,11 +14,18 @@ export class CreateUserDto {
   @MinLength(1)
   name!: string;
 
-  @ApiProperty({ description: 'Unique login email.', example: 'jane@iws.local' })
+  @ApiProperty({
+    description: 'Unique login email.',
+    example: 'jane@iws.local',
+  })
   @IsEmail()
   email!: string;
 
-  @ApiProperty({ description: 'Initial password (min 8 chars).', example: 'S3curePass!', minLength: 8 })
+  @ApiProperty({
+    description: 'Initial password (min 8 chars).',
+    example: 'S3curePass!',
+    minLength: 8,
+  })
   @IsString()
   @MinLength(8)
   password!: string;

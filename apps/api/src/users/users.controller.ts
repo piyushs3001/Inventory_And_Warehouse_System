@@ -66,7 +66,10 @@ export class UsersController {
   @ApiOperation({ summary: 'Get a user by id' })
   @ApiParam({ name: 'id', description: 'User id (UUID).' })
   @ApiOkResponse({ type: UserDto })
-  @ApiNotFoundResponse({ type: ErrorResponseDto, description: 'User not found.' })
+  @ApiNotFoundResponse({
+    type: ErrorResponseDto,
+    description: 'User not found.',
+  })
   findOne(@Param('id') id: string) {
     return this.users.findOne(id);
   }
@@ -76,7 +79,10 @@ export class UsersController {
   @ApiParam({ name: 'id', description: 'User id (UUID).' })
   @ApiOkResponse({ type: UserDto })
   @ApiValidationError()
-  @ApiNotFoundResponse({ type: ErrorResponseDto, description: 'User not found.' })
+  @ApiNotFoundResponse({
+    type: ErrorResponseDto,
+    description: 'User not found.',
+  })
   update(@Param('id') id: string, @Body() dto: UpdateUserDto) {
     return this.users.update(id, dto);
   }
@@ -88,7 +94,10 @@ export class UsersController {
   })
   @ApiParam({ name: 'id', description: 'User id (UUID).' })
   @ApiOkResponse({ type: UserDto })
-  @ApiNotFoundResponse({ type: ErrorResponseDto, description: 'User not found.' })
+  @ApiNotFoundResponse({
+    type: ErrorResponseDto,
+    description: 'User not found.',
+  })
   deactivate(@Param('id') id: string) {
     return this.users.deactivate(id);
   }
@@ -101,7 +110,10 @@ export class UsersController {
   @ApiParam({ name: 'id', description: 'User id (UUID).' })
   @ApiOkResponse({ type: UserDto })
   @ApiValidationError()
-  @ApiNotFoundResponse({ type: ErrorResponseDto, description: 'User not found.' })
+  @ApiNotFoundResponse({
+    type: ErrorResponseDto,
+    description: 'User not found.',
+  })
   setWarehouses(@Param('id') id: string, @Body() dto: AssignWarehousesDto) {
     return this.users.setWarehouses(id, dto.warehouseIds);
   }

@@ -9,7 +9,12 @@ export class UpdateUserDto {
   @MinLength(1)
   name?: string;
 
-  @ApiPropertyOptional({ description: 'New role for the user.', enum: Role, enumName: 'Role', example: Role.WAREHOUSE_MANAGER })
+  @ApiPropertyOptional({
+    description: 'New role for the user.',
+    enum: Role,
+    enumName: 'Role',
+    example: Role.WAREHOUSE_MANAGER,
+  })
   @IsOptional()
   @IsEnum(Role)
   role?: Role;
