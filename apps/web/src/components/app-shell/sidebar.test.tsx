@@ -22,4 +22,10 @@ describe('Sidebar', () => {
     expect(screen.getByRole('link', { name: /home/i })).toBeInTheDocument();
     expect(screen.queryByRole('link', { name: /users/i })).not.toBeInTheDocument();
   });
+
+  it('renders count badge on Purchase Orders for SUPER_ADMIN admin nav', () => {
+    render(<Sidebar surface="admin" role={Role.SUPER_ADMIN} />);
+    const poLink = screen.getByRole('link', { name: /purchase orders/i });
+    expect(poLink).toHaveTextContent('14');
+  });
 });
