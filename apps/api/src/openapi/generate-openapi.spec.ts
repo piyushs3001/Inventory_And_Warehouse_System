@@ -39,4 +39,14 @@ describe('OpenAPI document', () => {
       expect.arrayContaining(['TokensDto', 'UserDto', 'WarehouseRefDto']),
     );
   });
+
+  it('documents the health endpoint with a HealthDto response', () => {
+    const doc = buildOpenApiDocument(app);
+    const get = doc.paths['/health'].get!;
+    expect(get.tags).toContain('health');
+    expect(
+      (get.responses['200'] as { content?: Record<string, { schema: { $ref?: string } }> })
+        .content?.['application/json'].schema.$ref,
+    ).toContain('HealthDto');
+  });
 });
