@@ -10,7 +10,7 @@ import { Topbar } from './topbar';
 describe('Topbar', () => {
   it('renders the surface + page breadcrumb and the theme toggle', () => {
     render(<Topbar surface="admin" />);
-    expect(screen.getByText('Admin Portal')).toBeInTheDocument();
+    expect(screen.getByText('Admin')).toBeInTheDocument();
     expect(screen.getByText('Users')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /dark mode/i })).toBeInTheDocument();
   });

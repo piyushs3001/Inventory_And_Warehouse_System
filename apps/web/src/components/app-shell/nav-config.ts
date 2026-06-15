@@ -38,6 +38,12 @@ export const SURFACE_LABEL: Record<Surface, string> = {
   admin: 'Admin Portal',
 };
 
+/** Short surface label for the topbar breadcrumb (the full label lives in the sidebar brand mark). */
+export const SURFACE_CRUMB: Record<Surface, string> = {
+  staff: 'Staff',
+  admin: 'Admin',
+};
+
 const ROLE_LABEL: Record<Role, string> = {
   [Role.SUPER_ADMIN]: 'Super Admin',
   [Role.WAREHOUSE_MANAGER]: 'Warehouse Manager',
