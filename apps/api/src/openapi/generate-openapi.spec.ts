@@ -75,4 +75,15 @@ describe('OpenAPI document', () => {
       'ErrorResponseDto',
     );
   });
+
+  it('documents users error responses', () => {
+    const doc = buildOpenApiDocument(app);
+    expect(Object.keys(doc.paths['/users'].post!.responses)).toEqual(
+      expect.arrayContaining(['201', '400', '401', '403', '409']),
+    );
+    expect(Object.keys(doc.paths['/users/{id}'].get!.responses)).toEqual(
+      expect.arrayContaining(['200', '401', '403', '404']),
+    );
+    expect(doc.paths['/users/{id}'].get!.parameters).toBeDefined();
+  });
 });
