@@ -108,5 +108,49 @@ None. All components were implemented correctly on first pass. TDD RED→GREEN c
 
 ---
 
-## Slices C–E — not started
-C (AppShell) · D (screen retrofit) · E (full `qa:gate` + Playwright browser QA + a11y pass). Each updates this report on completion.
+## Slice C — AppShell · 2026-06-15
+
+### What was built
+- **`nav-config.ts`** — typed, grouped, role-gated nav (`NAV: Record<Surface, NavGroup[]>`): staff→Home (all roles); admin "Manage"→Users + Warehouses (SUPER_ADMIN only); commented slots for future Operations/Insights/AI groups. Plus `SURFACE_LABEL` (full), **`SURFACE_CRUMB`** (short, breadcrumb), `roleLabel`, `initials`, `pageLabel`.
+- **`sidebar.tsx`** — 248px aside: brand mark (`SURFACE_LABEL`), mono section headers, role-filtered items, active = `bg-primary-tint` + `text-primary` + 3px left accent bar (`aria-current="page"`), `UserMenu` foot.
+- **`topbar.tsx`** — glass header (`backdrop-blur`), breadcrumb (`SURFACE_CRUMB` · `pageLabel`) + `ThemeToggle`.
+- **`user-menu.tsx`** (rebuilt) — avatar initials + name + role + `Log out` (icon button) → `useAuth().logout` then `/login`.
+- **`app-shell.tsx`** — composes Sidebar + Topbar + scrollable `<main>` (p-7); both route-group layouts now render `<AppShell surface=…>`, keeping their `useRequireAuth` guard. **Deleted** old `nav.tsx` + `nav.test.tsx`.
+
+### Verification method
+TDD per component + full gate (typecheck/lint/unit/build). **Browser (Playwright-MCP) QA → Slice E** (after screen retrofit).
+
+### Scenarios & results
+| # | Scenario (▲ positive / ▼ negative) | Layer | Result |
+|---|---|---|---|
+| 1 | ▲ Admin Sidebar (SUPER_ADMIN) shows "Manage" → Users + Warehouses | unit | **Passed** |
+| 2 | ▼ Staff Sidebar (STAFF role) shows Home, **never** the admin Users link | unit | **Passed** |
+| 3 | ▲ Active route gets `aria-current="page"` + accent bar | unit | **Passed** |
+| 4 | ▲ Topbar breadcrumb = short surface ("Admin") · page ("Users") — distinct from sidebar's full "Admin Portal" | unit | **Passed** |
+| 5 | ▲ `UserMenu` renders name + role and logs out → `/login` | unit | **Passed** |
+| 6 | ▲ `AppShell` renders sidebar + topbar + children | unit | **Passed** |
+| 7 | ▲ Both layouts consume `AppShell`; admin still role-gates SUPER_ADMIN | code review | **Passed** |
+| 8 | ▼ Old `nav.tsx`/`nav.test.tsx` deleted; no dangling imports | git diff review | **Passed** |
+| 9 | ▲ Routes intact (`/`,`/admin`,`/admin/users`,`/admin/warehouses`,`/home`,`/login`) | `next build` | **Passed** |
+
+### Build gate
+typecheck ✓ · lint ✓ · unit **api 53 / web 57** ✓ · build ✓.
+
+### Reviews
+- **Spec compliance:** ✅ — all 7 checkpoints; `SURFACE_CRUMB` fix correctly wired; no UI-component/screen changes; old `nav` cleanly removed.
+- **Code quality:** ✅ **Approve** — clean extraction (both layouts collapsed to one shell), sound nav-config typing, role-gating tested against rendered output, no `any`. Minors all cosmetic/dormant.
+
+### Bugs found / fixed
+- **Plan gap (during impl):** `nav-config` originally reused `SURFACE_LABEL` for both the sidebar brand label and the topbar breadcrumb → duplicate "Admin Portal" text (failed the AppShell test) and diverged from the wireframe's short crumb. **Fixed** — added `SURFACE_CRUMB` (`Staff`/`Admin`) for the breadcrumb; sidebar keeps the full label (`a33028b`).
+
+### Pending / deferred
+- **Comprehensive Playwright-MCP browser QA** → **Slice E**.
+- **Dormant minor (track):** `pageLabel`'s fallback title-cases only the first char, so a future kebab route (e.g. `/admin/stock-counts`) would render "Stock-counts". No current route hits it; harden when such a route arrives.
+
+### Commits
+`7d4d5ac` nav-config · `d1d9c66` UserMenu · `709ff5e` Sidebar · `4a401ca` Topbar · `a33028b` SURFACE_CRUMB fix · `f8a375a` AppShell + layouts + remove Nav.
+
+---
+
+## Slices D–E — not started
+D (screen retrofit: login brand panel + users/warehouses tables + staff home) · E (full `qa:gate` + Playwright browser QA, light+dark, +/- ; a11y pass; clears pending 1.5 + warehouses browser QA). Each updates this report on completion.
