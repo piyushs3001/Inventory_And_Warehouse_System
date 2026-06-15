@@ -4,7 +4,8 @@ import { useRouter } from 'next/navigation';
 import { LogOutIcon } from 'lucide-react';
 import { useAuth } from '@/lib/auth/auth-context';
 import { Button } from '@/components/ui/button';
-import { initials, roleLabel } from './nav-config';
+import { initials } from '@/lib/utils';
+import { roleLabel } from './nav-config';
 
 export function UserMenu() {
   const { user, logout } = useAuth();

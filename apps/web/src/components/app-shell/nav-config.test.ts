@@ -1,12 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { initials, roleLabel, pageLabel, NAV, builtHrefs } from './nav-config';
+import { roleLabel, pageLabel, NAV, builtHrefs } from './nav-config';
 import { Role } from '@/lib/api/generated/model';
 
 describe('nav-config', () => {
-  it('initials takes first two name parts', () => {
-    expect(initials('Rosa Martins')).toBe('RM');
-    expect(initials('Jamal')).toBe('J');
-  });
   it('roleLabel humanizes the enum', () => {
     expect(roleLabel(Role.SUPER_ADMIN)).toBe('Super Admin');
   });

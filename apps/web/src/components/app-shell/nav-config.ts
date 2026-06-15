@@ -99,12 +99,6 @@ export function roleLabel(role: Role): string {
   return ROLE_LABEL[role] ?? role;
 }
 
-export function initials(name: string): string {
-  const parts = name.split(' ').filter(Boolean).slice(0, 2);
-  const out = parts.map((p) => p[0]?.toUpperCase() ?? '').join('');
-  return out || '?';
-}
-
 /** Breadcrumb page label: match a nav item by path, else humanize the last segment. */
 export function pageLabel(pathname: string, surface: Surface): string {
   const items = NAV[surface].flatMap((g) => g.items);

@@ -18,6 +18,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
+import { EntityAvatar } from '@/components/ui/entity-avatar';
 import { WarehouseFormDialog } from './warehouse-form-dialog';
 import { AssignStaffDialog } from './assign-staff-dialog';
 
@@ -94,7 +95,12 @@ export default function WarehousesPage() {
             <TableBody>
               {(warehouses ?? []).map((w) => (
                 <TableRow key={w.id}>
-                  <TableCell>{w.name}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2.5">
+                      <EntityAvatar name={w.name} />
+                      <div className="text-[13px] font-semibold">{w.name}</div>
+                    </div>
+                  </TableCell>
                   <TableCell>
                     <StatusBadge tone={w.status === WarehouseStatus.ACTIVE ? 'ok' : 'muted'}>{w.status}</StatusBadge>
                   </TableCell>

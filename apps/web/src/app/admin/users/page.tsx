@@ -17,6 +17,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table';
+import { EntityAvatar } from '@/components/ui/entity-avatar';
 import { UserFormDialog } from './user-form-dialog';
 import { AssignWarehousesDialog } from './assign-warehouses-dialog';
 
@@ -55,7 +56,6 @@ export default function UsersPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
                 <TableHead>Role</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Warehouses</TableHead>
@@ -65,8 +65,15 @@ export default function UsersPage() {
             <TableBody>
               {(users ?? []).map((u) => (
                 <TableRow key={u.id}>
-                  <TableCell>{u.name}</TableCell>
-                  <TableCell>{u.email}</TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2.5">
+                      <EntityAvatar name={u.name} />
+                      <div className="leading-tight">
+                        <div className="text-[13px] font-semibold">{u.name}</div>
+                        <div className="font-mono text-[11px] text-faint">{u.email}</div>
+                      </div>
+                    </div>
+                  </TableCell>
                   <TableCell>{u.role}</TableCell>
                   <TableCell>
                     <StatusBadge tone={u.status === UserStatus.ACTIVE ? 'ok' : 'muted'}>{u.status}</StatusBadge>
