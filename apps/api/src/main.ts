@@ -11,7 +11,8 @@ async function bootstrap() {
   const config = app.get(ConfigService);
   // CORS_ORIGIN may be a comma-separated list of allowed browser origins.
   const corsOrigin = (
-    config.get<string>('CORS_ORIGIN') ?? 'http://localhost:5000'
+    config.get<string>('CORS_ORIGIN') ??
+    'http://localhost:5000,http://localhost:5001'
   )
     .split(',')
     .map((o) => o.trim())
@@ -22,7 +23,7 @@ async function bootstrap() {
   const document = buildOpenApiDocument(app);
   SwaggerModule.setup('api/v1/docs', app, document);
 
-  const port = config.get<number>('PORT') ?? 5001;
+  const port = config.get<number>('PORT') ?? 5002;
   await app.listen(port);
 }
 void bootstrap();

@@ -21,9 +21,9 @@ declare module 'axios' {
 //     API host) — it is inlined at build time.
 //  2. Otherwise, in the browser, follow the page's own host so the app works
 //     identically whether opened via http://localhost:5000 or the machine's LAN
-//     IP (e.g. http://172.16.17.132:5000). The API runs on the same host, :5001.
+//     IP (e.g. http://172.16.17.132:5000). The API runs on the same host, :5002.
 //  3. SSR / non-browser fallback: localhost.
-const API_PORT = '5001';
+const API_PORT = '5002';
 function resolveBaseUrl(): string {
   const configured = process.env.NEXT_PUBLIC_API_URL;
   if (configured) return configured;

@@ -13,13 +13,7 @@ beforeEach(() => {
 });
 
 describe('RootPage redirect', () => {
-  it('sends a Super Admin to the /admin portal', () => {
-    auth = { status: 'authenticated', user: { role: 'SUPER_ADMIN' } };
-    render(<RootPage />);
-    expect(replace).toHaveBeenCalledWith('/admin');
-  });
-
-  it('sends a non-admin to /home', () => {
+  it('sends an authenticated user to /home (the staff app root)', () => {
     auth = { status: 'authenticated', user: { role: 'STAFF' } };
     render(<RootPage />);
     expect(replace).toHaveBeenCalledWith('/home');

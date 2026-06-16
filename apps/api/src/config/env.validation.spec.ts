@@ -21,6 +21,6 @@ describe('validateEnv', () => {
   it('passes and returns values when all required vars are present', () => {
     const result = validateEnv(complete);
     expect(result.DATABASE_URL).toBe(complete.DATABASE_URL);
-    expect(result.PORT).toBe(5001); // default applied
+    expect(result.PORT).toBe(5002); // default applied
   });
 });

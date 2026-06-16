@@ -1,5 +1,6 @@
 import {
-  Package, ShoppingCart, ArrowRightLeft, ClipboardList, Home, Truck, type LucideIcon,
+  LayoutDashboard, Package, Tag, Warehouse, ShoppingCart, ArrowRightLeft,
+  ClipboardList, BarChart3, Sparkles, Users, type LucideIcon,
 } from 'lucide-react';
 import { Role } from '@iws/api-client';
 
@@ -13,24 +14,43 @@ export interface NavGroup {
   items: NavItem[];
 }
 
-const ALL_ROLES: Role[] = [Role.STAFF, Role.WAREHOUSE_MANAGER, Role.SUPER_ADMIN];
+const ADMIN_ONLY: Role[] = [Role.SUPER_ADMIN];
+const MGR_UP: Role[] = [Role.WAREHOUSE_MANAGER, Role.SUPER_ADMIN];
 
-// Staff app nav. (The Admin Portal's nav lives in the admin app.)
+// Admin Portal nav — this app serves the admin routes at the ROOT (no /admin prefix).
 export const NAV: Partial<Record<Surface, NavGroup[]>> = {
-  staff: [
-    { items: [{ href: '/home', label: 'Home', icon: Home, roles: ALL_ROLES, built: true }] },
+  admin: [
+    { items: [{ href: '/', label: 'Dashboard', icon: LayoutDashboard, roles: ADMIN_ONLY, built: true }] },
     {
-      section: 'My Tasks',
+      section: 'Operations',
       items: [
-        { href: '/receive', label: 'Receive Stock', icon: Truck, roles: ALL_ROLES, built: false, phase: 4, badge: 2 },
-        { href: '/dispatch', label: 'Dispatch Stock', icon: ShoppingCart, roles: ALL_ROLES, built: false, phase: 4, badge: 5 },
-        { href: '/transfers', label: 'Stock Transfers', icon: ArrowRightLeft, roles: ALL_ROLES, built: false, phase: 5 },
-        { href: '/counting', label: 'Stock Count', icon: ClipboardList, roles: ALL_ROLES, built: false, phase: 5 },
+        { href: '/inventory', label: 'Inventory', icon: Package, roles: MGR_UP, built: false, phase: 3 },
+        { href: '/products', label: 'Products', icon: Tag, roles: MGR_UP, built: false, phase: 2 },
+        { href: '/warehouses', label: 'Warehouses', icon: Warehouse, roles: ADMIN_ONLY, built: true },
       ],
     },
     {
-      section: 'Lookup',
-      items: [{ href: '/inventory', label: 'View Inventory', icon: Package, roles: ALL_ROLES, built: false, phase: 3 }],
+      section: 'Purchasing',
+      items: [{ href: '/purchase-orders', label: 'Purchase Orders', icon: ShoppingCart, roles: MGR_UP, built: false, phase: 4, badge: 14 }],
+    },
+    {
+      section: 'Logistics',
+      items: [
+        { href: '/transfers', label: 'Stock Transfers', icon: ArrowRightLeft, roles: MGR_UP, built: false, phase: 5 },
+        { href: '/counting', label: 'Stock Counting', icon: ClipboardList, roles: MGR_UP, built: false, phase: 5 },
+      ],
+    },
+    {
+      section: 'Analytics',
+      items: [{ href: '/reports', label: 'Reports', icon: BarChart3, roles: MGR_UP, built: false, phase: 6 }],
+    },
+    {
+      section: 'AI Center',
+      items: [{ href: '/ai', label: 'AI Assistant', icon: Sparkles, roles: ADMIN_ONLY, built: false, phase: 7 }],
+    },
+    {
+      section: 'Manage',
+      items: [{ href: '/users', label: 'Users', icon: Users, roles: ADMIN_ONLY, built: true }],
     },
   ],
 };
@@ -73,5 +93,5 @@ export function pageLabel(pathname: string, surface: Surface): string {
     .sort((a, b) => b.href.length - a.href.length)[0];
   if (prefix) return prefix.label;
   const seg = pathname.split('/').filter(Boolean).pop() ?? '';
-  return seg ? seg.charAt(0).toUpperCase() + seg.slice(1) : 'Home';
+  return seg ? seg.charAt(0).toUpperCase() + seg.slice(1) : 'Dashboard';
 }
