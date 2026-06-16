@@ -3,10 +3,11 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma, UserStatus } from '@prisma/client';
+import { Prisma, Role, UserStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { PasswordService } from '../auth/password.service';
 import { CreateUserDto } from './dto/create-user.dto';
+import { RegisterDto } from '../auth/dto/register.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { SafeUser, userSafeSelect } from './users.select';
 
@@ -17,15 +18,47 @@ export class UsersService {
     private readonly passwords: PasswordService,
   ) {}
 
-  async create(dto: CreateUserDto): Promise<SafeUser> {
-    const passwordHash = await this.passwords.hash(dto.password);
+  /** Admin-created user (role chosen by the admin; ACTIVE by schema default). */
+  create(dto: CreateUserDto): Promise<SafeUser> {
+    return this.createWithPassword({
+      name: dto.name,
+      email: dto.email,
+      password: dto.password,
+      role: dto.role,
+    });
+  }
+
+  /**
+   * Public self-registration. Always STAFF, no warehouse scope, and
+   * PENDING_APPROVAL — a Super Admin must activate (and assign scope) before
+   * the account can log in. Role/scope are never taken from the client.
+   */
+  registerSelfSignup(dto: RegisterDto): Promise<SafeUser> {
+    return this.createWithPassword({
+      name: dto.name,
+      email: dto.email,
+      password: dto.password,
+      role: Role.STAFF,
+      status: UserStatus.PENDING_APPROVAL,
+    });
+  }
+
+  private async createWithPassword(input: {
+    name: string;
+    email: string;
+    password: string;
+    role?: Role;
+    status?: UserStatus;
+  }): Promise<SafeUser> {
+    const passwordHash = await this.passwords.hash(input.password);
     try {
       return await this.prisma.user.create({
         data: {
-          name: dto.name,
-          email: dto.email,
+          name: input.name,
+          email: input.email,
           passwordHash,
-          role: dto.role,
+          role: input.role,
+          status: input.status,
         },
         select: userSafeSelect,
       });
@@ -67,6 +100,16 @@ export class UsersService {
     return this.prisma.user.update({
       where: { id },
       data: { status: UserStatus.INACTIVE },
+      select: userSafeSelect,
+    });
+  }
+
+  /** Approve/reactivate a user (PENDING_APPROVAL or INACTIVE → ACTIVE). */
+  async activate(id: string): Promise<SafeUser> {
+    await this.ensureExists(id);
+    return this.prisma.user.update({
+      where: { id },
+      data: { status: UserStatus.ACTIVE },
       select: userSafeSelect,
     });
   }

@@ -20,6 +20,7 @@ enum Role {
 enum UserStatus {
   ACTIVE
   INACTIVE
+  PENDING_APPROVAL
 }
 
 enum WarehouseStatus {

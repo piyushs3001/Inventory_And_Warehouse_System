@@ -105,4 +105,110 @@ describe('Auth + Authorization (e2e)', () => {
       .set('Authorization', `Bearer ${refreshToken}`)
       .expect(403);
   });
+
+  describe('self-registration → approval → login', () => {
+    it('registers a pending STAFF account with no scope and no tokens', async () => {
+      const res = await request(http)
+        .post('/api/v1/auth/register')
+        .send({
+          name: 'Rosa',
+          email: 'rosa@test.local',
+          password: 'password123',
+        })
+        .expect(201);
+      const body = res.body as {
+        id: string;
+        role: string;
+        status: string;
+        warehouses: unknown[];
+        accessToken?: string;
+      };
+      expect(body.role).toBe(Role.STAFF);
+      expect(body.status).toBe('PENDING_APPROVAL');
+      expect(body.warehouses).toEqual([]);
+      expect(body.accessToken).toBeUndefined();
+    });
+
+    it('ignores client-supplied role/status — always STAFF + PENDING_APPROVAL', async () => {
+      const res = await request(http)
+        .post('/api/v1/auth/register')
+        .send({
+          name: 'Mallory',
+          email: 'mallory@test.local',
+          password: 'password123',
+          role: Role.SUPER_ADMIN,
+          status: 'ACTIVE',
+        })
+        .expect(201);
+      const body = res.body as { role: string; status: string };
+      expect(body.role).toBe(Role.STAFF);
+      expect(body.status).toBe('PENDING_APPROVAL');
+    });
+
+    it('blocks a pending account from logging in (403), then allows it after approval', async () => {
+      const reg = await request(http)
+        .post('/api/v1/auth/register')
+        .send({
+          name: 'Rosa',
+          email: 'rosa@test.local',
+          password: 'password123',
+        })
+        .expect(201);
+      const id = (reg.body as { id: string }).id;
+
+      // Pending → login forbidden.
+      await request(http)
+        .post('/api/v1/auth/login')
+        .send({ email: 'rosa@test.local', password: 'password123' })
+        .expect(403);
+
+      // Super Admin approves.
+      const admin = await login('admin@test.local');
+      const approved = await request(http)
+        .post(`/api/v1/users/${id}/activate`)
+        .set('Authorization', `Bearer ${admin.accessToken}`)
+        .expect(200);
+      expect((approved.body as { status: string }).status).toBe('ACTIVE');
+
+      // Now login succeeds.
+      await request(http)
+        .post('/api/v1/auth/login')
+        .send({ email: 'rosa@test.local', password: 'password123' })
+        .expect(200);
+    });
+
+    it('rejects a duplicate email (409) and invalid input (400)', async () => {
+      await request(http)
+        .post('/api/v1/auth/register')
+        .send({
+          name: 'Dup',
+          email: 'admin@test.local',
+          password: 'password123',
+        })
+        .expect(409);
+
+      await request(http)
+        .post('/api/v1/auth/register')
+        .send({ name: 'Bad', email: 'not-an-email', password: 'short' })
+        .expect(400);
+    });
+
+    it('forbids a non-admin from approving a user', async () => {
+      const reg = await request(http)
+        .post('/api/v1/auth/register')
+        .send({
+          name: 'Rosa',
+          email: 'rosa@test.local',
+          password: 'password123',
+        })
+        .expect(201);
+      const id = (reg.body as { id: string }).id;
+
+      const staff = await login('staff@test.local');
+      await request(http)
+        .post(`/api/v1/users/${id}/activate`)
+        .set('Authorization', `Bearer ${staff.accessToken}`)
+        .expect(403);
+    });
+  });
 });

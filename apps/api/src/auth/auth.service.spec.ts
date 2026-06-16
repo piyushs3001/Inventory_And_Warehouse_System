@@ -85,4 +85,52 @@ describe('AuthService', () => {
       ForbiddenException,
     );
   });
+
+  it('blocks a PENDING_APPROVAL user (valid creds) with 403 awaiting approval', async () => {
+    const passwords = new PasswordService();
+    const hash = await passwords.hash('correct');
+    const { service } = makeService({
+      id: 'u1',
+      email: 'pending@a.com',
+      role: Role.STAFF,
+      status: UserStatus.PENDING_APPROVAL,
+      passwordHash: hash,
+      hashedRefreshToken: null,
+    });
+    await expect(
+      service.login('pending@a.com', 'correct'),
+    ).rejects.toBeInstanceOf(ForbiddenException);
+  });
+
+  it('does NOT reveal pending status on a wrong password (stays generic 401)', async () => {
+    const passwords = new PasswordService();
+    const hash = await passwords.hash('correct');
+    const { service } = makeService({
+      id: 'u1',
+      email: 'pending@a.com',
+      role: Role.STAFF,
+      status: UserStatus.PENDING_APPROVAL,
+      passwordHash: hash,
+      hashedRefreshToken: null,
+    });
+    await expect(
+      service.login('pending@a.com', 'wrong'),
+    ).rejects.toBeInstanceOf(UnauthorizedException);
+  });
+
+  it('rejects an INACTIVE user generically (401, no status leak)', async () => {
+    const passwords = new PasswordService();
+    const hash = await passwords.hash('correct');
+    const { service } = makeService({
+      id: 'u1',
+      email: 'gone@a.com',
+      role: Role.STAFF,
+      status: UserStatus.INACTIVE,
+      passwordHash: hash,
+      hashedRefreshToken: null,
+    });
+    await expect(service.login('gone@a.com', 'correct')).rejects.toBeInstanceOf(
+      UnauthorizedException,
+    );
+  });
 });

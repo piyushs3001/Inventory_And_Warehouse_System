@@ -24,11 +24,20 @@ export class AuthService {
 
   async login(email: string, password: string): Promise<Tokens> {
     const user = await this.prisma.user.findUnique({ where: { email } });
-    if (
-      !user ||
-      user.status !== UserStatus.ACTIVE ||
-      !(await this.passwords.compare(password, user.passwordHash))
-    ) {
+    const credentialsValid =
+      !!user && (await this.passwords.compare(password, user.passwordHash));
+    // Generic message until credentials prove out — no user enumeration.
+    if (!user || !credentialsValid) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+    // Only revealed to a caller who already holds valid credentials.
+    if (user.status === UserStatus.PENDING_APPROVAL) {
+      throw new ForbiddenException(
+        'Your account is awaiting administrator approval.',
+      );
+    }
+    // Deactivated (or any non-active) accounts stay generic.
+    if (user.status !== UserStatus.ACTIVE) {
       throw new UnauthorizedException('Invalid credentials');
     }
     const tokens = await this.issueTokens({

@@ -9,6 +9,8 @@ import {
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
+  ApiConflictResponse,
+  ApiCreatedResponse,
   ApiNoContentResponse,
   ApiOkResponse,
   ApiOperation,
@@ -18,6 +20,7 @@ import {
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { LoginDto } from './dto/login.dto';
+import { RegisterDto } from './dto/register.dto';
 import { TokensDto } from './dto/tokens.dto';
 import { UserDto } from '../users/dto/user.dto';
 import { JwtAccessGuard } from './guards/jwt-access.guard';
@@ -52,6 +55,24 @@ export class AuthController {
   })
   login(@Body() dto: LoginDto): Promise<Tokens> {
     return this.auth.login(dto.email, dto.password);
+  }
+
+  @Post('register')
+  @ApiOperation({
+    summary: 'Self-register',
+    description:
+      'Create a self-service account. Always STAFF with no warehouse scope and ' +
+      'PENDING_APPROVAL status — a Super Admin must approve and assign scope ' +
+      'before sign-in works. Returns no tokens.',
+  })
+  @ApiCreatedResponse({ type: UserDto })
+  @ApiValidationError()
+  @ApiConflictResponse({
+    type: ErrorResponseDto,
+    description: 'Email already in use.',
+  })
+  register(@Body() dto: RegisterDto) {
+    return this.users.registerSelfSignup(dto);
   }
 
   @Post('refresh')

@@ -13,6 +13,7 @@ export * from './createWarehouseDto';
 export * from './errorResponseDto';
 export * from './healthDto';
 export * from './loginDto';
+export * from './registerDto';
 export * from './role';
 export * from './tokensDto';
 export * from './updateUserDto';

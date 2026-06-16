@@ -5,10 +5,12 @@ import { useQueryClient } from '@tanstack/react-query';
 import {
   useUsersControllerFindAll,
   useUsersControllerDeactivate,
+  useUsersControllerActivate,
   getUsersControllerFindAllQueryKey,
 } from '@/lib/api/generated/users/users';
 import { UserStatus } from '@/lib/api/generated/model';
 import type { UserDto } from '@/lib/api/generated/model';
+import type { StatusTone } from '@/components/ui/status-badge';
 import { Button } from '@/components/ui/button';
 import { PageHead } from '@/components/ui/page-head';
 import { StatusBadge } from '@/components/ui/status-badge';
@@ -21,6 +23,18 @@ import { EntityAvatar } from '@/components/ui/entity-avatar';
 import { UserFormDialog } from './user-form-dialog';
 import { AssignWarehousesDialog } from './assign-warehouses-dialog';
 
+const STATUS_TONE: Record<UserStatus, StatusTone> = {
+  [UserStatus.ACTIVE]: 'ok',
+  [UserStatus.PENDING_APPROVAL]: 'warn',
+  [UserStatus.INACTIVE]: 'muted',
+};
+
+const STATUS_LABEL: Record<UserStatus, string> = {
+  [UserStatus.ACTIVE]: 'Active',
+  [UserStatus.PENDING_APPROVAL]: 'Pending',
+  [UserStatus.INACTIVE]: 'Inactive',
+};
+
 export default function UsersPage() {
   const { data: users, isLoading } = useUsersControllerFindAll();
   const [editing, setEditing] = useState<UserDto | null>(null);
@@ -29,9 +43,16 @@ export default function UsersPage() {
 
   const queryClient = useQueryClient();
   const deactivate = useUsersControllerDeactivate();
+  const activate = useUsersControllerActivate();
+  const invalidateList = (): Promise<void> =>
+    queryClient.invalidateQueries({ queryKey: getUsersControllerFindAllQueryKey() });
   const onDeactivate = async (id: string): Promise<void> => {
     await deactivate.mutateAsync({ id });
-    await queryClient.invalidateQueries({ queryKey: getUsersControllerFindAllQueryKey() });
+    await invalidateList();
+  };
+  const onActivate = async (id: string): Promise<void> => {
+    await activate.mutateAsync({ id });
+    await invalidateList();
   };
 
   return (
@@ -76,12 +97,18 @@ export default function UsersPage() {
                   </TableCell>
                   <TableCell>{u.role}</TableCell>
                   <TableCell>
-                    <StatusBadge tone={u.status === UserStatus.ACTIVE ? 'ok' : 'muted'}>{u.status}</StatusBadge>
+                    <StatusBadge tone={STATUS_TONE[u.status]}>{STATUS_LABEL[u.status]}</StatusBadge>
                   </TableCell>
                   <TableCell>{u.warehouses.map((w) => w.name).join(', ') || '—'}</TableCell>
                   <TableCell className="space-x-2 text-right">
                     <Button variant="outline" size="sm" onClick={() => setEditing(u)}>Edit</Button>
                     <Button variant="outline" size="sm" onClick={() => setAssigning(u)}>Scope</Button>
+                    {u.status === UserStatus.PENDING_APPROVAL && (
+                      <Button size="sm" onClick={() => onActivate(u.id)}>Approve</Button>
+                    )}
+                    {u.status === UserStatus.INACTIVE && (
+                      <Button variant="outline" size="sm" onClick={() => onActivate(u.id)}>Reactivate</Button>
+                    )}
                     {u.status === UserStatus.ACTIVE && (
                       <Button variant="outline" size="sm" onClick={() => onDeactivate(u.id)}>Deactivate</Button>
                     )}

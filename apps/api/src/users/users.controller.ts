@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -100,6 +102,24 @@ export class UsersController {
   })
   deactivate(@Param('id') id: string) {
     return this.users.deactivate(id);
+  }
+
+  @Post(':id/activate')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Approve / reactivate a user',
+    description:
+      'Sets status → ACTIVE. Use to approve a self-registered (PENDING_APPROVAL) ' +
+      'account or reactivate a deactivated one. Assign warehouse scope separately.',
+  })
+  @ApiParam({ name: 'id', description: 'User id (UUID).' })
+  @ApiOkResponse({ type: UserDto })
+  @ApiNotFoundResponse({
+    type: ErrorResponseDto,
+    description: 'User not found.',
+  })
+  activate(@Param('id') id: string) {
+    return this.users.activate(id);
   }
 
   @Put(':id/warehouses')

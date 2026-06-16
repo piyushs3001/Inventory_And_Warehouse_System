@@ -27,6 +27,7 @@ import type {
 import type {
   ErrorResponseDto,
   LoginDto,
+  RegisterDto,
   TokensDto,
   UserDto
 } from '../model';
@@ -102,6 +103,70 @@ export const useAuthControllerLogin = <TError = ErrorType<ErrorResponseDto>,
         TContext
       > => {
       return useMutation(getAuthControllerLoginMutationOptions(options), queryClient);
+    }
+    /**
+ * Create a self-service account. Always STAFF with no warehouse scope and PENDING_APPROVAL status — a Super Admin must approve and assign scope before sign-in works. Returns no tokens.
+ * @summary Self-register
+ */
+export const authControllerRegister = (
+    registerDto: BodyType<RegisterDto>,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<UserDto>(
+      {url: `/auth/register`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: registerDto, signal
+    },
+      options);
+    }
+
+
+
+export const getAuthControllerRegisterMutationOptions = <TError = ErrorType<ErrorResponseDto>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof authControllerRegister>>, TError,{data: BodyType<RegisterDto>}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof authControllerRegister>>, TError,{data: BodyType<RegisterDto>}, TContext> => {
+
+const mutationKey = ['authControllerRegister'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof authControllerRegister>>, {data: BodyType<RegisterDto>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  authControllerRegister(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AuthControllerRegisterMutationResult = NonNullable<Awaited<ReturnType<typeof authControllerRegister>>>
+    export type AuthControllerRegisterMutationBody = BodyType<RegisterDto>
+    export type AuthControllerRegisterMutationError = ErrorType<ErrorResponseDto>
+
+    /**
+ * @summary Self-register
+ */
+export const useAuthControllerRegister = <TError = ErrorType<ErrorResponseDto>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof authControllerRegister>>, TError,{data: BodyType<RegisterDto>}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof authControllerRegister>>,
+        TError,
+        {data: BodyType<RegisterDto>},
+        TContext
+      > => {
+      return useMutation(getAuthControllerRegisterMutationOptions(options), queryClient);
     }
     /**
  * Rotate the token pair using a valid refresh token (sent as the bearer token).

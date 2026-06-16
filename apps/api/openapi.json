@@ -367,6 +367,74 @@
         ]
       }
     },
+    "/users/{id}/activate": {
+      "post": {
+        "description": "Sets status → ACTIVE. Use to approve a self-registered (PENDING_APPROVAL) account or reactivate a deactivated one. Assign warehouse scope separately.",
+        "operationId": "UsersController_activate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "User id (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "User not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Approve / reactivate a user",
+        "tags": [
+          "users"
+        ]
+      }
+    },
     "/users/{id}/warehouses": {
       "put": {
         "description": "Replaces the full set of warehouses assigned to the user.",
@@ -503,6 +571,59 @@
           }
         },
         "summary": "Log in",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "description": "Create a self-service account. Always STAFF with no warehouse scope and PENDING_APPROVAL status — a Super Admin must approve and assign scope before sign-in works. Returns no tokens.",
+        "operationId": "AuthController_register",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request body or parameters failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Email already in use.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Self-register",
         "tags": [
           "auth"
         ]
@@ -1158,7 +1279,8 @@
         "type": "string",
         "enum": [
           "ACTIVE",
-          "INACTIVE"
+          "INACTIVE",
+          "PENDING_APPROVAL"
         ],
         "description": "Account status."
       },
@@ -1334,6 +1456,34 @@
         "required": [
           "accessToken",
           "refreshToken"
+        ]
+      },
+      "RegisterDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Full name.",
+            "example": "Rosa Martins"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Unique work email.",
+            "example": "rosa@company.com"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "description": "Password (min 8 chars).",
+            "example": "S3curePass!"
+          }
+        },
+        "required": [
+          "name",
+          "email",
+          "password"
         ]
       },
       "WarehouseStatus": {

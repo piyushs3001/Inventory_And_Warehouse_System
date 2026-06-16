@@ -414,6 +414,68 @@ export const useUsersControllerDeactivate = <TError = ErrorType<ErrorResponseDto
       return useMutation(getUsersControllerDeactivateMutationOptions(options), queryClient);
     }
     /**
+ * Sets status → ACTIVE. Use to approve a self-registered (PENDING_APPROVAL) account or reactivate a deactivated one. Assign warehouse scope separately.
+ * @summary Approve / reactivate a user
+ */
+export const usersControllerActivate = (
+    id: string,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<UserDto>(
+      {url: `/users/${id}/activate`, method: 'POST', signal
+    },
+      options);
+    }
+
+
+
+export const getUsersControllerActivateMutationOptions = <TError = ErrorType<ErrorResponseDto>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof usersControllerActivate>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof usersControllerActivate>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['usersControllerActivate'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof usersControllerActivate>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  usersControllerActivate(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UsersControllerActivateMutationResult = NonNullable<Awaited<ReturnType<typeof usersControllerActivate>>>
+
+    export type UsersControllerActivateMutationError = ErrorType<ErrorResponseDto>
+
+    /**
+ * @summary Approve / reactivate a user
+ */
+export const useUsersControllerActivate = <TError = ErrorType<ErrorResponseDto>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof usersControllerActivate>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof usersControllerActivate>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getUsersControllerActivateMutationOptions(options), queryClient);
+    }
+    /**
  * Replaces the full set of warehouses assigned to the user.
  * @summary Set a user's warehouse scope
  */
