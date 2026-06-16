@@ -1,4 +1,4 @@
-export function AreaChart({ data, height = 180 }: { data: number[]; height?: number }) {
+export function AreaChart({ data, height = 180, label }: { data: number[]; height?: number; label?: string }) {
   const w = 600;
   const max = Math.max(...data, 1);
   const min = Math.min(...data, 0);
@@ -13,7 +13,7 @@ export function AreaChart({ data, height = 180 }: { data: number[]; height?: num
   const line = pts.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
   const area = `${line} L${w},${height} L0,${height} Z`;
   return (
-    <svg viewBox={`0 0 ${w} ${height}`} className="h-[180px] w-full" preserveAspectRatio="none" role="img" aria-label="Trend chart">
+    <svg viewBox={`0 0 ${w} ${height}`} className="h-[180px] w-full" preserveAspectRatio="none" role="img" aria-label={label ?? 'Trend chart'}>
       <defs>
         <linearGradient id="area-fill" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.28" />

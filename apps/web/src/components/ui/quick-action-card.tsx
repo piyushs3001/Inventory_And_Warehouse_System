@@ -18,7 +18,7 @@ export function QuickActionCard({
   return (
     <Link
       href={href}
-      className="flex flex-col gap-3 rounded-[14px] border border-border bg-card p-5 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md"
+      className="flex flex-col gap-3 rounded-[16px] border border-border bg-card p-5 shadow-xs transition-all hover:-translate-y-0.5 hover:shadow-md"
     >
       <span className={cn('flex size-11 items-center justify-center rounded-xl [&_svg]:size-6', toneClass[tone])}>
         {icon}

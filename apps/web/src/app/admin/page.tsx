@@ -41,7 +41,7 @@ export default function DashboardPage() {
       <div className="grid gap-4 lg:grid-cols-[1.55fr_1fr]">
         <section className={CARD}>
           <h2 className="mb-3 text-[14.5px] font-semibold">Inventory Value Trend</h2>
-          <AreaChart data={d.valueTrend} />
+          <AreaChart data={d.valueTrend} label="Inventory Value Trend" />
         </section>
         <section className={CARD}>
           <h2 className="mb-3 text-[14.5px] font-semibold">Warehouse Utilization</h2>
@@ -54,7 +54,7 @@ export default function DashboardPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <section className={CARD}>
           <h2 className="mb-3 text-[14.5px] font-semibold">Purchase Orders</h2>
-          <BarChart values={d.poWeeks} />
+          <BarChart values={d.poWeeks} label="Purchase Orders by week" />
         </section>
         <section className={CARD}>
           <h2 className="mb-3 text-[14.5px] font-semibold">Top Selling Products</h2>

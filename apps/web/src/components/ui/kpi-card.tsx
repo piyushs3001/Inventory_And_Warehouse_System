@@ -20,7 +20,7 @@ export function KpiCard({
   className?: string;
 }) {
   return (
-    <div className={cn('flex flex-col gap-2 rounded-[14px] border border-border bg-card p-4 shadow-xs', className)}>
+    <div className={cn('flex flex-col gap-2 rounded-[16px] border border-border bg-card p-4 shadow-xs', className)}>
       {icon ? <div className="flex size-9 items-center justify-center rounded-lg bg-primary-tint text-primary">{icon}</div> : null}
       <div className="text-[13px] font-medium text-muted-foreground">{label}</div>
       <div className="font-mono text-2xl font-bold tracking-tight tabular-nums">{value}</div>

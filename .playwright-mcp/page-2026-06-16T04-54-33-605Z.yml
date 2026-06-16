@@ -1,0 +1,230 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e8] [cursor=pointer]:
+    - img [ref=e9]
+  - alert [ref=e12]
+  - generic [ref=e183]:
+    - complementary [ref=e184]:
+      - generic [ref=e185]:
+        - generic [ref=e186]: ▦
+        - generic [ref=e187]:
+          - text: IWS
+          - generic [ref=e188]: Admin Portal
+      - navigation [ref=e189]:
+        - link "Dashboard" [ref=e191] [cursor=pointer]:
+          - /url: /admin
+          - img [ref=e192]
+          - generic [ref=e197]: Dashboard
+        - generic [ref=e198]:
+          - generic [ref=e199]: Operations
+          - link "Inventory" [ref=e200] [cursor=pointer]:
+            - /url: /admin/inventory
+            - img [ref=e201]
+            - generic [ref=e205]: Inventory
+          - link "Products" [ref=e206] [cursor=pointer]:
+            - /url: /admin/products
+            - img [ref=e207]
+            - generic [ref=e210]: Products
+          - link "Warehouses" [ref=e211] [cursor=pointer]:
+            - /url: /admin/warehouses
+            - img [ref=e212]
+            - generic [ref=e215]: Warehouses
+        - generic [ref=e216]:
+          - generic [ref=e217]: Purchasing
+          - link "Purchase Orders 14" [ref=e218] [cursor=pointer]:
+            - /url: /admin/purchase-orders
+            - img [ref=e219]
+            - generic [ref=e223]: Purchase Orders
+            - generic [ref=e224]: "14"
+        - generic [ref=e225]:
+          - generic [ref=e226]: Logistics
+          - link "Stock Transfers" [ref=e227] [cursor=pointer]:
+            - /url: /admin/transfers
+            - img [ref=e228]
+            - generic [ref=e231]: Stock Transfers
+          - link "Stock Counting" [ref=e232] [cursor=pointer]:
+            - /url: /admin/counting
+            - img [ref=e233]
+            - generic [ref=e236]: Stock Counting
+        - generic [ref=e237]:
+          - generic [ref=e238]: Analytics
+          - link "Reports" [ref=e239] [cursor=pointer]:
+            - /url: /admin/reports
+            - img [ref=e240]
+            - generic [ref=e242]: Reports
+        - generic [ref=e243]:
+          - generic [ref=e244]: AI Center
+          - link "AI Assistant" [ref=e245] [cursor=pointer]:
+            - /url: /admin/ai
+            - img [ref=e246]
+            - generic [ref=e249]: AI Assistant
+        - generic [ref=e250]:
+          - generic [ref=e251]: Manage
+          - link "Users" [ref=e252] [cursor=pointer]:
+            - /url: /admin/users
+            - img [ref=e253]
+            - generic [ref=e258]: Users
+      - generic [ref=e260]:
+        - generic [ref=e261]: SA
+        - generic [ref=e262]:
+          - generic [ref=e263]: Super Admin
+          - generic [ref=e264]: Super Admin
+        - button "Log out" [ref=e265]:
+          - img
+    - generic [ref=e266]:
+      - banner [ref=e267]:
+        - generic [ref=e268]:
+          - img [ref=e269]
+          - searchbox "Search" [ref=e272]
+          - generic [ref=e273]: ⌘K
+        - generic [ref=e274]:
+          - button "Ask AI" [ref=e275]:
+            - img [ref=e276]
+            - text: Ask AI
+          - button "Switch to light mode" [pressed] [ref=e279]:
+            - img
+          - button "Notifications" [ref=e280]:
+            - img [ref=e281]
+            - generic [ref=e285]: Unread notifications
+          - button "Switch warehouse" [ref=e287]:
+            - generic [ref=e289]:
+              - generic [ref=e290]: Warehouse
+              - generic [ref=e291]: Central Warehouse
+            - img [ref=e292]
+      - main [ref=e294]:
+        - generic [ref=e295]:
+          - generic [ref=e296]:
+            - generic [ref=e297]:
+              - heading "Good morning, Super" [level=1] [ref=e298]
+              - paragraph [ref=e299]: Sample data — live figures arrive with Reports (Phase 6).
+            - generic [ref=e301]:
+              - button "Export" [ref=e302]
+              - button "New Purchase Order" [ref=e303]
+          - generic [ref=e304]:
+            - generic [ref=e305]:
+              - img [ref=e307]
+              - generic [ref=e311]: Total Products
+              - generic [ref=e312]: 2,847
+              - generic [ref=e313]: +4.2% vs last mo
+            - generic [ref=e314]:
+              - img [ref=e316]
+              - generic [ref=e318]: Inventory Value
+              - generic [ref=e319]: $4.82M
+              - generic [ref=e320]: +8.1% vs last mo
+            - generic [ref=e321]:
+              - img [ref=e323]
+              - generic [ref=e326]: Active Warehouses
+              - generic [ref=e327]: "6"
+              - generic [ref=e328]: Stable
+            - generic [ref=e329]:
+              - img [ref=e331]
+              - generic [ref=e333]: Low Stock Alerts
+              - generic [ref=e334]: "23"
+              - generic [ref=e335]: +5 this week
+            - generic [ref=e336]:
+              - img [ref=e338]
+              - generic [ref=e342]: Pending POs
+              - generic [ref=e343]: "14"
+              - generic [ref=e344]: −2 vs last wk
+            - generic [ref=e345]:
+              - img [ref=e347]
+              - generic [ref=e350]: Revenue Impact
+              - generic [ref=e351]: +$312K
+              - generic [ref=e352]: +12.4% MTD
+          - generic [ref=e353]:
+            - generic [ref=e354]:
+              - heading "Inventory Value Trend" [level=2] [ref=e355]
+              - img "Trend chart" [ref=e356]
+            - generic [ref=e359]:
+              - heading "Warehouse Utilization" [level=2] [ref=e360]
+              - generic [ref=e361]:
+                - generic [ref=e362]:
+                  - generic [ref=e363]:
+                    - generic [ref=e364]: West Coast Hub
+                    - generic [ref=e365]: 92%
+                  - progressbar "West Coast Hub" [ref=e366]
+                - generic [ref=e368]:
+                  - generic [ref=e369]:
+                    - generic [ref=e370]: Midwest DC
+                    - generic [ref=e371]: 78%
+                  - progressbar "Midwest DC" [ref=e372]
+                - generic [ref=e374]:
+                  - generic [ref=e375]:
+                    - generic [ref=e376]: Southeast
+                    - generic [ref=e377]: 64%
+                  - progressbar "Southeast" [ref=e378]
+                - generic [ref=e380]:
+                  - generic [ref=e381]:
+                    - generic [ref=e382]: Northeast
+                    - generic [ref=e383]: 88%
+                  - progressbar "Northeast" [ref=e384]
+                - generic [ref=e386]:
+                  - generic [ref=e387]:
+                    - generic [ref=e388]: Texas
+                    - generic [ref=e389]: 71%
+                  - progressbar "Texas" [ref=e390]
+                - generic [ref=e392]:
+                  - generic [ref=e393]:
+                    - generic [ref=e394]: Pacific NW
+                    - generic [ref=e395]: 55%
+                  - progressbar "Pacific NW" [ref=e396]
+          - generic [ref=e398]:
+            - generic [ref=e399]:
+              - heading "Purchase Orders" [level=2] [ref=e400]
+              - img "Bar chart" [ref=e401]
+            - generic [ref=e408]:
+              - heading "Top Selling Products" [level=2] [ref=e409]
+              - generic [ref=e410]:
+                - generic [ref=e411]:
+                  - generic [ref=e412]:
+                    - generic [ref=e413]: Wireless Mouse
+                    - generic [ref=e414]: 90%
+                  - progressbar "Wireless Mouse" [ref=e415]
+                - generic [ref=e417]:
+                  - generic [ref=e418]:
+                    - generic [ref=e419]: USB-C Cable
+                    - generic [ref=e420]: 76%
+                  - progressbar "USB-C Cable" [ref=e421]
+                - generic [ref=e423]:
+                  - generic [ref=e424]:
+                    - generic [ref=e425]: Laptop Stand
+                    - generic [ref=e426]: 61%
+                  - progressbar "Laptop Stand" [ref=e427]
+                - generic [ref=e429]:
+                  - generic [ref=e430]:
+                    - generic [ref=e431]: Desk Mat
+                    - generic [ref=e432]: 48%
+                  - progressbar "Desk Mat" [ref=e433]
+          - generic [ref=e435]:
+            - generic [ref=e436]:
+              - heading "Recent Stock Activity" [level=2] [ref=e437]
+              - generic [ref=e438]:
+                - generic [ref=e439]:
+                  - img [ref=e441]
+                  - generic [ref=e445]: Receiving clerk received 320 units · PO-2842
+                  - generic [ref=e446]: 2m ago
+                - generic [ref=e447]:
+                  - img [ref=e449]
+                  - generic [ref=e453]: Warehouse manager approved Transfer TR-3918
+                  - generic [ref=e454]: 1h ago
+                - generic [ref=e455]:
+                  - img [ref=e457]
+                  - generic [ref=e461]: System low-stock alert · USB-C Cable
+                  - generic [ref=e462]: 3h ago
+            - generic [ref=e463]:
+              - generic [ref=e464]:
+                - generic [ref=e465]:
+                  - img [ref=e466]
+                  - text: AI Recommendations
+                  - generic [ref=e469]: Advisory
+                - list [ref=e470]:
+                  - listitem [ref=e471]: Reorder USB-C Cable — projected stock-out in 6 days.
+                  - listitem [ref=e472]: Rebalance West Coast Hub (92% capacity) to Pacific NW (55%).
+              - generic [ref=e473]:
+                - heading "Upcoming Deliveries" [level=2] [ref=e474]
+                - list [ref=e475]:
+                  - listitem [ref=e476]:
+                    - generic [ref=e477]: Jun 17 · Sony Corp
+                    - generic [ref=e478]: PO-2842
+                  - listitem [ref=e479]:
+                    - generic [ref=e480]: Jun 19 · TechMart
+                    - generic [ref=e481]: PO-2851
