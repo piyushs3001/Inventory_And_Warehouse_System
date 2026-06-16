@@ -3,7 +3,7 @@ import '@testing-library/jest-dom/vitest';
 import { render, screen } from '@testing-library/react';
 import HomePage from './page';
 
-vi.mock('@/lib/auth/auth-context', () => ({
+vi.mock('@iws/auth', () => ({
   useAuth: () => ({ user: { name: 'Test Staff', role: 'STAFF' } }),
 }));
 

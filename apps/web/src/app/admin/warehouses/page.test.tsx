@@ -3,7 +3,7 @@ import '@testing-library/jest-dom/vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import MockAdapter from 'axios-mock-adapter';
-import { AXIOS_INSTANCE } from '@/lib/api/axios';
+import { AXIOS_INSTANCE } from '@iws/api-client';
 import WarehousesPage from './page';
 
 let mock: MockAdapter;

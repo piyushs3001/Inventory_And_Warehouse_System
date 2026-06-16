@@ -3,23 +3,24 @@
   "version": "0.0.0",
   "private": true,
   "workspaces": [
-    "apps/*"
+    "apps/*",
+    "packages/*"
   ],
   "scripts": {
     "dev:api": "npm run start:dev -w api",
     "dev:web": "npm run dev -w web",
     "build": "npm run build -w api && npm run build -w web",
     "lint": "npm run lint -w api && npm run lint -w web",
-    "typecheck": "npm run typecheck -w api && npm run typecheck -w web",
-    "test": "npm run test -w api && npm run test -w web",
+    "typecheck": "npm run typecheck -w @iws/api-client && npm run typecheck -w @iws/ui && npm run typecheck -w @iws/auth && npm run typecheck -w api && npm run typecheck -w web",
+    "test": "npm run test -w @iws/api-client && npm run test -w @iws/ui && npm run test -w @iws/auth && npm run test -w api && npm run test -w web",
     "test:e2e": "npm run test:e2e -w api",
     "db:generate": "npm run db:generate -w api",
     "db:migrate": "npm run db:migrate -w api",
     "db:deploy": "npm run db:deploy -w api",
     "db:studio": "npm run db:studio -w api",
     "api:openapi": "npm run openapi -w api",
-    "web:client": "npm run client -w web",
-    "api:gen": "npm run api:openapi && npm run web:client",
+    "api:client": "npm run client -w @iws/api-client",
+    "api:gen": "npm run api:openapi && npm run api:client",
     "qa:gate": "npm run typecheck && npm run lint && npm run test && npm run build && npm run test:e2e",
     "prepare": "husky"
   },

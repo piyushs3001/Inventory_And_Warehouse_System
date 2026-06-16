@@ -1,14 +1,14 @@
 'use client';
 
 import { Package, DollarSign, Warehouse, AlertTriangle, ShoppingCart, TrendingUp, Sparkles } from 'lucide-react';
-import { useAuth } from '@/lib/auth/auth-context';
-import { PageHead } from '@/components/ui/page-head';
-import { Button } from '@/components/ui/button';
-import { KpiCard } from '@/components/ui/kpi-card';
-import { AreaChart } from '@/components/ui/area-chart';
-import { BarChart } from '@/components/ui/bar-chart';
-import { ProgressBar } from '@/components/ui/progress-bar';
-import { ActivityFeedItem } from '@/components/ui/activity-feed-item';
+import { useAuth } from '@iws/auth';
+import { PageHead } from '@iws/ui';
+import { Button } from '@iws/ui';
+import { KpiCard } from '@iws/ui';
+import { AreaChart } from '@iws/ui';
+import { BarChart } from '@iws/ui';
+import { ProgressBar } from '@iws/ui';
+import { ActivityFeedItem } from '@iws/ui';
 import { dashboardMock as d } from './_dashboard/dashboard.mock';
 
 const KPI_ICONS = [Package, DollarSign, Warehouse, AlertTriangle, ShoppingCart, TrendingUp];

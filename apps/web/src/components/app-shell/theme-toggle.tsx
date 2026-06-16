@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from 'react';
 import { useTheme } from 'next-themes';
 import { Moon, Sun } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@iws/ui';
 
 // SSR-safe mounted flag WITHOUT setState-in-effect (project lint rule
 // `react-hooks/set-state-in-effect` forbids the useEffect+setState pattern).

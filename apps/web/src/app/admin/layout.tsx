@@ -1,8 +1,8 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useRequireAuth } from '@/lib/auth/use-require-auth';
-import { Role } from '@/lib/api/generated/model';
+import { useRequireAuth } from '@iws/auth';
+import { Role } from '@iws/api-client';
 import { AppShell } from '@/components/app-shell/app-shell';
 
 export default function AdminLayout({ children }: { children: ReactNode }) {

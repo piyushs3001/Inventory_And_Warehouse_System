@@ -7,19 +7,19 @@ import {
   useUsersControllerDeactivate,
   useUsersControllerActivate,
   getUsersControllerFindAllQueryKey,
-} from '@/lib/api/generated/users/users';
-import { UserStatus } from '@/lib/api/generated/model';
-import type { UserDto } from '@/lib/api/generated/model';
-import type { StatusTone } from '@/components/ui/status-badge';
-import { Button } from '@/components/ui/button';
-import { PageHead } from '@/components/ui/page-head';
-import { StatusBadge } from '@/components/ui/status-badge';
-import { EmptyState } from '@/components/ui/empty-state';
-import { Skeleton } from '@/components/ui/skeleton';
+} from '@iws/api-client';
+import { UserStatus } from '@iws/api-client';
+import type { UserDto } from '@iws/api-client';
+import type { StatusTone } from '@iws/ui';
+import { Button } from '@iws/ui';
+import { PageHead } from '@iws/ui';
+import { StatusBadge } from '@iws/ui';
+import { EmptyState } from '@iws/ui';
+import { Skeleton } from '@iws/ui';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from '@/components/ui/table';
-import { EntityAvatar } from '@/components/ui/entity-avatar';
+} from '@iws/ui';
+import { EntityAvatar } from '@iws/ui';
 import { UserFormDialog } from './user-form-dialog';
 import { AssignWarehousesDialog } from './assign-warehouses-dialog';
 

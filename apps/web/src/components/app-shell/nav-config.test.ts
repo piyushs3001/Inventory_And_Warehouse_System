@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { roleLabel, pageLabel, NAV, builtHrefs } from './nav-config';
-import { Role } from '@/lib/api/generated/model';
+import { Role } from '@iws/api-client';
 
 describe('nav-config', () => {
   it('roleLabel humanizes the enum', () => {

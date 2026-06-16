@@ -6,19 +6,19 @@ import {
   useWarehousesControllerList,
   useWarehousesControllerArchive,
   getWarehousesControllerListQueryKey,
-} from '@/lib/api/generated/warehouses/warehouses';
-import { useUsersControllerFindAll } from '@/lib/api/generated/users/users';
-import { WarehouseStatus } from '@/lib/api/generated/model';
-import type { WarehouseDto } from '@/lib/api/generated/model';
-import { Button } from '@/components/ui/button';
-import { PageHead } from '@/components/ui/page-head';
-import { StatusBadge } from '@/components/ui/status-badge';
-import { EmptyState } from '@/components/ui/empty-state';
-import { Skeleton } from '@/components/ui/skeleton';
+} from '@iws/api-client';
+import { useUsersControllerFindAll } from '@iws/api-client';
+import { WarehouseStatus } from '@iws/api-client';
+import type { WarehouseDto } from '@iws/api-client';
+import { Button } from '@iws/ui';
+import { PageHead } from '@iws/ui';
+import { StatusBadge } from '@iws/ui';
+import { EmptyState } from '@iws/ui';
+import { Skeleton } from '@iws/ui';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from '@/components/ui/table';
-import { EntityAvatar } from '@/components/ui/entity-avatar';
+} from '@iws/ui';
+import { EntityAvatar } from '@iws/ui';
 import { WarehouseFormDialog } from './warehouse-form-dialog';
 import { AssignStaffDialog } from './assign-staff-dialog';
 

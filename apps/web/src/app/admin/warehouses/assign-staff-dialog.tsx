@@ -1,17 +1,17 @@
 'use client';
 
 import { useState } from 'react';
-import { useWarehousesControllerAssignStaff } from '@/lib/api/generated/warehouses/warehouses';
-import { useUsersControllerFindAll } from '@/lib/api/generated/users/users';
-import type { WarehouseDto } from '@/lib/api/generated/model';
-import { Button } from '@/components/ui/button';
+import { useWarehousesControllerAssignStaff } from '@iws/api-client';
+import { useUsersControllerFindAll } from '@iws/api-client';
+import type { WarehouseDto } from '@iws/api-client';
+import { Button } from '@iws/ui';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@/components/ui/dialog';
+} from '@iws/ui';
 
 export function AssignStaffDialog({
   warehouse,

@@ -2,20 +2,20 @@
 
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useWarehousesControllerList } from '@/lib/api/generated/warehouses/warehouses';
+import { useWarehousesControllerList } from '@iws/api-client';
 import {
   useUsersControllerSetWarehouses,
   getUsersControllerFindAllQueryKey,
-} from '@/lib/api/generated/users/users';
-import type { UserDto } from '@/lib/api/generated/model';
-import { Button } from '@/components/ui/button';
+} from '@iws/api-client';
+import type { UserDto } from '@iws/api-client';
+import { Button } from '@iws/ui';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@/components/ui/dialog';
+} from '@iws/ui';
 
 export function AssignWarehousesDialog({
   user,

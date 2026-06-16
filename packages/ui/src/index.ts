@@ -1,0 +1,27 @@
+// @iws/ui — design-system primitives + presentational widgets, shared by both apps.
+// Design tokens live in ./styles/globals.css (imported by each app's globals.css).
+export * from './utils';
+export * from './components/ui/activity-feed-item';
+export * from './components/ui/area-chart';
+export * from './components/ui/badge';
+export * from './components/ui/bar-chart';
+export * from './components/ui/button';
+export * from './components/ui/card';
+export * from './components/ui/coming-soon';
+export * from './components/ui/dialog';
+export * from './components/ui/empty-state';
+export * from './components/ui/entity-avatar';
+export * from './components/ui/error-state';
+export * from './components/ui/input';
+export * from './components/ui/kpi-card';
+export * from './components/ui/label';
+export * from './components/ui/page-head';
+export * from './components/ui/progress-bar';
+export * from './components/ui/quick-action-card';
+export * from './components/ui/select';
+export * from './components/ui/skeleton';
+export * from './components/ui/sonner';
+export * from './components/ui/stat-card';
+export * from './components/ui/status-badge';
+export * from './components/ui/stepper-timeline';
+export * from './components/ui/table';

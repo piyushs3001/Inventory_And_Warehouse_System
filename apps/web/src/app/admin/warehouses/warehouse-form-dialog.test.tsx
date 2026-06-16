@@ -4,9 +4,9 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import MockAdapter from 'axios-mock-adapter';
-import { AXIOS_INSTANCE } from '@/lib/api/axios';
+import { AXIOS_INSTANCE } from '@iws/api-client';
 import { WarehouseFormDialog } from './warehouse-form-dialog';
-import type { WarehouseDto } from '@/lib/api/generated/model';
+import type { WarehouseDto } from '@iws/api-client';
 
 let mock: MockAdapter;
 beforeEach(() => { mock = new MockAdapter(AXIOS_INSTANCE); });

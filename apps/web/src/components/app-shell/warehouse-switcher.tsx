@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { useWarehousesControllerList } from '@/lib/api/generated/warehouses/warehouses';
+import { useWarehousesControllerList } from '@iws/api-client';
 
 export function WarehouseSwitcher() {
   const { data, isLoading } = useWarehousesControllerList();

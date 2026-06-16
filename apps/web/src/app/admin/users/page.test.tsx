@@ -4,7 +4,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import MockAdapter from 'axios-mock-adapter';
-import { AXIOS_INSTANCE } from '@/lib/api/axios';
+import { AXIOS_INSTANCE } from '@iws/api-client';
 import UsersPage from './page';
 
 let mock: MockAdapter;

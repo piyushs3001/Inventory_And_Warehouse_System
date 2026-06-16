@@ -3,12 +3,12 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { AlertTriangle, Check, Eye, EyeOff, Shield } from 'lucide-react';
-import { useAuth } from '@/lib/auth/auth-context';
-import { authControllerRegister } from '@/lib/api/generated/auth/auth';
-import type { ErrorResponseDto } from '@/lib/api/generated/model';
-import type { ErrorType } from '@/lib/api/axios';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { useAuth } from '@iws/auth';
+import { authControllerRegister } from '@iws/api-client';
+import type { ErrorResponseDto } from '@iws/api-client';
+import type { ErrorType } from '@iws/api-client';
+import { Input } from '@iws/ui';
+import { Label } from '@iws/ui';
 
 type Tab = 'signin' | 'register';
 

@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useRequireAuth } from '@/lib/auth/use-require-auth';
+import { useRequireAuth } from '@iws/auth';
 import { AppShell } from '@/components/app-shell/app-shell';
 
 export default function StaffLayout({ children }: { children: ReactNode }) {

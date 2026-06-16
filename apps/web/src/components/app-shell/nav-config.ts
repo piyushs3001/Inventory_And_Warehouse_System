@@ -2,7 +2,7 @@ import {
   LayoutDashboard, Package, Tag, Warehouse, ShoppingCart, ArrowRightLeft,
   ClipboardList, BarChart3, Sparkles, Home, Truck, Users, type LucideIcon,
 } from 'lucide-react';
-import { Role } from '@/lib/api/generated/model';
+import { Role } from '@iws/api-client';
 
 export type Surface = 'staff' | 'admin';
 

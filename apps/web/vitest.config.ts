@@ -10,6 +10,12 @@ export default defineConfig({
     setupFiles: ['./vitest.setup.ts'],
   },
   resolve: {
-    alias: { '@': resolve(__dirname, './src') },
+    alias: {
+      '@': resolve(__dirname, './src'),
+      // Resolve shared packages to their TS source so vitest transforms them.
+      '@iws/api-client': resolve(__dirname, '../../packages/api-client/src/index.ts'),
+      '@iws/ui': resolve(__dirname, '../../packages/ui/src/index.ts'),
+      '@iws/auth': resolve(__dirname, '../../packages/auth/src/index.ts'),
+    },
   },
 });

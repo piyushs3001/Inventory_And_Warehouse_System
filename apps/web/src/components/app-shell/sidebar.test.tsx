@@ -3,10 +3,10 @@ import '@testing-library/jest-dom/vitest';
 import { render, screen } from '@testing-library/react';
 
 vi.mock('next/navigation', () => ({ usePathname: () => '/admin/users', useRouter: () => ({ replace: vi.fn() }) }));
-vi.mock('@/lib/auth/auth-context', () => ({ useAuth: () => ({ user: { name: 'Admin', role: 'SUPER_ADMIN' }, logout: vi.fn() }) }));
+vi.mock('@iws/auth', () => ({ useAuth: () => ({ user: { name: 'Admin', role: 'SUPER_ADMIN' }, logout: vi.fn() }) }));
 
 import { Sidebar } from './sidebar';
-import { Role } from '@/lib/api/generated/model';
+import { Role } from '@iws/api-client';
 
 describe('Sidebar', () => {
   it('shows admin Manage items for SUPER_ADMIN and marks the active route', () => {

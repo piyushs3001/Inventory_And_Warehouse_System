@@ -4,7 +4,7 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { WarehouseSwitcher } from './warehouse-switcher';
 
-vi.mock('@/lib/api/generated/warehouses/warehouses', () => ({
+vi.mock('@iws/api-client', () => ({
   useWarehousesControllerList: () => ({
     data: [
       { id: '1', name: 'West Coast Hub' },

@@ -4,9 +4,9 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import MockAdapter from 'axios-mock-adapter';
-import { AXIOS_INSTANCE } from '@/lib/api/axios';
+import { AXIOS_INSTANCE } from '@iws/api-client';
 import { AssignWarehousesDialog } from './assign-warehouses-dialog';
-import type { UserDto } from '@/lib/api/generated/model';
+import type { UserDto } from '@iws/api-client';
 
 const user: UserDto = {
   id: '1',

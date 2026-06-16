@@ -2,9 +2,9 @@
 
 import { useRouter } from 'next/navigation';
 import { LogOutIcon } from 'lucide-react';
-import { useAuth } from '@/lib/auth/auth-context';
-import { Button } from '@/components/ui/button';
-import { initials } from '@/lib/utils';
+import { useAuth } from '@iws/auth';
+import { Button } from '@iws/ui';
+import { initials } from '@iws/ui';
 import { roleLabel } from './nav-config';
 
 export function UserMenu() {

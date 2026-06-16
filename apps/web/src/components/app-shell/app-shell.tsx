@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { useAuth } from '@/lib/auth/auth-context';
+import { useAuth } from '@iws/auth';
 import { Sidebar } from './sidebar';
 import { Topbar } from './topbar';
 import type { Surface } from './nav-config';

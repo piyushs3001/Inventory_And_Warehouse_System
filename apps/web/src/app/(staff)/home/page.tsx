@@ -2,10 +2,10 @@
 
 import { Truck, ShoppingCart, ArrowRightLeft, ClipboardList, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
-import { useAuth } from '@/lib/auth/auth-context';
-import { PageHead } from '@/components/ui/page-head';
-import { QuickActionCard } from '@/components/ui/quick-action-card';
-import { StatusBadge } from '@/components/ui/status-badge';
+import { useAuth } from '@iws/auth';
+import { PageHead } from '@iws/ui';
+import { QuickActionCard } from '@iws/ui';
+import { StatusBadge } from '@iws/ui';
 import { homeMock as h } from './home.mock';
 
 export default function HomePage() {

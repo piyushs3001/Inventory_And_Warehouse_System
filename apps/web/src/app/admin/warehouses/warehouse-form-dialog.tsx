@@ -4,18 +4,18 @@ import { useState, type FormEvent } from 'react';
 import {
   useWarehousesControllerCreate,
   useWarehousesControllerUpdate,
-} from '@/lib/api/generated/warehouses/warehouses';
-import type { WarehouseDto } from '@/lib/api/generated/model';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+} from '@iws/api-client';
+import type { WarehouseDto } from '@iws/api-client';
+import { Button } from '@iws/ui';
+import { Input } from '@iws/ui';
+import { Label } from '@iws/ui';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@/components/ui/dialog';
+} from '@iws/ui';
 
 export function WarehouseFormDialog({
   warehouse,

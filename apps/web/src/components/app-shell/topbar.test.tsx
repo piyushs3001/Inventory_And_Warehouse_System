@@ -6,7 +6,7 @@ import { render, screen } from '@testing-library/react';
 vi.mock('next-themes', () => ({ useTheme: () => ({ resolvedTheme: 'light', setTheme: vi.fn() }) }));
 
 // WarehouseSwitcher calls this hook — mock it so no real QueryClient is needed
-vi.mock('@/lib/api/generated/warehouses/warehouses', () => ({
+vi.mock('@iws/api-client', () => ({
   useWarehousesControllerList: () => ({
     data: [{ id: '1', name: 'West Coast Hub' }],
     isLoading: false,

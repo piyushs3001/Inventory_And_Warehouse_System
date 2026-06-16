@@ -13,6 +13,8 @@ const devAllowedOrigins = (process.env.DEV_ALLOWED_ORIGINS ?? "")
 
 const nextConfig: NextConfig = {
   allowedDevOrigins: devAllowedOrigins,
+  // Shared workspace packages ship raw TS/TSX — Next must transpile them.
+  transpilePackages: ["@iws/api-client", "@iws/ui", "@iws/auth"],
 };
 
 export default nextConfig;

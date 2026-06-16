@@ -7,11 +7,11 @@ import LoginPage from './page';
 const login = vi.fn().mockResolvedValue(undefined);
 const replace = vi.fn();
 const registerFn = vi.fn().mockResolvedValue({ id: 'u9', status: 'PENDING_APPROVAL' });
-vi.mock('@/lib/auth/auth-context', () => ({
+vi.mock('@iws/auth', () => ({
   useAuth: () => ({ login, status: 'unauthenticated', user: null, logout: vi.fn() }),
 }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ replace }) }));
-vi.mock('@/lib/api/generated/auth/auth', () => ({
+vi.mock('@iws/api-client', () => ({
   authControllerRegister: (...args: unknown[]) => registerFn(...args),
 }));
 

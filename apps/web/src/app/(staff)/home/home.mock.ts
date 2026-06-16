@@ -1,6 +1,6 @@
 // TODO(phase-6): replace tasks/notifications with the real API.
 // Local sample data, NOT an API call — does not touch the Orval client.
-import type { StatusTone } from '@/components/ui/status-badge';
+import type { StatusTone } from '@iws/ui';
 
 export const homeMock = {
   warehouse: 'West Coast Hub',

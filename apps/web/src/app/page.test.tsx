@@ -4,7 +4,7 @@ import { render } from '@testing-library/react';
 const replace = vi.fn();
 vi.mock('next/navigation', () => ({ useRouter: () => ({ replace }) }));
 let auth: { status: string; user: { role: string } | null };
-vi.mock('@/lib/auth/auth-context', () => ({ useAuth: () => auth }));
+vi.mock('@iws/auth', () => ({ useAuth: () => auth }));
 
 import RootPage from './page';
 

@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import type { Role } from '@/lib/api/generated/model';
-import { cn } from '@/lib/utils';
+import type { Role } from '@iws/api-client';
+import { cn } from '@iws/ui';
 import { NAV, SURFACE_LABEL, type Surface } from './nav-config';
 import { UserMenu } from './user-menu';
 
