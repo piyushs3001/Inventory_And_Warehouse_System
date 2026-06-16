@@ -78,8 +78,10 @@ All defects were caught by the per-task adversarial code reviews and **fixed bef
 | Heading skip `<h1>`→`<h3>` on dashboard | T12 | ✅ Fixed (`<h2>`) |
 | Greeting dangling comma when name absent | T12 | ✅ Fixed (comma-guard) |
 | `initials` coupled in `nav-config`; avatar duplicated; initials not `aria-hidden` | T14 | ✅ Fixed (moved to `@/lib/utils`, shared `EntityAvatar`, `aria-hidden`) |
+| **`--color-primary-2` not registered in `@theme inline`** → `to-primary-2` gradient utility never compiled, so the logo + active-nav gradients fell back to primary→transparent in a production build (dev masked it) | Final integration review (globals.css) | ✅ Fixed — registered `--color-primary-2`; built CSS now emits `.to-primary-2{--tw-gradient-to:var(--primary-2)}` |
+| Charts had generic duplicate `aria-label`s; `WarehouseSwitcher` vanished while loading; card radius 14px vs 16px mismatch | Final integration review | ✅ Fixed (label props, loading placeholder, unified 16px) |
 
-The browser QA pass itself surfaced **no new defects** — all scenarios passed first time.
+The browser QA pass itself surfaced **no new defects** (all scenarios passed first time). The **final whole-branch integration review** caught the production-only gradient-token bug above — fixed and re-verified green.
 
 ## Deferred / not covered (honest)
 - **Dashboard + Staff-Home figures are local sample data** (`*.mock.ts`, marked `TODO(phase-6)`) — by design; live figures arrive with Reports/Dashboard in Phase 6. Not a defect.
