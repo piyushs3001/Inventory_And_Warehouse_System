@@ -80,6 +80,7 @@ temp/
 
 # ---- Claude Code ----
 .claude/
+.playwright-mcp/
 CLAUDE.md
 
 # ---- Project docs (PRD / internal blueprint) ----
