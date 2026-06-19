@@ -1479,6 +1479,365 @@
           "categories"
         ]
       }
+    },
+    "/products": {
+      "get": {
+        "description": "Global catalog; available to any authenticated user.",
+        "operationId": "ProductsController_list",
+        "parameters": [
+          {
+            "name": "includeArchived",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "categoryId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProductDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "List products",
+        "tags": [
+          "products"
+        ]
+      },
+      "post": {
+        "operationId": "ProductsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateProductDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request body or parameters failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "A product with this SKU already exists.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Create a product",
+        "tags": [
+          "products"
+        ]
+      }
+    },
+    "/products/{id}": {
+      "get": {
+        "operationId": "ProductsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Product id (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Get a product by id",
+        "tags": [
+          "products"
+        ]
+      },
+      "patch": {
+        "operationId": "ProductsController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Product id (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request body or parameters failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "A product with this SKU already exists.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Update a product",
+        "tags": [
+          "products"
+        ]
+      },
+      "delete": {
+        "description": "Soft-deletes the product (status → ARCHIVED).",
+        "operationId": "ProductsController_archive",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Product id (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Archive a product",
+        "tags": [
+          "products"
+        ]
+      }
     }
   },
   "info": {
@@ -2029,6 +2388,198 @@
             "format": "uuid",
             "description": "Parent category id (UUID) for nesting; omit for a root category.",
             "example": "9c1b2d34-5678-90ab-cdef-1234567890ab"
+          }
+        }
+      },
+      "ProductStatus": {
+        "type": "string",
+        "enum": [
+          "ACTIVE",
+          "ARCHIVED"
+        ],
+        "description": "Product status."
+      },
+      "ProductDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Product id (UUID).",
+            "example": "9c1b2d34-5678-90ab-cdef-1234567890ab"
+          },
+          "name": {
+            "type": "string",
+            "description": "Product name.",
+            "example": "Cola 330ml Can"
+          },
+          "sku": {
+            "type": "string",
+            "description": "Stock keeping unit (unique).",
+            "example": "COLA-330"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "description": "Free-text description."
+          },
+          "categoryId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Category id (UUID), or null."
+          },
+          "unit": {
+            "type": "string",
+            "nullable": true,
+            "description": "Unit of measure."
+          },
+          "costPrice": {
+            "type": "string",
+            "description": "Cost price as a decimal string (never a float).",
+            "example": "0.45"
+          },
+          "sellingPrice": {
+            "type": "string",
+            "description": "Selling price as a decimal string.",
+            "example": "1.20"
+          },
+          "reorderLevel": {
+            "type": "number",
+            "description": "Reorder level.",
+            "example": 50
+          },
+          "status": {
+            "description": "Product status.",
+            "example": "ACTIVE",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProductStatus"
+              }
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Creation timestamp.",
+            "example": "2026-06-19T10:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "sku",
+          "costPrice",
+          "sellingPrice",
+          "reorderLevel",
+          "status",
+          "createdAt"
+        ]
+      },
+      "CreateProductDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Product name.",
+            "example": "Cola 330ml Can"
+          },
+          "sku": {
+            "type": "string",
+            "description": "Stock keeping unit (unique).",
+            "example": "COLA-330"
+          },
+          "description": {
+            "type": "string",
+            "description": "Free-text description."
+          },
+          "categoryId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Category id (UUID).",
+            "example": "9c1b2d34-5678-90ab-cdef-1234567890ab"
+          },
+          "unit": {
+            "type": "string",
+            "description": "Unit of measure.",
+            "example": "can"
+          },
+          "costPrice": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Cost price (used for stock valuation).",
+            "example": 0.45
+          },
+          "sellingPrice": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Selling price.",
+            "example": 1.2
+          },
+          "reorderLevel": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Reorder level — low-stock alert threshold.",
+            "example": 50
+          }
+        },
+        "required": [
+          "name",
+          "sku"
+        ]
+      },
+      "UpdateProductDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Product name.",
+            "example": "Cola 330ml Can"
+          },
+          "sku": {
+            "type": "string",
+            "description": "Stock keeping unit (unique).",
+            "example": "COLA-330"
+          },
+          "description": {
+            "type": "string",
+            "description": "Free-text description."
+          },
+          "categoryId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Category id (UUID).",
+            "example": "9c1b2d34-5678-90ab-cdef-1234567890ab"
+          },
+          "unit": {
+            "type": "string",
+            "description": "Unit of measure.",
+            "example": "can"
+          },
+          "costPrice": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Cost price (used for stock valuation).",
+            "example": 0.45
+          },
+          "sellingPrice": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Selling price.",
+            "example": 1.2
+          },
+          "reorderLevel": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Reorder level — low-stock alert threshold.",
+            "example": 50
+          },
+          "status": {
+            "description": "Product status.",
+            "example": "ARCHIVED",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProductStatus"
+              }
+            ]
           }
         }
       }

@@ -22,9 +22,13 @@ type PrismaCategoryMock = {
   count: jest.Mock;
 };
 
-function makeService(overrides: Partial<PrismaCategoryMock> = {}): {
+function makeService(
+  overrides: Partial<PrismaCategoryMock> = {},
+  productCount: jest.Mock = jest.fn().mockResolvedValue(0),
+): {
   service: CategoriesService;
   prisma: PrismaCategoryMock;
+  productCount: jest.Mock;
 } {
   const defaults: PrismaCategoryMock = {
     create: jest.fn().mockResolvedValue(ROOT_CATEGORY),
@@ -35,9 +39,12 @@ function makeService(overrides: Partial<PrismaCategoryMock> = {}): {
     count: jest.fn().mockResolvedValue(0),
   };
   const categoryMethods: PrismaCategoryMock = { ...defaults, ...overrides };
-  const prisma = { category: categoryMethods };
+  const prisma = {
+    category: categoryMethods,
+    product: { count: productCount },
+  };
   const service = new CategoriesService(prisma as never);
-  return { service, prisma: prisma.category };
+  return { service, prisma: prisma.category, productCount };
 }
 
 describe('CategoriesService', () => {
@@ -166,6 +173,17 @@ describe('CategoriesService', () => {
       const { service, prisma } = makeService({
         count: jest.fn().mockResolvedValue(2),
       });
+      await expect(service.remove('c1')).rejects.toBeInstanceOf(
+        ConflictException,
+      );
+      expect(prisma.delete).not.toHaveBeenCalled();
+    });
+
+    it('throws Conflict when the category has products (no children)', async () => {
+      const { service, prisma } = makeService(
+        { count: jest.fn().mockResolvedValue(0) },
+        jest.fn().mockResolvedValue(3),
+      );
       await expect(service.remove('c1')).rejects.toBeInstanceOf(
         ConflictException,
       );

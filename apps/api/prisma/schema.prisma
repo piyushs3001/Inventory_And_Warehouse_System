@@ -28,6 +28,11 @@ enum WarehouseStatus {
   INACTIVE
 }
 
+enum ProductStatus {
+  ACTIVE
+  ARCHIVED
+}
+
 model User {
   id                 String      @id @default(uuid())
   name               String
@@ -66,9 +71,32 @@ model Category {
   parentId  String?    @map("parent_id")
   parent    Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
   children  Category[] @relation("CategoryHierarchy")
+  products  Product[]
   createdAt DateTime   @default(now()) @map("created_at")
   updatedAt DateTime   @updatedAt @map("updated_at")
 
   @@index([parentId])
   @@map("categories")
+}
+
+// Global product catalog (not warehouse-scoped). Money fields are Decimal
+// (never Float); soft-delete via status ARCHIVED. SKU is unique across
+// products (variants share the SKU space from Slice 4).
+model Product {
+  id           String        @id @default(uuid())
+  name         String
+  sku          String        @unique
+  description  String?
+  categoryId   String?       @map("category_id")
+  category     Category?     @relation(fields: [categoryId], references: [id])
+  unit         String?
+  costPrice    Decimal       @default(0) @db.Decimal(12, 2) @map("cost_price")
+  sellingPrice Decimal       @default(0) @db.Decimal(12, 2) @map("selling_price")
+  reorderLevel Int           @default(0) @map("reorder_level")
+  status       ProductStatus @default(ACTIVE)
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt      @map("updated_at")
+
+  @@index([categoryId])
+  @@map("products")
 }

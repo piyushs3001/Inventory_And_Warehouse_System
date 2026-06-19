@@ -68,6 +68,12 @@ export class CategoriesService {
     if (children > 0) {
       throw new ConflictException('Category has child categories');
     }
+    const products = await this.prisma.product.count({
+      where: { categoryId: id },
+    });
+    if (products > 0) {
+      throw new ConflictException('Category has products');
+    }
     return this.prisma.category.delete({
       where: { id },
       select: categorySelect,

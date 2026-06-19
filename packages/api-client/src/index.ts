@@ -5,6 +5,7 @@ export * from './generated/auth/auth';
 export * from './generated/users/users';
 export * from './generated/warehouses/warehouses';
 export * from './generated/categories/categories';
+export * from './generated/products/products';
 export * from './generated/health/health';
 export * from './generated/model';
 export * from './axios';
