@@ -56,3 +56,19 @@ model Warehouse {
 
   @@map("warehouses")
 }
+
+// Global product catalog reference data (not warehouse-scoped). Optional
+// self-referential nesting via parentId. Slice 3 adds `products Product[]`
+// and extends the delete dependency check to products.
+model Category {
+  id        String     @id @default(uuid())
+  name      String
+  parentId  String?    @map("parent_id")
+  parent    Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children  Category[] @relation("CategoryHierarchy")
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+
+  @@index([parentId])
+  @@map("categories")
+}

@@ -8,6 +8,8 @@
 
 export * from './assignStaffDto';
 export * from './assignWarehousesDto';
+export * from './categoryDto';
+export * from './createCategoryDto';
 export * from './createUserDto';
 export * from './createWarehouseDto';
 export * from './errorResponseDto';
@@ -16,6 +18,7 @@ export * from './loginDto';
 export * from './registerDto';
 export * from './role';
 export * from './tokensDto';
+export * from './updateCategoryDto';
 export * from './updateUserDto';
 export * from './updateWarehouseDto';
 export * from './userDto';
