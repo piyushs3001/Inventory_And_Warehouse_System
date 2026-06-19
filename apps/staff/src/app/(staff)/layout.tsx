@@ -5,13 +5,12 @@ import { useRequireAuth } from '@iws/auth';
 import { Role } from '@iws/api-client';
 import { AppShell } from '@/components/app-shell/app-shell';
 
-// The Staff app is for Staff and Warehouse Managers. A Super Admin who lands
-// here is bounced to the Admin Portal.
+// The Staff app is for Staff and Warehouse Managers. Wrong-role accounts are
+// rejected at the login page; this guard is the fallback for direct access.
 const STAFF_ROLES: Role[] = [Role.STAFF, Role.WAREHOUSE_MANAGER];
-const ADMIN_APP_URL = process.env.NEXT_PUBLIC_ADMIN_URL ?? 'http://localhost:5001';
 
 export default function StaffLayout({ children }: { children: ReactNode }) {
-  const { user, status } = useRequireAuth({ roles: STAFF_ROLES, deniedRedirect: ADMIN_APP_URL });
+  const { user, status } = useRequireAuth({ roles: STAFF_ROLES });
   if (status !== 'authenticated' || !user || !STAFF_ROLES.includes(user.role)) {
     return (
       <main className="flex min-h-screen items-center justify-center text-muted-foreground">Loading…</main>

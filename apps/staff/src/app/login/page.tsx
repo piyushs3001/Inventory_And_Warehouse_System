@@ -4,13 +4,19 @@ import { useState, type FormEvent, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { AlertTriangle, Check, Eye, EyeOff, Shield } from 'lucide-react';
 import { useAuth } from '@iws/auth';
-import { authControllerRegister } from '@iws/api-client';
+import { authControllerRegister, getAccessRole, Role } from '@iws/api-client';
 import type { ErrorResponseDto } from '@iws/api-client';
 import type { ErrorType } from '@iws/api-client';
 import { Input } from '@iws/ui';
 import { Label } from '@iws/ui';
 
 type Tab = 'signin' | 'register';
+
+// Roles allowed in the Staff app. A valid account with any other role (e.g. a
+// Super Admin) is rejected here with a message + a link to the Admin Portal —
+// we never silently send the user to the other app.
+const STAFF_ROLES: string[] = [Role.STAFF, Role.WAREHOUSE_MANAGER];
+const ADMIN_APP_URL = process.env.NEXT_PUBLIC_ADMIN_URL ?? 'http://localhost:5001';
 
 // Inputs match the wireframe scale (44px, strong border, brand focus ring) —
 // the shared <Input> default is the compact 32px form-grid size.
@@ -81,7 +87,7 @@ function PasswordField({
 }
 
 export default function LoginPage() {
-  const { login } = useAuth();
+  const { login, logout } = useAuth();
   const router = useRouter();
   const [tab, setTab] = useState<Tab>('signin');
 
@@ -90,6 +96,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [stay, setStay] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // When a valid account is for the *other* app, show a link to it.
+  const [wrongApp, setWrongApp] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   // Register → POST /auth/register (creates a PENDING_APPROVAL account; no tokens).
@@ -111,9 +119,18 @@ export default function LoginPage() {
     setError(null);
     setNotice(null);
     setFlash(null);
+    setWrongApp(false);
     setSubmitting(true);
     try {
       await login(email, password);
+      // Credentials are valid — but is this account allowed in the Staff app?
+      const role = getAccessRole();
+      if (role && !STAFF_ROLES.includes(role)) {
+        await logout(); // don't keep a Staff session for an account that can't use it
+        setError('This account doesn’t have access to the Staff app.');
+        setWrongApp(true);
+        return;
+      }
       router.replace('/');
     } catch (err) {
       const ex = err as ErrorType<ErrorResponseDto>;
@@ -177,6 +194,7 @@ export default function LoginPage() {
     setNotice(null);
     setFlash(null);
     setRegisterError(null);
+    setWrongApp(false);
   };
 
   return (
@@ -361,8 +379,16 @@ export default function LoginPage() {
                 </p>
               )}
               {error && (
-                <p role="alert" className="mb-3 text-sm text-destructive">
+                <p role="alert" className="mb-1 text-sm text-destructive">
                   {error}
+                </p>
+              )}
+              {wrongApp && (
+                <p className="mb-3 text-[12.5px] text-muted-foreground">
+                  Looks like an admin account.{' '}
+                  <a href={ADMIN_APP_URL} className="font-semibold text-primary-2">
+                    Open the Admin Portal →
+                  </a>
                 </p>
               )}
               {notice && <p className="mb-3 text-[12.5px] text-muted-foreground">{notice}</p>}

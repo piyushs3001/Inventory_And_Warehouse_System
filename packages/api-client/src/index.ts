@@ -8,3 +8,4 @@ export * from './generated/health/health';
 export * from './generated/model';
 export * from './axios';
 export * from './token-store';
+export * from './jwt';

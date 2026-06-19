@@ -17,19 +17,10 @@ describe('useRequireAuth', () => {
     expect(replace).toHaveBeenCalledWith('/login');
   });
 
-  it('sends a denied role to deniedRedirect (in-app path)', () => {
+  it('sends a denied role back to this app\'s /login (no cross-app bounce)', () => {
     auth = { status: 'authenticated', user: { role: 'STAFF' } };
-    renderHook(() => useRequireAuth({ roles: ['SUPER_ADMIN'], deniedRedirect: '/login' }));
+    renderHook(() => useRequireAuth({ roles: ['SUPER_ADMIN'] }));
     expect(replace).toHaveBeenCalledWith('/login');
-  });
-
-  it('bounces a denied role to the other app via a full URL (window.location)', () => {
-    const assign = vi.fn();
-    Object.defineProperty(window, 'location', { value: { assign }, writable: true });
-    auth = { status: 'authenticated', user: { role: 'STAFF' } };
-    renderHook(() => useRequireAuth({ roles: ['SUPER_ADMIN'], deniedRedirect: 'http://localhost:5000' }));
-    expect(assign).toHaveBeenCalledWith('http://localhost:5000');
-    expect(replace).not.toHaveBeenCalled();
   });
 
   it('does not redirect an allowed role', () => {

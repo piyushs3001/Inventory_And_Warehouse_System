@@ -9,16 +9,15 @@ import type { Role } from '@iws/api-client';
  * Client-side route guard. UI convenience only — server-side role + scope authz
  * is always enforced by the API.
  *
- * - `roles` — roles allowed on this surface; a signed-in user whose role is not
- *   listed is sent to `deniedRedirect`.
- * - `deniedRedirect` — where a denied role goes. A full `http(s)://` URL is a real
- *   navigation to the *other* app (different port); a path stays in-app. Default `/login`.
+ * - unauthenticated → this app's `/login`.
+ * - authenticated but `roles` doesn't include the user's role → this app's `/login`
+ *   (the wrong-app case is handled at the login page with a clear message, so the
+ *   guard never silently bounces to the other app's URL).
  */
-export function useRequireAuth(opts?: { roles?: Role[]; deniedRedirect?: string }) {
+export function useRequireAuth(opts?: { roles?: Role[] }) {
   const { user, status } = useAuth();
   const router = useRouter();
   const roles = opts?.roles;
-  const deniedRedirect = opts?.deniedRedirect ?? '/login';
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -26,13 +25,9 @@ export function useRequireAuth(opts?: { roles?: Role[]; deniedRedirect?: string 
       return;
     }
     if (status === 'authenticated' && roles && user && !roles.includes(user.role)) {
-      if (/^https?:\/\//.test(deniedRedirect)) {
-        if (typeof window !== 'undefined') window.location.assign(deniedRedirect);
-      } else {
-        router.replace(deniedRedirect);
-      }
+      router.replace('/login');
     }
-  }, [status, user, roles, router, deniedRedirect]);
+  }, [status, user, roles, router]);
 
   return { user, status };
 }

@@ -5,21 +5,28 @@ import userEvent from '@testing-library/user-event';
 import LoginPage from './page';
 
 const login = vi.fn().mockResolvedValue(undefined);
+const logout = vi.fn().mockResolvedValue(undefined);
 const replace = vi.fn();
 const registerFn = vi.fn().mockResolvedValue({ id: 'u9', status: 'PENDING_APPROVAL' });
+const roleFn = vi.fn<() => string | null>(() => 'STAFF'); // role of the just-issued token
 vi.mock('@iws/auth', () => ({
-  useAuth: () => ({ login, status: 'unauthenticated', user: null, logout: vi.fn() }),
+  useAuth: () => ({ login, logout, status: 'unauthenticated', user: null }),
 }));
 vi.mock('next/navigation', () => ({ useRouter: () => ({ replace }) }));
-vi.mock('@iws/api-client', () => ({
+// Keep the real module (Role enum, etc.); override the network call + role reader.
+vi.mock('@iws/api-client', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@iws/api-client')>()),
   authControllerRegister: (...args: unknown[]) => registerFn(...args),
+  getAccessRole: () => roleFn(),
 }));
 
 beforeEach(() => {
   login.mockClear();
+  logout.mockClear();
   replace.mockClear();
   registerFn.mockClear();
   registerFn.mockResolvedValue({ id: 'u9', status: 'PENDING_APPROVAL' });
+  roleFn.mockReturnValue('STAFF');
 });
 
 describe('LoginPage', () => {
@@ -30,6 +37,18 @@ describe('LoginPage', () => {
     await userEvent.type(screen.getByLabelText('Password'), 'Admin@12345');
     await userEvent.click(screen.getByRole('button', { name: /sign in/i }));
     expect(login).toHaveBeenCalledWith('admin@iws.local', 'Admin@12345');
+  });
+
+  it('rejects a valid account whose role is not for the Staff app (no bounce, no redirect)', async () => {
+    roleFn.mockReturnValue('SUPER_ADMIN'); // valid login, wrong app
+    render(<LoginPage />);
+    await userEvent.type(screen.getByLabelText(/email/i), 'admin@iws.local');
+    await userEvent.type(screen.getByLabelText('Password'), 'Admin@12345');
+    await userEvent.click(screen.getByRole('button', { name: /sign in/i }));
+    expect(await screen.findByText(/doesn.t have access to the staff app/i)).toBeInTheDocument();
+    expect(logout).toHaveBeenCalled(); // session cleared
+    expect(replace).not.toHaveBeenCalled(); // stayed on the login page
+    expect(screen.getByRole('link', { name: /open the admin portal/i })).toBeInTheDocument();
   });
 
   it('shows the API message on a real 401 with a body', async () => {

@@ -2,25 +2,29 @@
 
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { AlertTriangle, Check, Eye, EyeOff, Shield } from 'lucide-react';
+import { Eye, EyeOff, Shield } from 'lucide-react';
 import { useAuth } from '@iws/auth';
+import { getAccessRole, Role } from '@iws/api-client';
 import type { ErrorResponseDto, ErrorType } from '@iws/api-client';
 import { Input } from '@iws/ui';
 import { Label } from '@iws/ui';
 
-// Admin Portal login — sign-in only. Admin/Manager accounts are provisioned by a
-// Super Admin (self-registration creates STAFF accounts and lives on the Staff app).
+// Admin Portal login — sign-in only, on a distinct dark "console" layout.
+// Admin/Manager accounts are provisioned by a Super Admin; self-registration
+// (which creates STAFF accounts) lives on the Staff app.
+const ADMIN_ROLES: string[] = [Role.SUPER_ADMIN, Role.WAREHOUSE_MANAGER];
 const STAFF_APP_URL = process.env.NEXT_PUBLIC_STAFF_URL ?? 'http://localhost:5000';
 const INPUT = 'h-11 rounded-md border-border-strong bg-surface px-3.5 text-sm';
 
 export default function AdminLoginPage() {
-  const { login } = useAuth();
+  const { login, logout } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [stay, setStay] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [wrongApp, setWrongApp] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -28,9 +32,18 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setError(null);
     setNotice(null);
+    setWrongApp(false);
     setSubmitting(true);
     try {
       await login(email, password);
+      // Credentials are valid — but is this account allowed in the Admin Portal?
+      const role = getAccessRole();
+      if (role && !ADMIN_ROLES.includes(role)) {
+        await logout();
+        setError('This account doesn’t have access to the Admin Portal.');
+        setWrongApp(true);
+        return;
+      }
       router.replace('/');
     } catch (err) {
       const ex = err as ErrorType<ErrorResponseDto>;
@@ -49,120 +62,47 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <main className="grid min-h-screen lg:grid-cols-[1.1fr_1fr]">
-      {/* ===== Brand art panel (decorative; hidden under lg) ===== */}
-      <aside className="relative hidden flex-col justify-between overflow-hidden bg-primary p-12 text-white lg:flex">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              'linear-gradient(150deg, var(--primary-2), var(--primary) 55%, color-mix(in oklch, var(--primary) 60%, black))',
-          }}
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -top-[110px] -right-[120px] z-0 size-[400px] rounded-full"
-          style={{ background: 'radial-gradient(circle, oklch(1 0 0 / 0.26), transparent 60%)' }}
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -bottom-[120px] -left-[130px] z-0 size-[340px] rounded-full opacity-45"
-          style={{ background: 'radial-gradient(circle, color-mix(in oklch, var(--brand-accent) 70%, transparent), transparent 60%)' }}
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-50"
-          style={{
-            backgroundImage:
-              'linear-gradient(oklch(1 0 0 / 0.08) 1px, transparent 1px), linear-gradient(90deg, oklch(1 0 0 / 0.08) 1px, transparent 1px)',
-            backgroundSize: '38px 38px',
-            maskImage: 'radial-gradient(135% 100% at 72% 6%, black, transparent 72%)',
-          }}
-        />
+    <main className="relative grid min-h-screen place-items-center overflow-hidden p-6">
+      {/* Deep brand backdrop — distinct "secure console" feel vs the Staff app's
+          split-screen marketing layout. Mixing toward BLACK is hue-safe. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            'linear-gradient(160deg, color-mix(in oklch, var(--primary) 72%, black), color-mix(in oklch, var(--primary) 32%, black))',
+        }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-[160px] left-1/2 size-[520px] -translate-x-1/2 rounded-full"
+        style={{ background: 'radial-gradient(circle, oklch(1 0 0 / 0.18), transparent 60%)' }}
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-40"
+        style={{
+          backgroundImage:
+            'linear-gradient(oklch(1 0 0 / 0.06) 1px, transparent 1px), linear-gradient(90deg, oklch(1 0 0 / 0.06) 1px, transparent 1px)',
+          backgroundSize: '40px 40px',
+          maskImage: 'radial-gradient(120% 90% at 50% 0%, black, transparent 75%)',
+        }}
+      />
 
-        <div className="relative z-[2] flex items-center gap-2.5 text-base font-bold">
-          <span className="grid size-9 place-items-center rounded-[10px] border border-white/30 bg-white/15 backdrop-blur">▦</span>
-          IWS
+      {/* Centered console card */}
+      <div className="relative z-10 w-full max-w-[400px] rounded-[18px] border border-border bg-surface p-8 shadow-lg">
+        <div className="mb-6 flex flex-col items-center text-center">
+          <span className="mb-3 grid size-12 place-items-center rounded-[14px] bg-gradient-to-br from-primary to-primary-2 text-[20px] font-bold text-primary-foreground shadow-[0_8px_24px_var(--brand-glow)]">
+            ▦
+          </span>
+          <span className="rounded-full bg-primary-tint px-2.5 py-0.5 font-mono text-[10.5px] font-bold tracking-[0.14em] text-primary-2 uppercase">
+            Admin Portal
+          </span>
+          <h1 className="mt-3 text-[1.5rem] font-bold tracking-[-0.025em]">Sign in to continue</h1>
+          <p className="mt-1 text-[13px] text-muted-foreground">Restricted to administrators &amp; managers.</p>
         </div>
 
-        <div className="relative z-[2] max-w-sm">
-          <p className="font-mono text-[11.5px] tracking-[0.16em] uppercase opacity-80">Admin Portal</p>
-          <h2 className="mt-3 mb-6 max-w-[13ch] text-[2.05rem] leading-[1.1] font-bold tracking-[-0.025em]">
-            Oversee every warehouse from one place.
-          </h2>
-          <ul className="flex flex-col gap-2.5 text-sm opacity-95">
-            {[
-              'Configure warehouses, users & permissions',
-              'Approve transfers, POs & access requests',
-              'Reports, forecasting & AI — review-first',
-            ].map((t) => (
-              <li key={t} className="flex items-center gap-2.5">
-                <span className="grid size-[21px] shrink-0 place-items-center rounded-md bg-white/20">
-                  <Check className="size-[13px]" aria-hidden />
-                </span>
-                {t}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div aria-hidden className="pointer-events-none absolute top-[31%] right-6 z-[1] hidden w-[230px] xl:block">
-          <div className="absolute top-[-20px] right-[10px] w-[165px] rounded-[14px] border border-white/20 bg-white/[0.13] p-[0.8rem_0.95rem] shadow-[0_18px_44px_-14px_oklch(0_0_0/0.45)] backdrop-blur-md animate-floaty">
-            <div className="text-[11px] font-medium opacity-80">Stock value</div>
-            <div className="mt-0.5 font-mono text-[1.4rem] font-semibold">$4.82M</div>
-          </div>
-          <div
-            className="absolute top-[120px] right-[90px] flex w-[215px] items-center gap-2.5 rounded-[14px] border border-white/20 bg-white/[0.13] p-[0.8rem_0.95rem] shadow-[0_18px_44px_-14px_oklch(0_0_0/0.45)] backdrop-blur-md animate-floaty"
-            style={{ animationDelay: '1.6s' }}
-          >
-            <span
-              className="grid size-8 shrink-0 place-items-center rounded-[9px]"
-              style={{ background: 'color-mix(in oklch, var(--warn) 65%, white)', color: 'oklch(0.32 0.1 70)' }}
-            >
-              <AlertTriangle className="size-4" />
-            </span>
-            <div>
-              <div className="text-[12.5px] font-semibold">23 low-stock alerts</div>
-              <div className="text-[11px] font-medium opacity-80">+5 this week</div>
-            </div>
-          </div>
-          <div
-            className="absolute top-[236px] right-[-6px] flex w-[205px] items-center gap-2.5 rounded-[14px] border border-white/20 bg-white/[0.13] p-[0.8rem_0.95rem] text-[12.5px] shadow-[0_18px_44px_-14px_oklch(0_0_0/0.45)] backdrop-blur-md animate-floaty"
-            style={{ animationDelay: '3.1s' }}
-          >
-            <span
-              className="grid size-[26px] shrink-0 place-items-center rounded-[7px]"
-              style={{ background: 'color-mix(in oklch, var(--ok) 60%, white)', color: 'oklch(0.3 0.1 155)' }}
-            >
-              <Check className="size-4" />
-            </span>
-            <div>
-              <div className="font-semibold">3 transfers approved</div>
-              <div className="text-[11px] font-medium opacity-80">awaiting receipt</div>
-            </div>
-          </div>
-        </div>
-
-        <div className="relative z-[2] flex gap-9 text-[12.5px] opacity-80">
-          <div>
-            <span className="block font-mono text-[1.3rem] font-semibold">6</span>Warehouses
-          </div>
-          <div>
-            <span className="block font-mono text-[1.3rem] font-semibold">2,847</span>Products
-          </div>
-          <div>
-            <span className="block font-mono text-[1.3rem] font-semibold">14</span>Pending POs
-          </div>
-        </div>
-      </aside>
-
-      {/* ===== Auth card (sign-in only) ===== */}
-      <div className="grid place-items-center overflow-y-auto p-8">
-        <form onSubmit={onSubmit} noValidate className="w-full max-w-[382px]">
-          <h1 className="text-[1.55rem] font-bold tracking-[-0.025em]">Admin sign in</h1>
-          <p className="mt-[0.35rem] mb-[1.6rem] text-[13.5px] text-muted-foreground">Sign in to the IWS Admin Portal.</p>
-
+        <form onSubmit={onSubmit} noValidate>
           <div className="mb-[1.05rem]">
             <Label htmlFor="email" className="mb-[0.42rem] block text-[12.5px] font-medium">
               Work email
@@ -215,8 +155,16 @@ export default function AdminLoginPage() {
           </div>
 
           {error && (
-            <p role="alert" className="mb-3 text-sm text-destructive">
+            <p role="alert" className="mb-1 text-sm text-destructive">
               {error}
+            </p>
+          )}
+          {wrongApp && (
+            <p className="mb-3 text-[12.5px] text-muted-foreground">
+              Looks like a staff account.{' '}
+              <a href={STAFF_APP_URL} className="font-semibold text-primary-2">
+                Open the Staff app →
+              </a>
             </p>
           )}
           {notice && <p className="mb-3 text-[12.5px] text-muted-foreground">{notice}</p>}
@@ -240,14 +188,14 @@ export default function AdminLoginPage() {
           >
             <Shield className="size-4" aria-hidden /> Continue with SSO
           </button>
-
-          <p className="mt-[1.35rem] text-center text-[13px] text-muted-foreground">
-            Staff member?{' '}
-            <a href={STAFF_APP_URL} className="font-semibold text-primary-2">
-              Go to the Staff app
-            </a>
-          </p>
         </form>
+
+        <p className="mt-6 text-center text-[13px] text-muted-foreground">
+          Staff member?{' '}
+          <a href={STAFF_APP_URL} className="font-semibold text-primary-2">
+            Go to the Staff app
+          </a>
+        </p>
       </div>
     </main>
   );
