@@ -46,8 +46,12 @@ export default function CatalogPage() {
         </div>
       ) : list.length === 0 ? (
         <EmptyState
-          title="No products"
-          description="The product catalog is empty."
+          title={search ? 'No matches' : 'No products'}
+          description={
+            search
+              ? 'No products match your search.'
+              : 'The product catalog is empty.'
+          }
         />
       ) : (
         <div className="rounded-xl bg-card ring-1 ring-foreground/10 overflow-hidden">

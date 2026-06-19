@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import MockAdapter from 'axios-mock-adapter';
 import { AXIOS_INSTANCE } from '@iws/api-client';
@@ -31,6 +32,21 @@ describe('CatalogPage (staff, read-only)', () => {
     await waitFor(() => expect(screen.getByText('Cola')).toBeInTheDocument());
     expect(screen.getByText('COLA-1')).toBeInTheDocument();
     expect(screen.getByText('1.20')).toBeInTheDocument();
+  });
+
+  it('distinguishes a no-match search from a truly empty catalog', async () => {
+    mock.onGet('/products').reply(200, []);
+    mock.onGet('/categories').reply(200, []);
+    renderPage();
+    // No search yet → truly-empty copy.
+    await waitFor(() =>
+      expect(screen.getByText('The product catalog is empty.')).toBeInTheDocument(),
+    );
+    // With a search term → no-match copy.
+    await userEvent.type(screen.getByLabelText('Search catalog'), 'zzz');
+    await waitFor(() =>
+      expect(screen.getByText('No products match your search.')).toBeInTheDocument(),
+    );
   });
 
   it('shows NO management controls (no create/edit/delete buttons)', async () => {

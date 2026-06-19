@@ -95,8 +95,12 @@ export default function ProductsPage() {
         </div>
       ) : list.length === 0 ? (
         <EmptyState
-          title="No products"
-          description="Create a product to build out the catalog."
+          title={search || categoryId ? 'No matches' : 'No products'}
+          description={
+            search || categoryId
+              ? 'No products match the current filters.'
+              : 'Create a product to build out the catalog.'
+          }
           action={<Button onClick={() => setCreating(true)}>New product</Button>}
         />
       ) : (
