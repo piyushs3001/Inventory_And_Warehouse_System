@@ -19,7 +19,9 @@ describe('Categories CRUD + Authz (e2e)', () => {
     }).compile();
     app = moduleRef.createNestApplication();
     app.setGlobalPrefix('api/v1');
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+    app.useGlobalPipes(
+      new ValidationPipe({ whitelist: true, transform: true }),
+    );
     await app.init();
     prisma = moduleRef.get(PrismaService);
     users = moduleRef.get(UsersService);
@@ -133,7 +135,10 @@ describe('Categories CRUD + Authz (e2e)', () => {
     await request(http)
       .post('/api/v1/categories')
       .set('Authorization', `Bearer ${adminToken}`)
-      .send({ name: 'Orphan', parentId: '11111111-1111-4111-8111-111111111111' })
+      .send({
+        name: 'Orphan',
+        parentId: '11111111-1111-4111-8111-111111111111',
+      })
       .expect(400);
   });
 
