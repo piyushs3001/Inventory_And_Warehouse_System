@@ -3,6 +3,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Logger,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AllExceptionsFilter } from './all-exceptions.filter';
 
@@ -39,6 +40,21 @@ describe('AllExceptionsFilter', () => {
       path: '/auth/login',
     });
     expect(typeof body()?.timestamp).toBe('string');
+  });
+
+  it('derives the error label from the status for a guard-thrown exception with no error field', () => {
+    // Passport's AuthGuard throws a bare UnauthorizedException whose response
+    // body is { statusCode, message } with NO `error` field. The label must be
+    // derived from the 401 status, not left as the default "Internal Server Error".
+    const { host, status, body } = mockHost('/warehouses');
+    filter.catch(new UnauthorizedException(), host);
+    expect(status).toHaveBeenCalledWith(401);
+    expect(body()).toMatchObject({
+      statusCode: 401,
+      error: 'Unauthorized',
+      message: 'Unauthorized',
+      path: '/warehouses',
+    });
   });
 
   it('preserves validation (array) messages from a BadRequestException', () => {

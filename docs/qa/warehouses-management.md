@@ -1,6 +1,6 @@
 # QA — Warehouses Management (Phase 2, Slice 1)
 
-**Date:** 2026-06-13 · **Branch/worktree:** `phase-2-catalog-warehouses` · **Flow:** Warehouses CRUD API + `/admin/warehouses` admin UI, with two-layer authorization (role + warehouse scope). First real consumer of the `ScopeGuard`/`warehouseFilter` layer.
+**Date:** 2026-06-13 (build) · 2026-06-19 (browser QA) · **Branch/worktree:** `phase-2-catalog-warehouses` / `piyush` · **Flow:** Warehouses CRUD API + `/warehouses` admin UI, with two-layer authorization (role + warehouse scope). First real consumer of the `ScopeGuard`/`warehouseFilter` layer.
 
 ## What was built
 - **API:** `Warehouse` gains `address`/`contactPerson`/`capacity`. `warehouses` module → full CRUD: `GET /warehouses` (scope-filtered list, `?includeArchived`), `GET /:id` (scoped, 404 out-of-scope), `POST` / `PATCH /:id` / `DELETE /:id` (soft-archive → `INACTIVE`) / `POST /:id/staff` — **reads any-authed + scope-filtered; writes `@Roles(SUPER_ADMIN)`**. Orval client regenerated.
@@ -47,6 +47,34 @@ This slice's authorization invariant is proven by **e2e** (real HTTP + DB); UI b
 - **Missing negative tests (invariant-review):** no e2e for write-403 / out-of-scope-404. **Fixed** — added in `warehouses-crud.e2e-spec.ts`. (commit `db66ea4`)
 - **Misleading/duplicate page test + dead `warehouse-ref.dto.ts`** — repaired / removed.
 
+## Browser QA — Playwright MCP (2026-06-19)
+
+**Flow/task:** Phase 2 Slice 1 — Warehouse Management browser QA. **Surface:** Admin Portal `http://localhost:5001`, warehouses page served at **`/warehouses`** (the `(admin)` route group adds no URL segment — the slice's earlier `/admin/warehouses` URL is wrong; `/admin/warehouses` 404s). **API:** `http://localhost:5002/api/v1`. **User:** `admin@iws.local` (SUPER_ADMIN, global scope). Drove the real flow end-to-end through the browser; verified persisted state via reload + the underlying API calls.
+
+### Positive
+| # | Scenario | Result | Evidence |
+|---|---|---|---|
+| P1 | Super Admin login → lands in admin portal (`/`), not bounced | **Passed** | dashboard + "Warehouses" nav rendered |
+| P2 | List `/warehouses` → Central Warehouse + North Depot, both ACTIVE badges | **Passed** | `qa-warehouses-02-list.png` |
+| P3 | Create "QA Test Depot" (address/contact/capacity) → `POST` 201, row appears ACTIVE (cap 5000, contact Jane QA) | **Passed** | `qa-warehouses-04-created.png` |
+| P4 | Edit → change contact "Bob Edited" + capacity 7500 → `PATCH` 200; **persists after full page reload** | **Passed** | `qa-warehouses-05-edited-persisted.png` |
+| P5 | Archive (soft-delete) → confirm prompt → `DELETE` 200 → drops from default list; reappears as **INACTIVE** under "Include archived" (NOT hard-deleted; Archive action correctly hidden on inactive row) | **Passed** | `qa-warehouses-07-archived-inactive.png` |
+| P6 | Assign-staff dialog opens scoped to the warehouse, lists candidate users with pre-check checkboxes | **Passed** | `qa-warehouses-06-assign-staff-dialog.png` — only `admin@iws.local` exists (no STAFF seeded), so actual assignment not committed |
+
+### Negative
+| # | Scenario | Result | Evidence |
+|---|---|---|---|
+| N1 | Unauthenticated visit to `/warehouses` → redirected to `/login`, no data. Server-side enforced: direct `GET /api/v1/warehouses` with no token → **401** | **Passed** | `qa-warehouses-01-unauth-redirect.png`; 401 confirmed via in-page fetch |
+| N2 | Wrong-role (STAFF) login to admin app → bounced to staff app | **Skipped (covered by unit/e2e)** | No STAFF account seeded; gate verified in code (`page.tsx` `ADMIN_ROLES.includes(role)` → redirect to `STAFF_APP_URL`) + `apps/admin/src/app/login/page.test.tsx` |
+| N3 | Create form, empty required Name → submit blocked, no `POST`, dialog stays open | **Passed** | `qa-warehouses-03-validation-empty-name.png`; `name` input `required`, `valueMissing:true`, native message, zero network POST |
+| N4 | Out-of-scope warehouse 404 for a scoped Manager | **Skipped (covered by e2e)** | Super Admin has global scope — cannot exercise from this account in the browser; proven by `warehouses-crud.e2e-spec.ts` case #3 |
+
+### Observations (non-blocking)
+- **Low — error-envelope mislabel:** the 401 body for an unauthenticated `GET /warehouses` read `"error":"Internal Server Error"` while `statusCode:401` / `message:"Unauthorized"` were correct. Root cause (global filter, not warehouse-specific): `AllExceptionsFilter` defaulted the `error` label to `"Internal Server Error"` and only overrode it when the exception body carried an explicit `error` field — but a guard-thrown bare `UnauthorizedException` has none. **Status: FIXED** (2026-06-19) — the filter now derives the `error` label from the resolved HTTP status when the exception supplies none (`statusLabel(status)`), correcting every guard-thrown 4xx. Regression test added (`all-exceptions.filter.spec.ts`); verified live (`GET /warehouses` no-token → `"error":"Unauthorized"`) and via api unit (64) + e2e (33) green.
+- The `(admin)` route group means the canonical URL is `/warehouses`, not `/admin/warehouses` — earlier report text and the task brief both used the wrong path. Worth correcting in nav/docs references.
+
+**Bugs found this pass:** none functional (1 low-severity cosmetic observation above). No regressions; all CRUD + soft-delete + authz behaviours correct both directions.
+
 ## Pending / deferred
-- **Playwright-MCP browser QA (positive + negative) of `/admin/warehouses` is PENDING.** The Playwright MCP server is approved/connected but its tools are not loaded in the current session (MCP tools register at session start; this session predates the approval). To run: restart the session, launch the web+API dev servers **from this worktree** (the main-checkout dev server doesn't serve worktree code), then drive: Super Admin CRUD + archive + assign-staff (positive); a Staff/Manager user blocked from management actions + an out-of-scope warehouse absent + invalid form rejected (negative). This is the same pending browser-QA gate as Phase 1.5 (`docs/qa/auth-user-management.md`); run them together after the restart.
-- Automated coverage (e2e authz/scope matrix + UI component tests) is complete and green in the meantime.
+- **Browser QA is now COMPLETE** (see section above, 2026-06-19). Positive CRUD + archive + assign-staff and negatives N1/N3 driven live; N2 (wrong-role) and N4 (out-of-scope 404) intentionally deferred to unit/e2e as noted (no STAFF user seeded; global-scope account can't exercise scope-404).
+- Automated coverage (e2e authz/scope matrix + UI component tests) remains complete and green.
