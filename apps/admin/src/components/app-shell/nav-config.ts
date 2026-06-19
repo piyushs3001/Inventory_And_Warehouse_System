@@ -1,5 +1,5 @@
 import {
-  LayoutDashboard, Package, Tag, Warehouse, ShoppingCart, ArrowRightLeft,
+  LayoutDashboard, Package, Tag, FolderTree, Warehouse, ShoppingCart, ArrowRightLeft,
   ClipboardList, BarChart3, Sparkles, Users, type LucideIcon,
 } from 'lucide-react';
 import { Role } from '@iws/api-client';
@@ -26,6 +26,7 @@ export const NAV: Partial<Record<Surface, NavGroup[]>> = {
       items: [
         { href: '/inventory', label: 'Inventory', icon: Package, roles: MGR_UP, built: false, phase: 3 },
         { href: '/products', label: 'Products', icon: Tag, roles: MGR_UP, built: false, phase: 2 },
+        { href: '/categories', label: 'Categories', icon: FolderTree, roles: MGR_UP, built: true },
         { href: '/warehouses', label: 'Warehouses', icon: Warehouse, roles: ADMIN_ONLY, built: true },
       ],
     },
