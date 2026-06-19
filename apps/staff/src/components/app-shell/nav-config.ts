@@ -1,5 +1,5 @@
 import {
-  Package, ShoppingCart, ArrowRightLeft, ClipboardList, Home, Truck, type LucideIcon,
+  Package, ShoppingCart, ArrowRightLeft, ClipboardList, Home, Truck, Tag, type LucideIcon,
 } from 'lucide-react';
 import { Role } from '@iws/api-client';
 
@@ -30,7 +30,10 @@ export const NAV: Partial<Record<Surface, NavGroup[]>> = {
     },
     {
       section: 'Lookup',
-      items: [{ href: '/inventory', label: 'View Inventory', icon: Package, roles: ALL_ROLES, built: false, phase: 3 }],
+      items: [
+        { href: '/catalog', label: 'Catalog', icon: Tag, roles: ALL_ROLES, built: true },
+        { href: '/inventory', label: 'View Inventory', icon: Package, roles: ALL_ROLES, built: false, phase: 3 },
+      ],
     },
   ],
 };

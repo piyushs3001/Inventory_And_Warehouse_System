@@ -25,7 +25,7 @@ export const NAV: Partial<Record<Surface, NavGroup[]>> = {
       section: 'Operations',
       items: [
         { href: '/inventory', label: 'Inventory', icon: Package, roles: MGR_UP, built: false, phase: 3 },
-        { href: '/products', label: 'Products', icon: Tag, roles: MGR_UP, built: false, phase: 2 },
+        { href: '/products', label: 'Products', icon: Tag, roles: MGR_UP, built: true },
         { href: '/categories', label: 'Categories', icon: FolderTree, roles: MGR_UP, built: true },
         { href: '/warehouses', label: 'Warehouses', icon: Warehouse, roles: ADMIN_ONLY, built: true },
       ],
