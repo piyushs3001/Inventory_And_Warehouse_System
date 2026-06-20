@@ -19,8 +19,19 @@ import {
 } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
+import { Throttle } from '@nestjs/throttler';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+
+// Brute-force guard on credential endpoints: 10 attempts/min/IP in real
+// environments; effectively disabled under test so the serial e2e suite (which
+// logs in many times from one IP) isn't rate-limited.
+const AUTH_THROTTLE = {
+  default: {
+    ttl: 60_000,
+    limit: process.env.NODE_ENV === 'test' ? 100_000 : 10,
+  },
+};
 import { TokensDto } from './dto/tokens.dto';
 import { UserDto } from '../users/dto/user.dto';
 import { JwtAccessGuard } from './guards/jwt-access.guard';
@@ -42,6 +53,7 @@ export class AuthController {
   ) {}
 
   @Post('login')
+  @Throttle(AUTH_THROTTLE)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Log in',
@@ -58,6 +70,7 @@ export class AuthController {
   }
 
   @Post('register')
+  @Throttle(AUTH_THROTTLE)
   @ApiOperation({
     summary: 'Self-register',
     description:

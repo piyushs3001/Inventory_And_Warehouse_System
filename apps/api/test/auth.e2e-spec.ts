@@ -106,6 +106,33 @@ describe('Auth + Authorization (e2e)', () => {
       .expect(403);
   });
 
+  it('a deactivated user cannot refresh or log in (immediate revocation)', async () => {
+    const { refreshToken } = await login('staff@test.local');
+    const staff = await prisma.user.findUniqueOrThrow({
+      where: { email: 'staff@test.local' },
+    });
+    await users.deactivate(staff.id);
+
+    // Old refresh token must be rejected (status re-checked + hash cleared).
+    await request(http)
+      .post('/api/v1/auth/refresh')
+      .set('Authorization', `Bearer ${refreshToken}`)
+      .expect(403);
+
+    // And a fresh login is rejected generically.
+    await request(http)
+      .post('/api/v1/auth/login')
+      .send({ email: 'staff@test.local', password: 'password123' })
+      .expect(401);
+  });
+
+  it('login with an unknown email returns a generic 401 (no user enumeration)', async () => {
+    await request(http)
+      .post('/api/v1/auth/login')
+      .send({ email: 'nobody@test.local', password: 'password123' })
+      .expect(401);
+  });
+
   describe('self-registration → approval → login', () => {
     it('registers a pending STAFF account with no scope and no tokens', async () => {
       const res = await request(http)

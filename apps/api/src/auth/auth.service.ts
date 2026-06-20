@@ -14,6 +14,10 @@ import { JwtPayload, Tokens } from './auth.types';
 export class AuthService {
   private readonly accessTtl = '15m';
   private readonly refreshTtl = '7d';
+  // A valid bcrypt hash compared against when the email is unknown, so login
+  // takes ~the same time whether or not the user exists (no timing enumeration).
+  private readonly dummyHash =
+    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy';
 
   constructor(
     private readonly prisma: PrismaService,
@@ -24,10 +28,14 @@ export class AuthService {
 
   async login(email: string, password: string): Promise<Tokens> {
     const user = await this.prisma.user.findUnique({ where: { email } });
-    const credentialsValid =
-      !!user && (await this.passwords.compare(password, user.passwordHash));
+    // Always run a compare (against a dummy hash when the email is unknown) so
+    // response time doesn't reveal whether the account exists.
+    const passwordOk = await this.passwords.compare(
+      password,
+      user?.passwordHash ?? this.dummyHash,
+    );
     // Generic message until credentials prove out — no user enumeration.
-    if (!user || !credentialsValid) {
+    if (!user || !passwordOk) {
       throw new UnauthorizedException('Invalid credentials');
     }
     // Only revealed to a caller who already holds valid credentials.
@@ -51,7 +59,13 @@ export class AuthService {
 
   async refresh(userId: string, refreshToken: string): Promise<Tokens> {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
-    if (!user || !user.hashedRefreshToken) {
+    // Re-check status here: a deactivated/pending account must not be able to
+    // mint fresh access tokens off an old refresh token until its 7-day TTL.
+    if (
+      !user ||
+      !user.hashedRefreshToken ||
+      user.status !== UserStatus.ACTIVE
+    ) {
       throw new ForbiddenException('Access denied');
     }
     const matches = await this.passwords.compare(

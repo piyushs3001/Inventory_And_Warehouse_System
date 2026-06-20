@@ -99,7 +99,9 @@ export class UsersService {
     await this.ensureExists(id);
     return this.prisma.user.update({
       where: { id },
-      data: { status: UserStatus.INACTIVE },
+      // Revoke the refresh token too, so deactivation takes effect immediately
+      // (not just at access-token TTL).
+      data: { status: UserStatus.INACTIVE, hashedRefreshToken: null },
       select: userSafeSelect,
     });
   }
