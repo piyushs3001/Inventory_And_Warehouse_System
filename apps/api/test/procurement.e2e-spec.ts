@@ -64,6 +64,7 @@ describe('Procurement: Suppliers + Purchase Orders + Receiving (e2e)', () => {
     await prisma.purchaseOrder.deleteMany();
     await prisma.inventoryItem.deleteMany();
     await prisma.supplier.deleteMany();
+    await prisma.productVariant.deleteMany();
     await prisma.product.deleteMany();
     await prisma.warehouse.deleteMany();
     await prisma.user.deleteMany();

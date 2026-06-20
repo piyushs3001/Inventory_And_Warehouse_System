@@ -1943,6 +1943,415 @@
         ]
       }
     },
+    "/products/{productId}/variants": {
+      "get": {
+        "description": "Available to any authenticated user.",
+        "operationId": "VariantsController_list",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "description": "Product id (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "includeArchived",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/VariantDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "List variants of a product",
+        "tags": [
+          "variants"
+        ]
+      },
+      "post": {
+        "operationId": "VariantsController_create",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "description": "Product id (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateVariantDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VariantDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request body or parameters failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The SKU is already used by a product or variant.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Create a variant",
+        "tags": [
+          "variants"
+        ]
+      }
+    },
+    "/products/{productId}/variants/{id}": {
+      "get": {
+        "operationId": "VariantsController_findOne",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "description": "Product id (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Variant id (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VariantDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Variant not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Get a variant by id",
+        "tags": [
+          "variants"
+        ]
+      },
+      "patch": {
+        "operationId": "VariantsController_update",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "description": "Product id (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Variant id (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateVariantDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VariantDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request body or parameters failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Variant not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The SKU is already used by a product or variant.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Update a variant",
+        "tags": [
+          "variants"
+        ]
+      },
+      "delete": {
+        "description": "Soft-deletes the variant (status → ARCHIVED).",
+        "operationId": "VariantsController_archive",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "description": "Product id (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Variant id (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VariantDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Variant not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Archive a variant",
+        "tags": [
+          "variants"
+        ]
+      }
+    },
     "/inventory": {
       "get": {
         "description": "Scope-filtered stock per (product x warehouse). Any authenticated user; staff see only their assigned warehouses. Paginated.",
@@ -5452,6 +5861,135 @@
             "allOf": [
               {
                 "$ref": "#/components/schemas/ProductStatus"
+              }
+            ]
+          }
+        }
+      },
+      "ProductVariantStatus": {
+        "type": "string",
+        "enum": [
+          "ACTIVE",
+          "ARCHIVED"
+        ],
+        "description": "Variant status."
+      },
+      "VariantDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Variant id (UUID)."
+          },
+          "productId": {
+            "type": "string",
+            "description": "Parent product id (UUID)."
+          },
+          "sku": {
+            "type": "string",
+            "description": "Stock keeping unit (unique across products and variants).",
+            "example": "COLA-330-RED"
+          },
+          "barcode": {
+            "type": "string",
+            "nullable": true,
+            "description": "Barcode value."
+          },
+          "attributes": {
+            "type": "object",
+            "description": "Free-form variant attributes.",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "size": "L",
+              "color": "Red"
+            }
+          },
+          "status": {
+            "description": "Variant status.",
+            "example": "ACTIVE",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProductVariantStatus"
+              }
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Creation timestamp.",
+            "example": "2026-06-20T10:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "productId",
+          "sku",
+          "attributes",
+          "status",
+          "createdAt"
+        ]
+      },
+      "CreateVariantDto": {
+        "type": "object",
+        "properties": {
+          "sku": {
+            "type": "string",
+            "description": "Stock keeping unit (unique across products and variants).",
+            "example": "COLA-330-RED"
+          },
+          "barcode": {
+            "type": "string",
+            "description": "Barcode value.",
+            "example": "5012345678900"
+          },
+          "attributes": {
+            "type": "object",
+            "description": "Free-form variant attributes (string values only).",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "size": "L",
+              "color": "Red"
+            }
+          }
+        },
+        "required": [
+          "sku"
+        ]
+      },
+      "UpdateVariantDto": {
+        "type": "object",
+        "properties": {
+          "sku": {
+            "type": "string",
+            "description": "Stock keeping unit (unique across products and variants).",
+            "example": "COLA-330-RED"
+          },
+          "barcode": {
+            "type": "string",
+            "description": "Barcode value.",
+            "example": "5012345678900"
+          },
+          "attributes": {
+            "type": "object",
+            "description": "Free-form variant attributes (string values only).",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "example": {
+              "size": "L",
+              "color": "Red"
+            }
+          },
+          "status": {
+            "description": "Variant status.",
+            "example": "ARCHIVED",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProductVariantStatus"
               }
             ]
           }

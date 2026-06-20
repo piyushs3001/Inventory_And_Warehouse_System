@@ -63,6 +63,7 @@ describe('AI: reorder + forecast + chat + summarize + generate-po (e2e)', () => 
     await prisma.stockCount.deleteMany();
     await prisma.inventoryItem.deleteMany();
     await prisma.supplier.deleteMany();
+    await prisma.productVariant.deleteMany();
     await prisma.product.deleteMany();
     await prisma.warehouse.deleteMany();
     await prisma.user.deleteMany();

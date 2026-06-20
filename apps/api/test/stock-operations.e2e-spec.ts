@@ -61,6 +61,7 @@ describe('Stock Operations: Transfers + Stock Counts (e2e)', () => {
     await prisma.stockTransferLine.deleteMany();
     await prisma.stockTransfer.deleteMany();
     await prisma.inventoryItem.deleteMany();
+    await prisma.productVariant.deleteMany();
     await prisma.product.deleteMany();
     await prisma.warehouse.deleteMany();
     await prisma.user.deleteMany();

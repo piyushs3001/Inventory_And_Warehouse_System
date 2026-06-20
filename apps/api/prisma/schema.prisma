@@ -33,6 +33,11 @@ enum ProductStatus {
   ARCHIVED
 }
 
+enum ProductVariantStatus {
+  ACTIVE
+  ARCHIVED
+}
+
 // Closed set (CLAUDE.md). Never extend — a reservation is recorded as
 // ADJUSTMENT (a bucket shift available -> reserved with a reason), not a new type.
 enum MovementType {
@@ -153,6 +158,7 @@ model Product {
   sellingPrice Decimal       @default(0) @db.Decimal(12, 2) @map("selling_price")
   reorderLevel Int           @default(0) @map("reorder_level")
   status       ProductStatus @default(ACTIVE)
+  variants       ProductVariant[]
   inventoryItems InventoryItem[]
   purchaseOrderLines PurchaseOrderLine[]
   goodsReceiptLines  GoodsReceiptLine[]
@@ -163,6 +169,24 @@ model Product {
 
   @@index([categoryId])
   @@map("products")
+}
+
+// Catalog-only variant of a product (own SKU/barcode/attributes). Stock is NOT
+// tracked per-variant in this slice — InventoryItem stays at Product level
+// (see docs/superpowers/specs/2026-06-20-phase-2-slice-4-variants-design.md).
+model ProductVariant {
+  id         String               @id @default(uuid())
+  productId  String               @map("product_id")
+  product    Product              @relation(fields: [productId], references: [id])
+  sku        String               @unique
+  barcode    String?
+  attributes Json                 @default("{}")
+  status     ProductVariantStatus @default(ACTIVE)
+  createdAt  DateTime             @default(now()) @map("created_at")
+  updatedAt  DateTime             @updatedAt      @map("updated_at")
+
+  @@index([productId])
+  @@map("product_variants")
 }
 
 // Real stock for one Product at one Warehouse. Four buckets that together are

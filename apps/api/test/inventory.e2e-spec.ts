@@ -57,6 +57,7 @@ describe('Inventory + Movements (e2e)', () => {
     await prisma.notification.deleteMany();
     await prisma.stockMovement.deleteMany();
     await prisma.inventoryItem.deleteMany();
+    await prisma.productVariant.deleteMany();
     await prisma.product.deleteMany();
     await prisma.category.deleteMany();
     await prisma.warehouse.deleteMany();

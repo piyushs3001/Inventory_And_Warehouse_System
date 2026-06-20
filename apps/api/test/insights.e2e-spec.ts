@@ -65,6 +65,7 @@ describe('Insights: ActivityLog + Notifications + Dashboard + Reports (e2e)', ()
     await prisma.stockCount.deleteMany();
     await prisma.inventoryItem.deleteMany();
     await prisma.supplier.deleteMany();
+    await prisma.productVariant.deleteMany();
     await prisma.product.deleteMany();
     await prisma.category.deleteMany();
     await prisma.warehouse.deleteMany();

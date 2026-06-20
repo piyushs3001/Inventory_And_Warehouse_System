@@ -11,6 +11,7 @@ import { AuthModule } from './auth/auth.module';
 import { WarehousesModule } from './warehouses/warehouses.module';
 import { CategoriesModule } from './categories/categories.module';
 import { ProductsModule } from './products/products.module';
+import { VariantsModule } from './variants/variants.module';
 import { InventoryModule } from './inventory/inventory.module';
 import { MovementsModule } from './movements/movements.module';
 import { SuppliersModule } from './suppliers/suppliers.module';
@@ -35,6 +36,7 @@ import { AiModule } from './ai/ai.module';
     WarehousesModule,
     CategoriesModule,
     ProductsModule,
+    VariantsModule,
     InventoryModule,
     MovementsModule,
     SuppliersModule,

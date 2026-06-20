@@ -6,6 +6,7 @@ export * from './generated/users/users';
 export * from './generated/warehouses/warehouses';
 export * from './generated/categories/categories';
 export * from './generated/products/products';
+export * from './generated/variants/variants';
 export * from './generated/inventory/inventory';
 export * from './generated/movements/movements';
 export * from './generated/suppliers/suppliers';

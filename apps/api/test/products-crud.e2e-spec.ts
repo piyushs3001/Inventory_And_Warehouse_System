@@ -48,6 +48,7 @@ describe('Products CRUD + Authz (e2e)', () => {
   }
 
   async function clearCatalog(): Promise<void> {
+    await prisma.productVariant.deleteMany();
     await prisma.product.deleteMany();
     await prisma.category.deleteMany();
   }

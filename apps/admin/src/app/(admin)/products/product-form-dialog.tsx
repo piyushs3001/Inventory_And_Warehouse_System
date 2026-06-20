@@ -16,6 +16,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@iws/ui';
+import { VariantsSection } from './variants-section';
 
 function errorMessage(err: unknown): string {
   const message = (err as { response?: { data?: { message?: string } } })
@@ -143,6 +144,7 @@ export function ProductFormDialog({
             <Button type="submit" disabled={isPending}>{isEdit ? 'Save' : 'Create'}</Button>
           </DialogFooter>
         </form>
+        {isEdit && product && <VariantsSection productId={product.id} />}
       </DialogContent>
     </Dialog>
   );

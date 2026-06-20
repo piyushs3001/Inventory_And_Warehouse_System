@@ -58,4 +58,22 @@ describe('CatalogPage (staff, read-only)', () => {
     expect(screen.queryByRole('button', { name: /edit/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /archive|delete/i })).not.toBeInTheDocument();
   });
+
+  it('expands a product row to show its variants (read-only, lazy-loaded)', async () => {
+    const VARIANT = {
+      id: 'v1', productId: 'p1', sku: 'COLA-1-RED', barcode: null,
+      attributes: { color: 'Red' }, status: 'ACTIVE', createdAt: '',
+    };
+    mock.onGet('/products').reply(200, [PRODUCT]);
+    mock.onGet('/categories').reply(200, [CATEGORY]);
+    mock.onGet('/products/p1/variants').reply(200, [VARIANT]);
+    renderPage();
+    await waitFor(() => expect(screen.getByText('Cola')).toBeInTheDocument());
+
+    await userEvent.click(screen.getByRole('button', { name: /expand variants/i }));
+    await waitFor(() =>
+      expect(screen.getByText('COLA-1-RED')).toBeInTheDocument(),
+    );
+    expect(screen.getByText('color: Red')).toBeInTheDocument();
+  });
 });
