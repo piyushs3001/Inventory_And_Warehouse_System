@@ -41,6 +41,7 @@ function makeService(
   service: ProductsService;
   product: ProductMock;
   category: { findUnique: jest.Mock };
+  barcodes: { render: jest.Mock };
 } {
   const productMethods: ProductMock = {
     create: jest.fn().mockResolvedValue(PRODUCT),
@@ -55,8 +56,20 @@ function makeService(
   };
   const prisma = { product: productMethods, category: categoryMethods };
   const activity = { record: jest.fn().mockResolvedValue(undefined) };
-  const service = new ProductsService(prisma as never, activity as never);
-  return { service, product: productMethods, category: categoryMethods };
+  const barcodes = {
+    render: jest.fn().mockResolvedValue('data:image/png;base64,AAA'),
+  };
+  const service = new ProductsService(
+    prisma as never,
+    activity as never,
+    barcodes,
+  );
+  return {
+    service,
+    product: productMethods,
+    category: categoryMethods,
+    barcodes,
+  };
 }
 
 describe('ProductsService', () => {
@@ -180,6 +193,28 @@ describe('ProductsService', () => {
       await expect(
         service.update('u1', 'p1', { sku: 'TAKEN' }),
       ).rejects.toBeInstanceOf(ConflictException);
+    });
+  });
+
+  describe('barcode', () => {
+    it('renders the product SKU and returns a BarcodeDto', async () => {
+      const { service, barcodes } = makeService();
+      const result = await service.barcode('p1', 'code128');
+      expect(barcodes.render).toHaveBeenCalledWith('COLA-330', 'code128');
+      expect(result).toEqual({
+        value: 'COLA-330',
+        symbology: 'code128',
+        png: 'data:image/png;base64,AAA',
+      });
+    });
+
+    it('throws NotFound when the product does not exist', async () => {
+      const { service } = makeService({
+        findUnique: jest.fn().mockResolvedValue(null),
+      });
+      await expect(service.barcode('nope', 'code128')).rejects.toBeInstanceOf(
+        NotFoundException,
+      );
     });
   });
 

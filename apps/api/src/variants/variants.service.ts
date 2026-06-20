@@ -9,6 +9,8 @@ import { ActivityService } from '../activity/activity.service';
 import { CreateVariantDto } from './dto/create-variant.dto';
 import { UpdateVariantDto } from './dto/update-variant.dto';
 import { VariantDto } from './dto/variant.dto';
+import { BarcodeService, type Symbology } from '../barcodes/barcode.service';
+import { BarcodeDto } from '../barcodes/dto/barcode.dto';
 
 const variantSelect = {
   id: true,
@@ -39,7 +41,23 @@ export class VariantsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly activity: ActivityService,
+    private readonly barcodes: BarcodeService,
   ) {}
+
+  async barcode(
+    productId: string,
+    id: string,
+    symbology: Symbology = 'code128',
+  ): Promise<BarcodeDto> {
+    const variant = await this.findVariant(productId, id);
+    // A variant's own barcode value wins; fall back to its SKU.
+    const value = variant.barcode ?? variant.sku;
+    return {
+      value,
+      symbology,
+      png: await this.barcodes.render(value, symbology),
+    };
+  }
 
   private toDto(v: VariantRow): VariantDto {
     return {

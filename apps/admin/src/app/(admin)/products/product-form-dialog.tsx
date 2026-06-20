@@ -17,6 +17,7 @@ import {
   DialogFooter,
 } from '@iws/ui';
 import { VariantsSection } from './variants-section';
+import { ProductBarcode } from './barcode-controls';
 
 function errorMessage(err: unknown): string {
   const message = (err as { response?: { data?: { message?: string } } })
@@ -54,6 +55,7 @@ export function ProductFormDialog({
     product?.reorderLevel != null ? String(product.reorderLevel) : '',
   );
   const [error, setError] = useState<string | null>(null);
+  const [showBarcode, setShowBarcode] = useState(false);
 
   const isPending = create.isPending || update.isPending;
 
@@ -144,6 +146,23 @@ export function ProductFormDialog({
             <Button type="submit" disabled={isPending}>{isEdit ? 'Save' : 'Create'}</Button>
           </DialogFooter>
         </form>
+        {isEdit && product && (
+          <div className="flex flex-col gap-2 border-t border-foreground/10 pt-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold">Product barcode</h3>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                aria-expanded={showBarcode}
+                onClick={() => setShowBarcode((v) => !v)}
+              >
+                {showBarcode ? 'Hide' : 'Show'}
+              </Button>
+            </div>
+            {showBarcode && <ProductBarcode productId={product.id} />}
+          </div>
+        )}
         {isEdit && product && <VariantsSection productId={product.id} />}
       </DialogContent>
     </Dialog>

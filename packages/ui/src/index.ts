@@ -5,6 +5,8 @@ export * from './components/ui/activity-feed-item';
 export * from './components/ui/area-chart';
 export * from './components/ui/badge';
 export * from './components/ui/bar-chart';
+export * from './components/ui/barcode-preview';
+export * from './components/ui/barcode-controls';
 export * from './components/ui/button';
 export * from './components/ui/card';
 export * from './components/ui/coming-soon';

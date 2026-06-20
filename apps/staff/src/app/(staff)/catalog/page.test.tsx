@@ -76,4 +76,23 @@ describe('CatalogPage (staff, read-only)', () => {
     );
     expect(screen.getByText('color: Red')).toBeInTheDocument();
   });
+
+  it('shows a read-only barcode for a variant on demand', async () => {
+    const VARIANT = {
+      id: 'v1', productId: 'p1', sku: 'COLA-1-RED', barcode: null,
+      attributes: {}, status: 'ACTIVE', createdAt: '',
+    };
+    mock.onGet('/products').reply(200, [PRODUCT]);
+    mock.onGet('/categories').reply(200, [CATEGORY]);
+    mock.onGet('/products/p1/variants').reply(200, [VARIANT]);
+    mock.onGet(/\/products\/p1\/variants\/v1\/barcode/).reply(200, {
+      value: 'COLA-1-RED', symbology: 'code128', png: 'data:image/png;base64,AAA',
+    });
+    renderPage();
+    await waitFor(() => expect(screen.getByText('Cola')).toBeInTheDocument());
+    await userEvent.click(screen.getByRole('button', { name: /expand variants/i }));
+    await userEvent.click(await screen.findByRole('button', { name: /show barcode/i }));
+    const img = await screen.findByRole('img', { name: /barcode for COLA-1-RED/i });
+    expect(img).toHaveAttribute('src', 'data:image/png;base64,AAA');
+  });
 });

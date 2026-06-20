@@ -33,6 +33,7 @@ function makeService(
   service: VariantsService;
   variant: VariantMock;
   product: { findUnique: jest.Mock };
+  barcodes: { render: jest.Mock };
 } {
   const variantMethods: VariantMock = {
     create: jest.fn().mockResolvedValue(VARIANT),
@@ -54,8 +55,20 @@ function makeService(
   };
   const prisma = { productVariant: variantMethods, product: productMethods };
   const activity = { record: jest.fn().mockResolvedValue(undefined) };
-  const service = new VariantsService(prisma as never, activity as never);
-  return { service, variant: variantMethods, product: productMethods };
+  const barcodes = {
+    render: jest.fn().mockResolvedValue('data:image/png;base64,AAA'),
+  };
+  const service = new VariantsService(
+    prisma as never,
+    activity as never,
+    barcodes,
+  );
+  return {
+    service,
+    variant: variantMethods,
+    product: productMethods,
+    barcodes,
+  };
 }
 
 describe('VariantsService', () => {
@@ -166,6 +179,43 @@ describe('VariantsService', () => {
       await expect(
         service.update('u1', 'p1', 'v1', { sku: 'TAKEN' }),
       ).rejects.toBeInstanceOf(ConflictException);
+    });
+  });
+
+  describe('barcode', () => {
+    it('falls back to the SKU when the variant has no barcode value', async () => {
+      const { service, barcodes } = makeService({
+        findUnique: jest.fn().mockResolvedValue(VARIANT), // barcode: null
+      });
+      const result = await service.barcode('p1', 'v1', 'code128');
+      expect(barcodes.render).toHaveBeenCalledWith('COLA-330-RED', 'code128');
+      expect(result.value).toBe('COLA-330-RED');
+    });
+
+    it('uses the variant barcode value when present', async () => {
+      const { service, barcodes } = makeService({
+        findUnique: jest
+          .fn()
+          .mockResolvedValue({ ...VARIANT, barcode: '5012345678900' }),
+      });
+      const result = await service.barcode('p1', 'v1', 'qr');
+      expect(barcodes.render).toHaveBeenCalledWith('5012345678900', 'qr');
+      expect(result).toMatchObject({
+        value: '5012345678900',
+        symbology: 'qr',
+        png: 'data:image/png;base64,AAA',
+      });
+    });
+
+    it('throws NotFound when the variant belongs to another product', async () => {
+      const { service } = makeService({
+        findUnique: jest
+          .fn()
+          .mockResolvedValue({ ...VARIANT, productId: 'other' }),
+      });
+      await expect(
+        service.barcode('p1', 'v1', 'code128'),
+      ).rejects.toBeInstanceOf(NotFoundException);
     });
   });
 

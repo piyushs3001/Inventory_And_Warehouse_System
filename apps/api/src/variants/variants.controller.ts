@@ -30,6 +30,8 @@ import { VariantsService } from './variants.service';
 import { CreateVariantDto } from './dto/create-variant.dto';
 import { UpdateVariantDto } from './dto/update-variant.dto';
 import { VariantDto } from './dto/variant.dto';
+import { BarcodeDto } from '../barcodes/dto/barcode.dto';
+import { BarcodeQueryDto } from '../barcodes/dto/barcode-query.dto';
 import {
   ApiAuthErrors,
   ApiUnauthorizedTokenError,
@@ -81,6 +83,29 @@ export class VariantsController {
     @Param('id') id: string,
   ): Promise<VariantDto> {
     return this.variants.findOne(productId, id);
+  }
+
+  @Get(':id/barcode')
+  @ApiOperation({
+    summary: 'Generate a barcode for a variant',
+    description:
+      'Renders the variant barcode (or SKU) as a PNG (code128 or qr) data URI.',
+  })
+  @ApiParam({ name: 'productId', description: 'Product id (UUID).' })
+  @ApiParam({ name: 'id', description: 'Variant id (UUID).' })
+  @ApiOkResponse({ type: BarcodeDto })
+  @ApiUnauthorizedTokenError()
+  @ApiValidationError()
+  @ApiNotFoundResponse({
+    type: ErrorResponseDto,
+    description: 'Variant not found.',
+  })
+  barcode(
+    @Param('productId') productId: string,
+    @Param('id') id: string,
+    @Query() query: BarcodeQueryDto,
+  ): Promise<BarcodeDto> {
+    return this.variants.barcode(productId, id, query.symbology);
   }
 
   @Post()

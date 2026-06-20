@@ -30,6 +30,8 @@ import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductDto } from './dto/product.dto';
+import { BarcodeDto } from '../barcodes/dto/barcode.dto';
+import { BarcodeQueryDto } from '../barcodes/dto/barcode-query.dto';
 import {
   ApiAuthErrors,
   ApiUnauthorizedTokenError,
@@ -77,6 +79,26 @@ export class ProductsController {
   })
   findOne(@Param('id') id: string): Promise<ProductDto> {
     return this.products.findOne(id);
+  }
+
+  @Get(':id/barcode')
+  @ApiOperation({
+    summary: 'Generate a barcode for a product',
+    description: 'Renders the product SKU as a PNG (code128 or qr) data URI.',
+  })
+  @ApiParam({ name: 'id', description: 'Product id (UUID).' })
+  @ApiOkResponse({ type: BarcodeDto })
+  @ApiUnauthorizedTokenError()
+  @ApiValidationError()
+  @ApiNotFoundResponse({
+    type: ErrorResponseDto,
+    description: 'Product not found.',
+  })
+  barcode(
+    @Param('id') id: string,
+    @Query() query: BarcodeQueryDto,
+  ): Promise<BarcodeDto> {
+    return this.products.barcode(id, query.symbology);
   }
 
   @Post()

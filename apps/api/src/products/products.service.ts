@@ -10,6 +10,8 @@ import { ActivityService } from '../activity/activity.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductDto } from './dto/product.dto';
+import { BarcodeService, type Symbology } from '../barcodes/barcode.service';
+import { BarcodeDto } from '../barcodes/dto/barcode.dto';
 
 const productSelect = {
   id: true,
@@ -50,7 +52,24 @@ export class ProductsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly activity: ActivityService,
+    private readonly barcodes: BarcodeService,
   ) {}
+
+  async barcode(
+    id: string,
+    symbology: Symbology = 'code128',
+  ): Promise<BarcodeDto> {
+    const product = await this.prisma.product.findUnique({
+      where: { id },
+      select: { sku: true },
+    });
+    if (!product) throw new NotFoundException('Product not found');
+    return {
+      value: product.sku,
+      symbology,
+      png: await this.barcodes.render(product.sku, symbology),
+    };
+  }
 
   // Decimal prices serialize as fixed 2-decimal strings: JSON never loses
   // precision to a float, and the money format stays consistent (e.g. "1.20",

@@ -25,10 +25,12 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  BarcodeDto,
   CreateVariantDto,
   ErrorResponseDto,
   UpdateVariantDto,
   VariantDto,
+  VariantsControllerBarcodeParams,
   VariantsControllerListParams
 } from '../model';
 
@@ -436,3 +438,111 @@ export const useVariantsControllerArchive = <TError = ErrorType<ErrorResponseDto
       > => {
       return useMutation(getVariantsControllerArchiveMutationOptions(options), queryClient);
     }
+    /**
+ * Renders the variant barcode (or SKU) as a PNG (code128 or qr) data URI.
+ * @summary Generate a barcode for a variant
+ */
+export const variantsControllerBarcode = (
+    productId: string,
+    id: string,
+    params?: VariantsControllerBarcodeParams,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<BarcodeDto>(
+      {url: `/products/${productId}/variants/${id}/barcode`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+
+
+
+
+export const getVariantsControllerBarcodeQueryKey = (productId: string,
+    id: string,
+    params?: VariantsControllerBarcodeParams,) => {
+    return [
+    `/products/${productId}/variants/${id}/barcode`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getVariantsControllerBarcodeQueryOptions = <TData = Awaited<ReturnType<typeof variantsControllerBarcode>>, TError = ErrorType<ErrorResponseDto>>(productId: string,
+    id: string,
+    params?: VariantsControllerBarcodeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof variantsControllerBarcode>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getVariantsControllerBarcodeQueryKey(productId,id,params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof variantsControllerBarcode>>> = ({ signal }) => variantsControllerBarcode(productId,id,params, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: productId !== null && productId !== undefined && id !== null && id !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof variantsControllerBarcode>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type VariantsControllerBarcodeQueryResult = NonNullable<Awaited<ReturnType<typeof variantsControllerBarcode>>>
+export type VariantsControllerBarcodeQueryError = ErrorType<ErrorResponseDto>
+
+
+export function useVariantsControllerBarcode<TData = Awaited<ReturnType<typeof variantsControllerBarcode>>, TError = ErrorType<ErrorResponseDto>>(
+ productId: string,
+    id: string,
+    params: undefined |  VariantsControllerBarcodeParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof variantsControllerBarcode>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof variantsControllerBarcode>>,
+          TError,
+          Awaited<ReturnType<typeof variantsControllerBarcode>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useVariantsControllerBarcode<TData = Awaited<ReturnType<typeof variantsControllerBarcode>>, TError = ErrorType<ErrorResponseDto>>(
+ productId: string,
+    id: string,
+    params?: VariantsControllerBarcodeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof variantsControllerBarcode>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof variantsControllerBarcode>>,
+          TError,
+          Awaited<ReturnType<typeof variantsControllerBarcode>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useVariantsControllerBarcode<TData = Awaited<ReturnType<typeof variantsControllerBarcode>>, TError = ErrorType<ErrorResponseDto>>(
+ productId: string,
+    id: string,
+    params?: VariantsControllerBarcodeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof variantsControllerBarcode>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Generate a barcode for a variant
+ */
+
+export function useVariantsControllerBarcode<TData = Awaited<ReturnType<typeof variantsControllerBarcode>>, TError = ErrorType<ErrorResponseDto>>(
+ productId: string,
+    id: string,
+    params?: VariantsControllerBarcodeParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof variantsControllerBarcode>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getVariantsControllerBarcodeQueryOptions(productId,id,params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+

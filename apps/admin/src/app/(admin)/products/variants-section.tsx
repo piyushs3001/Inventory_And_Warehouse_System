@@ -13,6 +13,7 @@ import type { VariantDto } from '@iws/api-client';
 import { Button } from '@iws/ui';
 import { Input } from '@iws/ui';
 import { Label } from '@iws/ui';
+import { VariantBarcode } from './barcode-controls';
 
 function errorMessage(err: unknown): string {
   const message = (err as { response?: { data?: { message?: string } } })
@@ -52,6 +53,7 @@ export function VariantsSection({ productId }: { productId: string }) {
 
   const [editing, setEditing] = useState<VariantDto | null>(null);
   const [adding, setAdding] = useState(false);
+  const [barcodeFor, setBarcodeFor] = useState<string | null>(null);
 
   const invalidate = async (): Promise<void> => {
     await queryClient.invalidateQueries({
@@ -95,42 +97,58 @@ export function VariantsSection({ productId }: { productId: string }) {
           {list.map((v) => (
             <li
               key={v.id}
-              className="flex items-center justify-between gap-3 rounded-md bg-muted/40 px-3 py-2"
+              className="flex flex-col gap-2 rounded-md bg-muted/40 px-3 py-2"
             >
-              <div className="min-w-0">
-                <div className="font-mono text-xs">{v.sku}</div>
-                <div className="flex flex-wrap gap-1 pt-1">
-                  {Object.entries(v.attributes).map(([k, val]) => (
-                    <span
-                      key={k}
-                      className="rounded bg-foreground/10 px-1.5 py-0.5 text-[11px]"
-                    >
-                      {k}: {val}
-                    </span>
-                  ))}
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="font-mono text-xs">{v.sku}</div>
+                  <div className="flex flex-wrap gap-1 pt-1">
+                    {Object.entries(v.attributes).map(([k, val]) => (
+                      <span
+                        key={k}
+                        className="rounded bg-foreground/10 px-1.5 py-0.5 text-[11px]"
+                      >
+                        {k}: {val}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex shrink-0 gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    aria-expanded={barcodeFor === v.id}
+                    onClick={() =>
+                      setBarcodeFor((cur) => (cur === v.id ? null : v.id))
+                    }
+                  >
+                    Barcode
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setAdding(false);
+                      setEditing(v);
+                    }}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => onArchive(v.id)}
+                  >
+                    Archive
+                  </Button>
                 </div>
               </div>
-              <div className="flex shrink-0 gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setAdding(false);
-                    setEditing(v);
-                  }}
-                >
-                  Edit
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onArchive(v.id)}
-                >
-                  Archive
-                </Button>
-              </div>
+              {barcodeFor === v.id && (
+                <VariantBarcode productId={productId} variantId={v.id} />
+              )}
             </li>
           ))}
         </ul>

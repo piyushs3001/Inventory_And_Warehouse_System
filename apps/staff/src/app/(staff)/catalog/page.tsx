@@ -15,6 +15,8 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@iws/ui';
 import { EntityAvatar } from '@iws/ui';
+import { Button } from '@iws/ui';
+import { VariantBarcode } from './variant-barcode';
 
 // Staff catalog is READ-ONLY — staff browse products + their variants, they
 // don't manage them. (Server-side, catalog writes are role-gated to MGR+Admin.)
@@ -93,6 +95,7 @@ function CatalogRow({
   categoryName: string;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [barcodeFor, setBarcodeFor] = useState<string | null>(null);
   const { data: variants, isLoading } = useVariantsControllerList(
     product.id,
     undefined,
@@ -138,16 +141,35 @@ function CatalogRow({
             ) : (
               <ul className="flex flex-col gap-1.5 py-1">
                 {list.map((v) => (
-                  <li key={v.id} className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono text-xs">{v.sku}</span>
-                    {Object.entries(v.attributes).map(([k, val]) => (
-                      <span
-                        key={k}
-                        className="rounded bg-foreground/10 px-1.5 py-0.5 text-[11px]"
+                  <li key={v.id} className="flex flex-col gap-1.5">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-mono text-xs">{v.sku}</span>
+                      {Object.entries(v.attributes).map(([k, val]) => (
+                        <span
+                          key={k}
+                          className="rounded bg-foreground/10 px-1.5 py-0.5 text-[11px]"
+                        >
+                          {k}: {val}
+                        </span>
+                      ))}
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        aria-expanded={barcodeFor === v.id}
+                        onClick={() =>
+                          setBarcodeFor((cur) => (cur === v.id ? null : v.id))
+                        }
                       >
-                        {k}: {val}
-                      </span>
-                    ))}
+                        {barcodeFor === v.id ? 'Hide barcode' : 'Show barcode'}
+                      </Button>
+                    </div>
+                    {barcodeFor === v.id && (
+                      <VariantBarcode
+                        productId={product.id}
+                        variantId={v.id}
+                      />
+                    )}
                   </li>
                 ))}
               </ul>

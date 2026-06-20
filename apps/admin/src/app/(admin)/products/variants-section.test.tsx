@@ -78,4 +78,26 @@ describe('VariantsSection (admin)', () => {
     );
     expect(screen.getByText('color: Red')).toBeInTheDocument();
   });
+
+  it('toggles a variant barcode and renders the generated image', async () => {
+    mock.onGet('/products/p1/variants').reply(200, [
+      {
+        id: 'v1', productId: 'p1', sku: 'COLA-1-RED', barcode: null,
+        attributes: {}, status: 'ACTIVE', createdAt: '',
+      },
+    ]);
+    mock.onGet(/\/products\/p1\/variants\/v1\/barcode/).reply(200, {
+      value: 'COLA-1-RED',
+      symbology: 'code128',
+      png: 'data:image/png;base64,AAA',
+    });
+    renderSection();
+    await waitFor(() =>
+      expect(screen.getByText('COLA-1-RED')).toBeInTheDocument(),
+    );
+
+    await userEvent.click(screen.getByRole('button', { name: 'Barcode' }));
+    const img = await screen.findByRole('img', { name: /barcode for COLA-1-RED/i });
+    expect(img).toHaveAttribute('src', 'data:image/png;base64,AAA');
+  });
 });

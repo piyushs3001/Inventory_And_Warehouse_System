@@ -1943,6 +1943,88 @@
         ]
       }
     },
+    "/products/{id}/barcode": {
+      "get": {
+        "description": "Renders the product SKU as a PNG (code128 or qr) data URI.",
+        "operationId": "ProductsController_barcode",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Product id (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "symbology",
+            "required": false,
+            "in": "query",
+            "description": "Barcode symbology; defaults to code128.",
+            "schema": {
+              "example": "code128",
+              "type": "string",
+              "enum": [
+                "code128",
+                "qr"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BarcodeDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request body or parameters failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Generate a barcode for a product",
+        "tags": [
+          "products"
+        ]
+      }
+    },
     "/products/{productId}/variants": {
       "get": {
         "description": "Available to any authenticated user.",
@@ -2347,6 +2429,97 @@
           }
         ],
         "summary": "Archive a variant",
+        "tags": [
+          "variants"
+        ]
+      }
+    },
+    "/products/{productId}/variants/{id}/barcode": {
+      "get": {
+        "description": "Renders the variant barcode (or SKU) as a PNG (code128 or qr) data URI.",
+        "operationId": "VariantsController_barcode",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": true,
+            "in": "path",
+            "description": "Product id (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Variant id (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "symbology",
+            "required": false,
+            "in": "query",
+            "description": "Barcode symbology; defaults to code128.",
+            "schema": {
+              "example": "code128",
+              "type": "string",
+              "enum": [
+                "code128",
+                "qr"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BarcodeDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request body or parameters failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Variant not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Generate a barcode for a variant",
         "tags": [
           "variants"
         ]
@@ -5755,6 +5928,35 @@
           "reorderLevel",
           "status",
           "createdAt"
+        ]
+      },
+      "BarcodeDto": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "description": "The encoded value (a product or variant SKU/barcode).",
+            "example": "TSHIRT-L"
+          },
+          "symbology": {
+            "enum": [
+              "code128",
+              "qr"
+            ],
+            "type": "string",
+            "description": "Barcode symbology used.",
+            "example": "code128"
+          },
+          "png": {
+            "type": "string",
+            "description": "Rendered barcode as a PNG data URI.",
+            "example": "data:image/png;base64,iVBORw0KGgo…"
+          }
+        },
+        "required": [
+          "value",
+          "symbology",
+          "png"
         ]
       },
       "CreateProductDto": {
