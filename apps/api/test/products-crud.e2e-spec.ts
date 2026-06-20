@@ -19,7 +19,9 @@ describe('Products CRUD + Authz (e2e)', () => {
     }).compile();
     app = moduleRef.createNestApplication();
     app.setGlobalPrefix('api/v1');
-    app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+    app.useGlobalPipes(
+      new ValidationPipe({ whitelist: true, transform: true }),
+    );
     await app.init();
     prisma = moduleRef.get(PrismaService);
     users = moduleRef.get(UsersService);
@@ -67,15 +69,32 @@ describe('Products CRUD + Authz (e2e)', () => {
     await clearCatalog();
     await prisma.user.deleteMany();
 
-    await users.create({ name: 'Admin', email: 'admin@prod.local', password: 'password123', role: Role.SUPER_ADMIN });
-    await users.create({ name: 'Manager', email: 'manager@prod.local', password: 'password123', role: Role.WAREHOUSE_MANAGER });
-    await users.create({ name: 'Staff', email: 'staff@prod.local', password: 'password123', role: Role.STAFF });
+    await users.create({
+      name: 'Admin',
+      email: 'admin@prod.local',
+      password: 'password123',
+      role: Role.SUPER_ADMIN,
+    });
+    await users.create({
+      name: 'Manager',
+      email: 'manager@prod.local',
+      password: 'password123',
+      role: Role.WAREHOUSE_MANAGER,
+    });
+    await users.create({
+      name: 'Staff',
+      email: 'staff@prod.local',
+      password: 'password123',
+      role: Role.STAFF,
+    });
 
     adminToken = await login('admin@prod.local');
     managerToken = await login('manager@prod.local');
     staffToken = await login('staff@prod.local');
 
-    const category = await prisma.category.create({ data: { name: 'Beverages' } });
+    const category = await prisma.category.create({
+      data: { name: 'Beverages' },
+    });
     categoryId = category.id;
   });
 
@@ -104,7 +123,9 @@ describe('Products CRUD + Authz (e2e)', () => {
       .get('/api/v1/products')
       .set('Authorization', `Bearer ${staffToken}`)
       .expect(200);
-    expect((res.body as { sku: string }[]).map((p) => p.sku)).toContain('COLA-1');
+    expect((res.body as { sku: string }[]).map((p) => p.sku)).toContain(
+      'COLA-1',
+    );
   });
 
   it('duplicate SKU → 409', async () => {
@@ -116,12 +137,19 @@ describe('Products CRUD + Authz (e2e)', () => {
     await request(http)
       .post('/api/v1/products')
       .set('Authorization', `Bearer ${adminToken}`)
-      .send({ name: 'X', sku: 'X-1', categoryId: '11111111-1111-4111-8111-111111111111' })
+      .send({
+        name: 'X',
+        sku: 'X-1',
+        categoryId: '11111111-1111-4111-8111-111111111111',
+      })
       .expect(400);
   });
 
   it('archive excludes from default list but includeArchived shows it', async () => {
-    const product = await createProduct(adminToken, { name: 'Temp', sku: 'TEMP-1' });
+    const product = await createProduct(adminToken, {
+      name: 'Temp',
+      sku: 'TEMP-1',
+    });
     const del = await request(http)
       .delete(`/api/v1/products/${product.id}`)
       .set('Authorization', `Bearer ${adminToken}`)
@@ -132,17 +160,25 @@ describe('Products CRUD + Authz (e2e)', () => {
       .get('/api/v1/products')
       .set('Authorization', `Bearer ${adminToken}`)
       .expect(200);
-    expect((def.body as { id: string }[]).map((p) => p.id)).not.toContain(product.id);
+    expect((def.body as { id: string }[]).map((p) => p.id)).not.toContain(
+      product.id,
+    );
 
     const all = await request(http)
       .get('/api/v1/products?includeArchived=true')
       .set('Authorization', `Bearer ${adminToken}`)
       .expect(200);
-    expect((all.body as { id: string }[]).map((p) => p.id)).toContain(product.id);
+    expect((all.body as { id: string }[]).map((p) => p.id)).toContain(
+      product.id,
+    );
   });
 
   it('filters by categoryId and search', async () => {
-    await createProduct(adminToken, { name: 'Cola', sku: 'COLA-1', categoryId });
+    await createProduct(adminToken, {
+      name: 'Cola',
+      sku: 'COLA-1',
+      categoryId,
+    });
     await createProduct(adminToken, { name: 'Stapler', sku: 'STAP-1' });
 
     const byCat = await request(http)
@@ -163,7 +199,11 @@ describe('Products CRUD + Authz (e2e)', () => {
   });
 
   it('deleting a category that has a product → 409 (cross-slice dependency)', async () => {
-    await createProduct(adminToken, { name: 'Cola', sku: 'COLA-1', categoryId });
+    await createProduct(adminToken, {
+      name: 'Cola',
+      sku: 'COLA-1',
+      categoryId,
+    });
     await request(http)
       .delete(`/api/v1/categories/${categoryId}`)
       .set('Authorization', `Bearer ${adminToken}`)
