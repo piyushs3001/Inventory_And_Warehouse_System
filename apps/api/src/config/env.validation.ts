@@ -11,6 +11,11 @@ export interface EnvVars {
   S3_ACCESS_KEY: string;
   S3_SECRET_KEY: string;
   S3_BUCKET: string;
+  // Optional LLM provider keys — when absent, the AI Chat Assistant reports
+  // "not configured" rather than fabricating answers. Statistical AI features
+  // (reorder, forecast, PO generator, report summary) work without them.
+  OPENAI_API_KEY?: string;
+  GEMINI_API_KEY?: string;
 }
 
 export const envSchema = Joi.object<EnvVars, true>({
@@ -28,6 +33,8 @@ export const envSchema = Joi.object<EnvVars, true>({
   S3_ACCESS_KEY: Joi.string().required(),
   S3_SECRET_KEY: Joi.string().required(),
   S3_BUCKET: Joi.string().required(),
+  OPENAI_API_KEY: Joi.string().optional(),
+  GEMINI_API_KEY: Joi.string().optional(),
 });
 
 export function validateEnv(config: Record<string, unknown>): EnvVars {

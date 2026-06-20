@@ -1,6 +1,7 @@
 import {
   LayoutDashboard, Package, Tag, FolderTree, Warehouse, ShoppingCart, ArrowRightLeft,
-  ClipboardList, BarChart3, Sparkles, Users, type LucideIcon,
+  ClipboardList, BarChart3, Sparkles, Users, ScrollText, Building2, Bell, History,
+  type LucideIcon,
 } from 'lucide-react';
 import { Role } from '@iws/api-client';
 
@@ -24,7 +25,8 @@ export const NAV: Partial<Record<Surface, NavGroup[]>> = {
     {
       section: 'Operations',
       items: [
-        { href: '/inventory', label: 'Inventory', icon: Package, roles: MGR_UP, built: false, phase: 3 },
+        { href: '/inventory', label: 'Inventory', icon: Package, roles: MGR_UP, built: true },
+        { href: '/movements', label: 'Movements', icon: ScrollText, roles: MGR_UP, built: true },
         { href: '/products', label: 'Products', icon: Tag, roles: MGR_UP, built: true },
         { href: '/categories', label: 'Categories', icon: FolderTree, roles: MGR_UP, built: true },
         { href: '/warehouses', label: 'Warehouses', icon: Warehouse, roles: ADMIN_ONLY, built: true },
@@ -32,22 +34,32 @@ export const NAV: Partial<Record<Surface, NavGroup[]>> = {
     },
     {
       section: 'Purchasing',
-      items: [{ href: '/purchase-orders', label: 'Purchase Orders', icon: ShoppingCart, roles: MGR_UP, built: false, phase: 4, badge: 14 }],
+      items: [
+        { href: '/purchase-orders', label: 'Purchase Orders', icon: ShoppingCart, roles: MGR_UP, built: true },
+        { href: '/suppliers', label: 'Suppliers', icon: Building2, roles: MGR_UP, built: true },
+      ],
     },
     {
       section: 'Logistics',
       items: [
-        { href: '/transfers', label: 'Stock Transfers', icon: ArrowRightLeft, roles: MGR_UP, built: false, phase: 5 },
-        { href: '/counting', label: 'Stock Counting', icon: ClipboardList, roles: MGR_UP, built: false, phase: 5 },
+        { href: '/transfers', label: 'Stock Transfers', icon: ArrowRightLeft, roles: MGR_UP, built: true },
+        { href: '/counting', label: 'Stock Counting', icon: ClipboardList, roles: MGR_UP, built: true },
       ],
     },
     {
       section: 'Analytics',
-      items: [{ href: '/reports', label: 'Reports', icon: BarChart3, roles: MGR_UP, built: false, phase: 6 }],
+      items: [
+        { href: '/reports', label: 'Reports', icon: BarChart3, roles: MGR_UP, built: true },
+        { href: '/notifications', label: 'Notifications', icon: Bell, roles: MGR_UP, built: true },
+      ],
     },
     {
       section: 'AI Center',
-      items: [{ href: '/ai', label: 'AI Assistant', icon: Sparkles, roles: ADMIN_ONLY, built: false, phase: 7 }],
+      items: [{ href: '/ai', label: 'AI Assistant', icon: Sparkles, roles: MGR_UP, built: true }],
+    },
+    {
+      section: 'Audit',
+      items: [{ href: '/activity', label: 'Activity Log', icon: History, roles: ADMIN_ONLY, built: true }],
     },
     {
       section: 'Manage',

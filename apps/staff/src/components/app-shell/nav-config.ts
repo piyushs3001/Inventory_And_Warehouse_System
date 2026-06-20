@@ -1,5 +1,5 @@
 import {
-  Package, ShoppingCart, ArrowRightLeft, ClipboardList, Home, Truck, Tag, type LucideIcon,
+  Package, ShoppingCart, ArrowRightLeft, ClipboardList, Home, Truck, Tag, ScrollText, Bell, Sparkles, type LucideIcon,
 } from 'lucide-react';
 import { Role } from '@iws/api-client';
 
@@ -22,17 +22,20 @@ export const NAV: Partial<Record<Surface, NavGroup[]>> = {
     {
       section: 'My Tasks',
       items: [
-        { href: '/receive', label: 'Receive Stock', icon: Truck, roles: ALL_ROLES, built: false, phase: 4, badge: 2 },
+        { href: '/receive', label: 'Receive Stock', icon: Truck, roles: ALL_ROLES, built: true },
         { href: '/dispatch', label: 'Dispatch Stock', icon: ShoppingCart, roles: ALL_ROLES, built: false, phase: 4, badge: 5 },
-        { href: '/transfers', label: 'Stock Transfers', icon: ArrowRightLeft, roles: ALL_ROLES, built: false, phase: 5 },
-        { href: '/counting', label: 'Stock Count', icon: ClipboardList, roles: ALL_ROLES, built: false, phase: 5 },
+        { href: '/transfers', label: 'Stock Transfers', icon: ArrowRightLeft, roles: ALL_ROLES, built: true },
+        { href: '/counting', label: 'Stock Count', icon: ClipboardList, roles: ALL_ROLES, built: true },
       ],
     },
     {
       section: 'Lookup',
       items: [
         { href: '/catalog', label: 'Catalog', icon: Tag, roles: ALL_ROLES, built: true },
-        { href: '/inventory', label: 'View Inventory', icon: Package, roles: ALL_ROLES, built: false, phase: 3 },
+        { href: '/inventory', label: 'View Inventory', icon: Package, roles: ALL_ROLES, built: true },
+        { href: '/movements', label: 'Movement History', icon: ScrollText, roles: ALL_ROLES, built: true },
+        { href: '/notifications', label: 'Notifications', icon: Bell, roles: ALL_ROLES, built: true },
+        { href: '/ai', label: 'Assistant', icon: Sparkles, roles: ALL_ROLES, built: true },
       ],
     },
   ],

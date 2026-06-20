@@ -26,12 +26,33 @@ describe('nav-config (admin)', () => {
       expect.arrayContaining(['Operations', 'Purchasing', 'Logistics', 'Analytics', 'AI Center']),
     );
   });
-  it('marks unbuilt items with a phase and built=false (root hrefs)', () => {
-    const inventory = adminNav.flatMap((g) => g.items).find((i) => i.href === '/inventory');
-    expect(inventory?.built).toBe(false);
-    if (inventory && !inventory.built) {
-      expect(inventory.phase).toBeGreaterThan(0);
-    }
+  it('every admin nav item is built (all phases complete)', () => {
+    expect(adminNav.flatMap((g) => g.items).every((i) => i.built)).toBe(true);
+  });
+  it('AI Assistant is built (phase 7, manager + admin)', () => {
+    const built = builtHrefs('admin', Role.WAREHOUSE_MANAGER);
+    expect(built).toContain('/ai');
+  });
+  it('Reports and Activity Log are built (phase 6)', () => {
+    const built = builtHrefs('admin', Role.SUPER_ADMIN);
+    expect(built).toContain('/reports');
+    expect(built).toContain('/activity');
+    expect(built).toContain('/notifications');
+  });
+  it('Stock Transfers and Counting are built (phase 5)', () => {
+    const built = builtHrefs('admin', Role.SUPER_ADMIN);
+    expect(built).toContain('/transfers');
+    expect(built).toContain('/counting');
+  });
+  it('Inventory and Movements are built (phase 3)', () => {
+    const built = builtHrefs('admin', Role.SUPER_ADMIN);
+    expect(built).toContain('/inventory');
+    expect(built).toContain('/movements');
+  });
+  it('Purchase Orders and Suppliers are built (phase 4)', () => {
+    const built = builtHrefs('admin', Role.SUPER_ADMIN);
+    expect(built).toContain('/purchase-orders');
+    expect(built).toContain('/suppliers');
   });
   it('Dashboard (/) and Users (/users) are built', () => {
     const built = builtHrefs('admin', Role.SUPER_ADMIN);

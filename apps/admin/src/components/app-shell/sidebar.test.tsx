@@ -17,9 +17,9 @@ describe('Sidebar (admin)', () => {
     expect(screen.getByRole('link', { name: /warehouses/i })).toBeInTheDocument();
   });
 
-  it('renders a count badge on Purchase Orders', () => {
+  it('renders the built Purchase Orders link', () => {
     render(<Sidebar surface="admin" role={Role.SUPER_ADMIN} />);
     const poLink = screen.getByRole('link', { name: /purchase orders/i });
-    expect(poLink).toHaveTextContent('14');
+    expect(poLink).toHaveAttribute('href', '/purchase-orders');
   });
 });

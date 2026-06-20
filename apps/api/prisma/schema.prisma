@@ -33,6 +33,49 @@ enum ProductStatus {
   ARCHIVED
 }
 
+// Closed set (CLAUDE.md). Never extend — a reservation is recorded as
+// ADJUSTMENT (a bucket shift available -> reserved with a reason), not a new type.
+enum MovementType {
+  RECEIVE
+  TRANSFER
+  ADJUSTMENT
+  SALE
+  RETURN
+}
+
+enum SupplierStatus {
+  ACTIVE
+  INACTIVE
+}
+
+// PO lifecycle (PRD §5.6). Transitions are server-authoritative:
+// DRAFT -> SENT -> APPROVED -> PARTIALLY_RECEIVED -> COMPLETED; DRAFT/SENT -> CANCELLED.
+enum PurchaseOrderStatus {
+  DRAFT
+  SENT
+  APPROVED
+  PARTIALLY_RECEIVED
+  COMPLETED
+  CANCELLED
+}
+
+// Transfer lifecycle (PRD §5.8): REQUESTED (source available->inTransit) ->
+// APPROVED -> COMPLETED (source inTransit cleared, destination available up).
+// REQUESTED -> CANCELLED reverses the in-transit hold back to source available.
+enum StockTransferStatus {
+  REQUESTED
+  APPROVED
+  COMPLETED
+  CANCELLED
+}
+
+// Stock count (PRD §5.9): OPEN (enter counts) -> RECONCILED (Adjustments written).
+enum StockCountStatus {
+  OPEN
+  RECONCILED
+  CANCELLED
+}
+
 model User {
   id                 String      @id @default(uuid())
   name               String
@@ -42,6 +85,17 @@ model User {
   status             UserStatus  @default(ACTIVE)
   hashedRefreshToken String?     @map("hashed_refresh_token")
   warehouses         Warehouse[] @relation("UserWarehouses")
+  stockMovements     StockMovement[]
+  createdPurchaseOrders  PurchaseOrder[] @relation("PoCreatedBy")
+  approvedPurchaseOrders PurchaseOrder[] @relation("PoApprovedBy")
+  goodsReceipts          GoodsReceipt[]
+  requestedTransfers     StockTransfer[] @relation("TransferRequestedBy")
+  approvedTransfers      StockTransfer[] @relation("TransferApprovedBy")
+  receivedTransfers      StockTransfer[] @relation("TransferReceivedBy")
+  createdCounts          StockCount[]    @relation("CountCreatedBy")
+  reconciledCounts       StockCount[]    @relation("CountReconciledBy")
+  activityLogs           ActivityLog[]
+  notifications          Notification[]
   createdAt          DateTime    @default(now()) @map("created_at")
   updatedAt          DateTime    @updatedAt @map("updated_at")
 
@@ -56,6 +110,11 @@ model Warehouse {
   capacity      Int?
   status        WarehouseStatus @default(ACTIVE)
   users         User[]          @relation("UserWarehouses")
+  inventoryItems InventoryItem[]
+  purchaseOrders PurchaseOrder[]
+  transfersOut  StockTransfer[] @relation("TransferSource")
+  transfersIn   StockTransfer[] @relation("TransferDestination")
+  stockCounts   StockCount[]
   createdAt     DateTime        @default(now()) @map("created_at")
   updatedAt     DateTime        @updatedAt @map("updated_at")
 
@@ -94,9 +153,289 @@ model Product {
   sellingPrice Decimal       @default(0) @db.Decimal(12, 2) @map("selling_price")
   reorderLevel Int           @default(0) @map("reorder_level")
   status       ProductStatus @default(ACTIVE)
+  inventoryItems InventoryItem[]
+  purchaseOrderLines PurchaseOrderLine[]
+  goodsReceiptLines  GoodsReceiptLine[]
+  stockTransferLines StockTransferLine[]
+  stockCountLines    StockCountLine[]
   createdAt    DateTime      @default(now()) @map("created_at")
   updatedAt    DateTime      @updatedAt      @map("updated_at")
 
   @@index([categoryId])
   @@map("products")
+}
+
+// Real stock for one Product at one Warehouse. Four buckets that together are
+// the full picture: available + reserved + damaged + inTransit. One row per
+// (product x warehouse) — same SKU has independent quantities per location.
+// (Variant support is deferred; the unique key gains variantId in a later phase.)
+model InventoryItem {
+  id          String    @id @default(uuid())
+  productId   String    @map("product_id")
+  product     Product   @relation(fields: [productId], references: [id])
+  warehouseId String    @map("warehouse_id")
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
+  available   Int       @default(0)
+  reserved    Int       @default(0)
+  damaged     Int       @default(0)
+  inTransit   Int       @default(0) @map("in_transit")
+  movements   StockMovement[]
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@unique([productId, warehouseId])
+  @@index([warehouseId])
+  @@index([productId])
+  @@map("inventory_items")
+}
+
+// Append-only ledger of every quantity change. NEVER updated or deleted — to
+// correct a mistake, write a compensating movement. Each row records the signed
+// per-bucket deltas plus the total on-hand before/after, so any bucket value
+// reconciles as the sum of its deltas across the item's history.
+model StockMovement {
+  id              String        @id @default(uuid())
+  inventoryItemId String        @map("inventory_item_id")
+  inventoryItem   InventoryItem @relation(fields: [inventoryItemId], references: [id])
+  // Denormalized for fast scope-filtered ledger queries and indexing.
+  productId       String        @map("product_id")
+  warehouseId     String        @map("warehouse_id")
+  type            MovementType
+  availableDelta  Int           @default(0) @map("available_delta")
+  reservedDelta   Int           @default(0) @map("reserved_delta")
+  damagedDelta    Int           @default(0) @map("damaged_delta")
+  inTransitDelta  Int           @default(0) @map("in_transit_delta")
+  beforeQty       Int           @map("before_qty")
+  afterQty        Int           @map("after_qty")
+  reason          String?
+  refType         String?       @map("ref_type")
+  refId           String?       @map("ref_id")
+  userId          String        @map("user_id")
+  user            User          @relation(fields: [userId], references: [id])
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  @@index([productId, warehouseId, createdAt])
+  @@index([warehouseId, createdAt])
+  @@index([inventoryItemId])
+  @@index([type])
+  @@map("stock_movements")
+}
+
+// Global supplier reference data (not warehouse-scoped). Soft-delete via
+// status INACTIVE; never hard-delete a supplier with purchase history.
+model Supplier {
+  id             String          @id @default(uuid())
+  name           String
+  contactName    String?         @map("contact_name")
+  email          String?
+  phone          String?
+  address        String?
+  status         SupplierStatus  @default(ACTIVE)
+  purchaseOrders PurchaseOrder[]
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+
+  @@map("suppliers")
+}
+
+// A purchase order against a supplier, delivered to one (scoped) warehouse.
+// Status transitions are server-authoritative (see PurchaseOrderStatus).
+model PurchaseOrder {
+  id           String              @id @default(uuid())
+  // DB-assigned sequence; the human code (PO-#####) is derived from it. Avoids
+  // the count()+1 race that could mint duplicate codes under concurrency.
+  number       Int                 @unique @default(autoincrement())
+  supplierId   String              @map("supplier_id")
+  supplier     Supplier            @relation(fields: [supplierId], references: [id])
+  warehouseId  String              @map("warehouse_id")
+  warehouse    Warehouse           @relation(fields: [warehouseId], references: [id])
+  status       PurchaseOrderStatus @default(DRAFT)
+  expectedDate DateTime?           @map("expected_date")
+  notes        String?
+  lines        PurchaseOrderLine[]
+  receipts     GoodsReceipt[]
+  createdById  String              @map("created_by_id")
+  createdBy    User                @relation("PoCreatedBy", fields: [createdById], references: [id])
+  approvedById String?             @map("approved_by_id")
+  approvedBy   User?               @relation("PoApprovedBy", fields: [approvedById], references: [id])
+  sentAt       DateTime?           @map("sent_at")
+  approvedAt   DateTime?           @map("approved_at")
+  completedAt  DateTime?           @map("completed_at")
+  createdAt    DateTime            @default(now()) @map("created_at")
+  updatedAt    DateTime            @updatedAt @map("updated_at")
+
+  @@index([warehouseId, status])
+  @@index([supplierId])
+  @@map("purchase_orders")
+}
+
+// One ordered product line. receivedQty = cumulative SOUND units received (counts
+// toward fulfilment); damagedQty = cumulative damaged units (flags performance,
+// never fulfils). Money is Decimal, never Float.
+model PurchaseOrderLine {
+  id              String        @id @default(uuid())
+  purchaseOrderId String        @map("purchase_order_id")
+  purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  productId       String        @map("product_id")
+  product         Product       @relation(fields: [productId], references: [id])
+  quantity        Int
+  unitCost        Decimal       @default(0) @db.Decimal(12, 2) @map("unit_cost")
+  receivedQty     Int           @default(0) @map("received_qty")
+  damagedQty      Int           @default(0) @map("damaged_qty")
+
+  @@unique([purchaseOrderId, productId])
+  @@index([purchaseOrderId])
+  @@map("purchase_order_lines")
+}
+
+// One delivery against a PO. Atomic with the inventory + movement writes.
+// (Delivery-note/damage-photo object-storage upload is deferred; `deliveryNote`
+// holds a reference/note for now.)
+model GoodsReceipt {
+  id              String             @id @default(uuid())
+  purchaseOrderId String             @map("purchase_order_id")
+  purchaseOrder   PurchaseOrder      @relation(fields: [purchaseOrderId], references: [id])
+  warehouseId     String             @map("warehouse_id")
+  receivedById    String             @map("received_by_id")
+  receivedBy      User               @relation(fields: [receivedById], references: [id])
+  deliveryNote    String?            @map("delivery_note")
+  notes           String?
+  lines           GoodsReceiptLine[]
+  createdAt       DateTime           @default(now()) @map("created_at")
+
+  @@index([purchaseOrderId])
+  @@index([warehouseId, createdAt])
+  @@map("goods_receipts")
+}
+
+model GoodsReceiptLine {
+  id             String       @id @default(uuid())
+  goodsReceiptId String       @map("goods_receipt_id")
+  goodsReceipt   GoodsReceipt @relation(fields: [goodsReceiptId], references: [id], onDelete: Cascade)
+  productId      String       @map("product_id")
+  product        Product      @relation(fields: [productId], references: [id])
+  soundQty       Int          @default(0) @map("sound_qty")
+  damagedQty     Int          @default(0) @map("damaged_qty")
+
+  @@index([goodsReceiptId])
+  @@map("goods_receipt_lines")
+}
+
+// Inter-warehouse transfer. In-transit stock is held on the SOURCE item's
+// inTransit bucket between request and receive, so nothing is lost or double
+// counted. Both legs write Transfer movements (Phase 3 ledger).
+model StockTransfer {
+  id                     String              @id @default(uuid())
+  number                 Int                 @unique @default(autoincrement())
+  sourceWarehouseId      String              @map("source_warehouse_id")
+  sourceWarehouse        Warehouse           @relation("TransferSource", fields: [sourceWarehouseId], references: [id])
+  destinationWarehouseId String              @map("destination_warehouse_id")
+  destinationWarehouse   Warehouse           @relation("TransferDestination", fields: [destinationWarehouseId], references: [id])
+  status                 StockTransferStatus @default(REQUESTED)
+  notes                  String?
+  requestedById          String              @map("requested_by_id")
+  requestedBy            User                @relation("TransferRequestedBy", fields: [requestedById], references: [id])
+  approvedById           String?             @map("approved_by_id")
+  approvedBy             User?               @relation("TransferApprovedBy", fields: [approvedById], references: [id])
+  receivedById           String?             @map("received_by_id")
+  receivedBy             User?               @relation("TransferReceivedBy", fields: [receivedById], references: [id])
+  approvedAt             DateTime?           @map("approved_at")
+  receivedAt             DateTime?           @map("received_at")
+  lines                  StockTransferLine[]
+  createdAt              DateTime            @default(now()) @map("created_at")
+  updatedAt              DateTime            @updatedAt @map("updated_at")
+
+  @@index([sourceWarehouseId, status])
+  @@index([destinationWarehouseId, status])
+  @@map("stock_transfers")
+}
+
+model StockTransferLine {
+  id              String        @id @default(uuid())
+  stockTransferId String        @map("stock_transfer_id")
+  stockTransfer   StockTransfer @relation(fields: [stockTransferId], references: [id], onDelete: Cascade)
+  productId       String        @map("product_id")
+  product         Product       @relation(fields: [productId], references: [id])
+  quantity        Int
+
+  @@unique([stockTransferId, productId])
+  @@index([stockTransferId])
+  @@map("stock_transfer_lines")
+}
+
+// A physical count session for one warehouse. recordedQty snapshots system
+// available at session creation; countedQty is the physical count. Reconcile
+// writes an Adjustment movement per line to align available to countedQty.
+model StockCount {
+  id              String           @id @default(uuid())
+  number          Int              @unique @default(autoincrement())
+  warehouseId     String           @map("warehouse_id")
+  warehouse       Warehouse        @relation(fields: [warehouseId], references: [id])
+  status          StockCountStatus @default(OPEN)
+  notes           String?
+  createdById     String           @map("created_by_id")
+  createdBy       User             @relation("CountCreatedBy", fields: [createdById], references: [id])
+  reconciledById  String?          @map("reconciled_by_id")
+  reconciledBy    User?            @relation("CountReconciledBy", fields: [reconciledById], references: [id])
+  reconciledAt    DateTime?        @map("reconciled_at")
+  lines           StockCountLine[]
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+
+  @@index([warehouseId, status])
+  @@map("stock_counts")
+}
+
+model StockCountLine {
+  id           String     @id @default(uuid())
+  stockCountId String     @map("stock_count_id")
+  stockCount   StockCount @relation(fields: [stockCountId], references: [id], onDelete: Cascade)
+  productId    String     @map("product_id")
+  product      Product    @relation(fields: [productId], references: [id])
+  recordedQty  Int        @map("recorded_qty")
+  countedQty   Int?       @map("counted_qty")
+
+  @@unique([stockCountId, productId])
+  @@index([stockCountId])
+  @@map("stock_count_lines")
+}
+
+// Append-only audit of every meaningful action (distinct from StockMovement,
+// which is quantity-only). Never updated or deleted. A quantity change writes
+// BOTH a StockMovement and an ActivityLog; a non-quantity action writes only here.
+model ActivityLog {
+  id          String   @id @default(uuid())
+  userId      String?  @map("user_id")
+  // Audit log outlives the actor: keep the row, drop the link if the user is removed.
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action      String // e.g. STOCK_RECEIVE, PO_APPROVE, PRODUCT_UPDATE
+  entityType  String   @map("entity_type")
+  entityId    String?  @map("entity_id")
+  warehouseId String?  @map("warehouse_id")
+  summary     String
+  before      Json?
+  after       Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([entityType, entityId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("activity_logs")
+}
+
+// Per-user notification (low stock, PO approval, etc.). Read flag is mutable;
+// the row itself is not a ledger.
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String // LOW_STOCK, PO_APPROVAL, ...
+  title     String
+  body      String?
+  link      String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId, read, createdAt])
+  @@map("notifications")
 }
