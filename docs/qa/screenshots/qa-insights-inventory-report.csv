@@ -1,0 +1,4 @@
+Warehouse,Product,SKU,Available,Reserved,Damaged,In transit,Total,Reorder,Low?,Stock value
+Central Warehouse,Cola 330ml Can,COLA-330,40,0,0,0,40,50,yes,18.00
+Central Warehouse,Heavy Duty Stapler,STAP-HD,100,0,0,0,100,0,no,450.00
+Central Warehouse,Spring Water 1L,WATER-1L,100,0,0,0,100,0,no,30.00

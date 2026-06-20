@@ -25,7 +25,8 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { ScopeGuard } from '../auth/guards/scope.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentScope } from '../auth/decorators/current-scope.decorator';
-import type { WarehouseScope } from '../auth/auth.types';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import type { JwtPayload, WarehouseScope } from '../auth/auth.types';
 import { WarehousesService } from './warehouses.service';
 import { CreateWarehouseDto } from './dto/create-warehouse.dto';
 import { UpdateWarehouseDto } from './dto/update-warehouse.dto';
@@ -85,8 +86,11 @@ export class WarehousesController {
   @ApiCreatedResponse({ type: WarehouseDto })
   @ApiAuthErrors()
   @ApiValidationError()
-  create(@Body() dto: CreateWarehouseDto): Promise<WarehouseDto> {
-    return this.warehouses.create(dto);
+  create(
+    @CurrentUser() user: JwtPayload,
+    @Body() dto: CreateWarehouseDto,
+  ): Promise<WarehouseDto> {
+    return this.warehouses.create(user.sub, dto);
   }
 
   @Patch(':id')
@@ -101,10 +105,11 @@ export class WarehousesController {
     description: 'Warehouse not found.',
   })
   update(
+    @CurrentUser() user: JwtPayload,
     @Param('id') id: string,
     @Body() dto: UpdateWarehouseDto,
   ): Promise<WarehouseDto> {
-    return this.warehouses.update(id, dto);
+    return this.warehouses.update(user.sub, id, dto);
   }
 
   @Delete(':id')
@@ -120,8 +125,11 @@ export class WarehousesController {
     type: ErrorResponseDto,
     description: 'Warehouse not found.',
   })
-  archive(@Param('id') id: string): Promise<WarehouseDto> {
-    return this.warehouses.archive(id);
+  archive(
+    @CurrentUser() user: JwtPayload,
+    @Param('id') id: string,
+  ): Promise<WarehouseDto> {
+    return this.warehouses.archive(user.sub, id);
   }
 
   @Post(':id/staff')
@@ -136,9 +144,10 @@ export class WarehousesController {
     description: 'Warehouse not found.',
   })
   assignStaff(
+    @CurrentUser() user: JwtPayload,
     @Param('id') id: string,
     @Body() dto: AssignStaffDto,
   ): Promise<WarehouseDto> {
-    return this.warehouses.assignStaff(id, dto);
+    return this.warehouses.assignStaff(user.sub, id, dto);
   }
 }

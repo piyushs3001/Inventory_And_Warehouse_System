@@ -22,6 +22,8 @@ import { Role } from '@prisma/client';
 import { JwtAccessGuard } from '../auth/guards/jwt-access.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import type { JwtPayload } from '../auth/auth.types';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
@@ -71,8 +73,11 @@ export class CategoriesController {
   @ApiCreatedResponse({ type: CategoryDto })
   @ApiAuthErrors()
   @ApiValidationError()
-  create(@Body() dto: CreateCategoryDto): Promise<CategoryDto> {
-    return this.categories.create(dto);
+  create(
+    @CurrentUser() user: JwtPayload,
+    @Body() dto: CreateCategoryDto,
+  ): Promise<CategoryDto> {
+    return this.categories.create(user.sub, dto);
   }
 
   @Patch(':id')
@@ -91,10 +96,11 @@ export class CategoriesController {
     description: 'Re-parenting would create a cycle.',
   })
   update(
+    @CurrentUser() user: JwtPayload,
     @Param('id') id: string,
     @Body() dto: UpdateCategoryDto,
   ): Promise<CategoryDto> {
-    return this.categories.update(id, dto);
+    return this.categories.update(user.sub, id, dto);
   }
 
   @Delete(':id')
@@ -115,7 +121,10 @@ export class CategoriesController {
     type: ErrorResponseDto,
     description: 'Category has child categories.',
   })
-  remove(@Param('id') id: string): Promise<CategoryDto> {
-    return this.categories.remove(id);
+  remove(
+    @CurrentUser() user: JwtPayload,
+    @Param('id') id: string,
+  ): Promise<CategoryDto> {
+    return this.categories.remove(user.sub, id);
   }
 }

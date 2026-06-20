@@ -54,7 +54,8 @@ function makeService(
       category.findUnique ?? jest.fn().mockResolvedValue({ id: 'cat1' }),
   };
   const prisma = { product: productMethods, category: categoryMethods };
-  const service = new ProductsService(prisma as never);
+  const activity = { record: jest.fn().mockResolvedValue(undefined) };
+  const service = new ProductsService(prisma as never, activity as never);
   return { service, product: productMethods, category: categoryMethods };
 }
 
@@ -62,7 +63,7 @@ describe('ProductsService', () => {
   describe('create', () => {
     it('maps Decimal prices to strings in the response', async () => {
       const { service } = makeService();
-      const result = await service.create({
+      const result = await service.create('u1', {
         name: 'Cola 330ml',
         sku: 'COLA-330',
       });
@@ -73,7 +74,7 @@ describe('ProductsService', () => {
 
     it('validates the category exists when categoryId is given', async () => {
       const { service, category } = makeService();
-      await service.create({ name: 'X', sku: 'X-1', categoryId: 'cat1' });
+      await service.create('u1', { name: 'X', sku: 'X-1', categoryId: 'cat1' });
       expect(category.findUnique).toHaveBeenCalledWith(
         expect.objectContaining({ where: { id: 'cat1' } }),
       );
@@ -85,7 +86,7 @@ describe('ProductsService', () => {
         { findUnique: jest.fn().mockResolvedValue(null) },
       );
       await expect(
-        service.create({ name: 'X', sku: 'X-1', categoryId: 'missing' }),
+        service.create('u1', { name: 'X', sku: 'X-1', categoryId: 'missing' }),
       ).rejects.toBeInstanceOf(BadRequestException);
     });
 
@@ -94,7 +95,7 @@ describe('ProductsService', () => {
         create: jest.fn().mockRejectedValue(p2002()),
       });
       await expect(
-        service.create({ name: 'Dup', sku: 'COLA-330' }),
+        service.create('u1', { name: 'Dup', sku: 'COLA-330' }),
       ).rejects.toBeInstanceOf(ConflictException);
     });
   });
@@ -168,7 +169,7 @@ describe('ProductsService', () => {
         findUnique: jest.fn().mockResolvedValue(null),
       });
       await expect(
-        service.update('nope', { name: 'X' }),
+        service.update('u1', 'nope', { name: 'X' }),
       ).rejects.toBeInstanceOf(NotFoundException);
     });
 
@@ -177,7 +178,7 @@ describe('ProductsService', () => {
         update: jest.fn().mockRejectedValue(p2002()),
       });
       await expect(
-        service.update('p1', { sku: 'TAKEN' }),
+        service.update('u1', 'p1', { sku: 'TAKEN' }),
       ).rejects.toBeInstanceOf(ConflictException);
     });
   });
@@ -188,7 +189,7 @@ describe('ProductsService', () => {
       const { service, product } = makeService({
         update: jest.fn().mockResolvedValue(archived),
       });
-      const result = await service.archive('p1');
+      const result = await service.archive('u1', 'p1');
       expect(product.update).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { id: 'p1' },

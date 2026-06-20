@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { Prisma, ProductStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { ActivityService } from '../activity/activity.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductDto } from './dto/product.dto';
@@ -46,7 +47,10 @@ export interface ListProductsOptions {
 
 @Injectable()
 export class ProductsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly activity: ActivityService,
+  ) {}
 
   // Decimal prices serialize as fixed 2-decimal strings: JSON never loses
   // precision to a float, and the money format stays consistent (e.g. "1.20",
@@ -59,12 +63,19 @@ export class ProductsService {
     };
   }
 
-  async create(dto: CreateProductDto): Promise<ProductDto> {
+  async create(userId: string, dto: CreateProductDto): Promise<ProductDto> {
     if (dto.categoryId) await this.ensureCategoryExists(dto.categoryId);
     try {
       const created = await this.prisma.product.create({
         data: dto,
         select: productSelect,
+      });
+      await this.activity.record({
+        userId,
+        action: 'PRODUCT_CREATE',
+        entityType: 'Product',
+        entityId: created.id,
+        summary: `Created product ${created.sku}`,
       });
       return this.toDto(created);
     } catch (e) {
@@ -101,7 +112,11 @@ export class ProductsService {
     return this.toDto(product);
   }
 
-  async update(id: string, dto: UpdateProductDto): Promise<ProductDto> {
+  async update(
+    userId: string,
+    id: string,
+    dto: UpdateProductDto,
+  ): Promise<ProductDto> {
     await this.ensureExists(id);
     if (dto.categoryId) await this.ensureCategoryExists(dto.categoryId);
     try {
@@ -110,18 +125,32 @@ export class ProductsService {
         data: dto,
         select: productSelect,
       });
+      await this.activity.record({
+        userId,
+        action: 'PRODUCT_UPDATE',
+        entityType: 'Product',
+        entityId: id,
+        summary: `Updated product ${updated.sku}`,
+      });
       return this.toDto(updated);
     } catch (e) {
       this.rethrowSkuConflict(e);
     }
   }
 
-  async archive(id: string): Promise<ProductDto> {
+  async archive(userId: string, id: string): Promise<ProductDto> {
     await this.ensureExists(id);
     const archived = await this.prisma.product.update({
       where: { id },
       data: { status: ProductStatus.ARCHIVED },
       select: productSelect,
+    });
+    await this.activity.record({
+      userId,
+      action: 'PRODUCT_ARCHIVE',
+      entityType: 'Product',
+      entityId: id,
+      summary: `Archived product ${archived.sku}`,
     });
     return this.toDto(archived);
   }

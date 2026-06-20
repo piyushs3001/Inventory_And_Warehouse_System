@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { ActivityService } from '../activity/activity.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { CategoryDto } from './dto/category.dto';
@@ -19,11 +20,25 @@ const categorySelect = {
 
 @Injectable()
 export class CategoriesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly activity: ActivityService,
+  ) {}
 
-  async create(dto: CreateCategoryDto): Promise<CategoryDto> {
+  async create(userId: string, dto: CreateCategoryDto): Promise<CategoryDto> {
     if (dto.parentId) await this.ensureParentExists(dto.parentId);
-    return this.prisma.category.create({ data: dto, select: categorySelect });
+    const created = await this.prisma.category.create({
+      data: dto,
+      select: categorySelect,
+    });
+    await this.activity.record({
+      userId,
+      action: 'CATEGORY_CREATE',
+      entityType: 'Category',
+      entityId: created.id,
+      summary: `Created category ${created.name}`,
+    });
+    return created;
   }
 
   list(): Promise<CategoryDto[]> {
@@ -42,7 +57,11 @@ export class CategoriesService {
     return category;
   }
 
-  async update(id: string, dto: UpdateCategoryDto): Promise<CategoryDto> {
+  async update(
+    userId: string,
+    id: string,
+    dto: UpdateCategoryDto,
+  ): Promise<CategoryDto> {
     await this.ensureExists(id);
     // parentId can be a string (re-parent) or null (make root); only a real
     // id needs the self-parent / existence / cycle checks.
@@ -53,14 +72,22 @@ export class CategoriesService {
       await this.ensureParentExists(dto.parentId);
       await this.assertNoCycle(id, dto.parentId);
     }
-    return this.prisma.category.update({
+    const updated = await this.prisma.category.update({
       where: { id },
       data: dto,
       select: categorySelect,
     });
+    await this.activity.record({
+      userId,
+      action: 'CATEGORY_UPDATE',
+      entityType: 'Category',
+      entityId: id,
+      summary: `Updated category ${updated.name}`,
+    });
+    return updated;
   }
 
-  async remove(id: string): Promise<CategoryDto> {
+  async remove(userId: string, id: string): Promise<CategoryDto> {
     await this.ensureExists(id);
     const children = await this.prisma.category.count({
       where: { parentId: id },
@@ -74,10 +101,18 @@ export class CategoriesService {
     if (products > 0) {
       throw new ConflictException('Category has products');
     }
-    return this.prisma.category.delete({
+    const deleted = await this.prisma.category.delete({
       where: { id },
       select: categorySelect,
     });
+    await this.activity.record({
+      userId,
+      action: 'CATEGORY_DELETE',
+      entityType: 'Category',
+      entityId: id,
+      summary: `Deleted category ${deleted.name}`,
+    });
+    return deleted;
   }
 
   private async ensureExists(id: string): Promise<void> {

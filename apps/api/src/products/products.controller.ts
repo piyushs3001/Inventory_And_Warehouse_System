@@ -24,6 +24,8 @@ import { Role } from '@prisma/client';
 import { JwtAccessGuard } from '../auth/guards/jwt-access.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import type { JwtPayload } from '../auth/auth.types';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -87,8 +89,11 @@ export class ProductsController {
     type: ErrorResponseDto,
     description: 'A product with this SKU already exists.',
   })
-  create(@Body() dto: CreateProductDto): Promise<ProductDto> {
-    return this.products.create(dto);
+  create(
+    @CurrentUser() user: JwtPayload,
+    @Body() dto: CreateProductDto,
+  ): Promise<ProductDto> {
+    return this.products.create(user.sub, dto);
   }
 
   @Patch(':id')
@@ -107,10 +112,11 @@ export class ProductsController {
     description: 'A product with this SKU already exists.',
   })
   update(
+    @CurrentUser() user: JwtPayload,
     @Param('id') id: string,
     @Body() dto: UpdateProductDto,
   ): Promise<ProductDto> {
-    return this.products.update(id, dto);
+    return this.products.update(user.sub, id, dto);
   }
 
   @Delete(':id')
@@ -126,7 +132,10 @@ export class ProductsController {
     type: ErrorResponseDto,
     description: 'Product not found.',
   })
-  archive(@Param('id') id: string): Promise<ProductDto> {
-    return this.products.archive(id);
+  archive(
+    @CurrentUser() user: JwtPayload,
+    @Param('id') id: string,
+  ): Promise<ProductDto> {
+    return this.products.archive(user.sub, id);
   }
 }

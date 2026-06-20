@@ -43,7 +43,8 @@ function makeService(
     category: categoryMethods,
     product: { count: productCount },
   };
-  const service = new CategoriesService(prisma as never);
+  const activity = { record: jest.fn().mockResolvedValue(undefined) };
+  const service = new CategoriesService(prisma as never, activity as never);
   return { service, prisma: prisma.category, productCount };
 }
 
@@ -52,7 +53,7 @@ describe('CategoriesService', () => {
     it('creates a root category (no parent lookup)', async () => {
       const { service, prisma } = makeService();
       const dto: CreateCategoryDto = { name: 'Beverages' };
-      const result = await service.create(dto);
+      const result = await service.create('u1', dto);
       expect(prisma.create).toHaveBeenCalledWith(
         expect.objectContaining({ data: dto }),
       );
@@ -62,7 +63,7 @@ describe('CategoriesService', () => {
 
     it('validates the parent exists when parentId is given', async () => {
       const { service, prisma } = makeService();
-      await service.create({ name: 'Sodas', parentId: 'c1' });
+      await service.create('u1', { name: 'Sodas', parentId: 'c1' });
       expect(prisma.findUnique).toHaveBeenCalledWith(
         expect.objectContaining({ where: { id: 'c1' } }),
       );
@@ -74,7 +75,7 @@ describe('CategoriesService', () => {
         findUnique: jest.fn().mockResolvedValue(null),
       });
       await expect(
-        service.create({ name: 'Sodas', parentId: 'missing' }),
+        service.create('u1', { name: 'Sodas', parentId: 'missing' }),
       ).rejects.toBeInstanceOf(BadRequestException);
     });
   });
@@ -113,7 +114,7 @@ describe('CategoriesService', () => {
       const { service, prisma } = makeService({
         update: jest.fn().mockResolvedValue(updated),
       });
-      const result = await service.update('c1', { name: 'Drinks' });
+      const result = await service.update('u1', 'c1', { name: 'Drinks' });
       expect(prisma.update).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { id: 'c1' },
@@ -128,14 +129,14 @@ describe('CategoriesService', () => {
         findUnique: jest.fn().mockResolvedValue(null),
       });
       await expect(
-        service.update('nope', { name: 'X' }),
+        service.update('u1', 'nope', { name: 'X' }),
       ).rejects.toBeInstanceOf(NotFoundException);
     });
 
     it('throws BadRequest when a category is set as its own parent', async () => {
       const { service } = makeService();
       await expect(
-        service.update('c1', { parentId: 'c1' }),
+        service.update('u1', 'c1', { parentId: 'c1' }),
       ).rejects.toBeInstanceOf(BadRequestException);
     });
 
@@ -152,7 +153,7 @@ describe('CategoriesService', () => {
         .mockResolvedValueOnce({ parentId: 'c1' });
       const { service } = makeService({ findUnique });
       await expect(
-        service.update('c1', { parentId: 'c2' }),
+        service.update('u1', 'c1', { parentId: 'c2' }),
       ).rejects.toBeInstanceOf(ConflictException);
     });
   });
@@ -162,7 +163,7 @@ describe('CategoriesService', () => {
       const { service, prisma } = makeService({
         count: jest.fn().mockResolvedValue(0),
       });
-      await service.remove('c1');
+      await service.remove('u1', 'c1');
       expect(prisma.count).toHaveBeenCalledWith({ where: { parentId: 'c1' } });
       expect(prisma.delete).toHaveBeenCalledWith(
         expect.objectContaining({ where: { id: 'c1' } }),
@@ -173,7 +174,7 @@ describe('CategoriesService', () => {
       const { service, prisma } = makeService({
         count: jest.fn().mockResolvedValue(2),
       });
-      await expect(service.remove('c1')).rejects.toBeInstanceOf(
+      await expect(service.remove('u1', 'c1')).rejects.toBeInstanceOf(
         ConflictException,
       );
       expect(prisma.delete).not.toHaveBeenCalled();
@@ -184,7 +185,7 @@ describe('CategoriesService', () => {
         { count: jest.fn().mockResolvedValue(0) },
         jest.fn().mockResolvedValue(3),
       );
-      await expect(service.remove('c1')).rejects.toBeInstanceOf(
+      await expect(service.remove('u1', 'c1')).rejects.toBeInstanceOf(
         ConflictException,
       );
       expect(prisma.delete).not.toHaveBeenCalled();
@@ -194,7 +195,7 @@ describe('CategoriesService', () => {
       const { service } = makeService({
         findUnique: jest.fn().mockResolvedValue(null),
       });
-      await expect(service.remove('nope')).rejects.toBeInstanceOf(
+      await expect(service.remove('u1', 'nope')).rejects.toBeInstanceOf(
         NotFoundException,
       );
     });

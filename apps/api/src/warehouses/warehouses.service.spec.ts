@@ -44,7 +44,8 @@ function makeService(overrides: Partial<PrismaWarehouseMock> = {}): {
   };
   const warehouseMethods: PrismaWarehouseMock = { ...defaults, ...overrides };
   const prisma = { warehouse: warehouseMethods };
-  const service = new WarehousesService(prisma as never);
+  const activity = { record: jest.fn().mockResolvedValue(undefined) };
+  const service = new WarehousesService(prisma as never, activity as never);
   return { service, prisma: prisma.warehouse };
 }
 
@@ -53,7 +54,7 @@ describe('WarehousesService', () => {
     it('calls prisma.warehouse.create with the dto and warehouseSelect', async () => {
       const { service, prisma } = makeService();
       const dto: CreateWarehouseDto = { name: 'New Warehouse' };
-      const result = await service.create(dto);
+      const result = await service.create('u1', dto);
       expect(prisma.create).toHaveBeenCalledWith(
         expect.objectContaining({ data: dto }),
       );
@@ -68,7 +69,7 @@ describe('WarehousesService', () => {
         contactPerson: 'Bob',
         capacity: 500,
       };
-      await service.create(dto);
+      await service.create('u1', dto);
       expect(prisma.create).toHaveBeenCalledWith(
         expect.objectContaining({ data: dto }),
       );
@@ -171,7 +172,7 @@ describe('WarehousesService', () => {
         update: jest.fn().mockResolvedValue(updatedWarehouse),
       });
       const dto: UpdateWarehouseDto = { name: 'Updated Name' };
-      const result = await service.update('w1', dto);
+      const result = await service.update('u1', 'w1', dto);
       expect(prisma.findUnique).toHaveBeenCalledWith(
         expect.objectContaining({ where: { id: 'w1' } }),
       );
@@ -186,7 +187,7 @@ describe('WarehousesService', () => {
         findUnique: jest.fn().mockResolvedValue(null),
       });
       await expect(
-        service.update('nonexistent', { name: 'X' }),
+        service.update('u1', 'nonexistent', { name: 'X' }),
       ).rejects.toBeInstanceOf(NotFoundException);
     });
   });
@@ -200,7 +201,7 @@ describe('WarehousesService', () => {
       const { service, prisma } = makeService({
         update: jest.fn().mockResolvedValue(archivedWarehouse),
       });
-      const result = await service.archive('w1');
+      const result = await service.archive('u1', 'w1');
       expect(prisma.update).toHaveBeenCalledWith(
         expect.objectContaining({
           where: { id: 'w1' },
@@ -214,7 +215,7 @@ describe('WarehousesService', () => {
       const { service } = makeService({
         findUnique: jest.fn().mockResolvedValue(null),
       });
-      await expect(service.archive('nonexistent')).rejects.toBeInstanceOf(
+      await expect(service.archive('u1', 'nonexistent')).rejects.toBeInstanceOf(
         NotFoundException,
       );
     });
@@ -224,7 +225,7 @@ describe('WarehousesService', () => {
     it('uses set relation to assign users to warehouse', async () => {
       const { service, prisma } = makeService();
       const dto: AssignStaffDto = { userIds: ['u1', 'u2'] };
-      await service.assignStaff('w1', dto);
+      await service.assignStaff('u1', 'w1', dto);
       expect(prisma.findUnique).toHaveBeenCalledWith(
         expect.objectContaining({ where: { id: 'w1' } }),
       );
@@ -245,13 +246,13 @@ describe('WarehousesService', () => {
         findUnique: jest.fn().mockResolvedValue(null),
       });
       await expect(
-        service.assignStaff('nonexistent', { userIds: ['u1'] }),
+        service.assignStaff('u1', 'nonexistent', { userIds: ['u1'] }),
       ).rejects.toBeInstanceOf(NotFoundException);
     });
 
     it('accepts empty userIds array (removes all staff from scope)', async () => {
       const { service, prisma } = makeService();
-      await service.assignStaff('w1', { userIds: [] });
+      await service.assignStaff('u1', 'w1', { userIds: [] });
       expect(prisma.update).toHaveBeenCalledWith(
         expect.objectContaining({
           data: { users: { set: [] } },

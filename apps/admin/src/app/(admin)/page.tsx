@@ -1,101 +1,99 @@
 'use client';
 
-import { Package, DollarSign, Warehouse, AlertTriangle, ShoppingCart, TrendingUp, Sparkles } from 'lucide-react';
+import {
+  Package, DollarSign, Boxes, AlertTriangle, ShoppingCart, ArrowRightLeft,
+} from 'lucide-react';
 import { useAuth } from '@iws/auth';
-import { PageHead } from '@iws/ui';
-import { Button } from '@iws/ui';
-import { KpiCard } from '@iws/ui';
-import { AreaChart } from '@iws/ui';
-import { BarChart } from '@iws/ui';
-import { ProgressBar } from '@iws/ui';
-import { ActivityFeedItem } from '@iws/ui';
-import { dashboardMock as d } from './_dashboard/dashboard.mock';
+import { useDashboardControllerGet } from '@iws/api-client';
+import {
+  PageHead, KpiCard, StatusBadge, Skeleton, EmptyState,
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from '@iws/ui';
 
-const KPI_ICONS = [Package, DollarSign, Warehouse, AlertTriangle, ShoppingCart, TrendingUp];
-
-const CARD = 'rounded-[16px] border border-border bg-card p-5 shadow-xs';
+const CARD = 'rounded-[16px] bg-card p-5 ring-1 ring-foreground/10';
 
 export default function DashboardPage() {
   const { user } = useAuth();
   const firstName = user?.name?.split(' ')[0];
+  const { data, isLoading } = useDashboardControllerGet();
+
   return (
     <div className="flex flex-col gap-5">
       <PageHead
         title={`Good morning${firstName ? `, ${firstName}` : ''}`}
-        description="Sample data — live figures arrive with Reports (Phase 6)."
-        actions={
-          <div className="flex gap-2">
-            <Button variant="outline">Export</Button>
-            <Button>New Purchase Order</Button>
-          </div>
-        }
+        description="Live figures across all warehouses in your scope."
       />
 
-      <div className="grid grid-cols-2 gap-3.5 md:grid-cols-3 xl:grid-cols-6">
-        {d.kpis.map((k, i) => {
-          const Icon = KPI_ICONS[i] ?? Package;
-          return <KpiCard key={k.label} icon={<Icon className="size-4" />} label={k.label} value={k.value} delta={k.delta} />;
-        })}
-      </div>
-
-      <div className="grid gap-4 lg:grid-cols-[1.55fr_1fr]">
-        <section className={CARD}>
-          <h2 className="mb-3 text-[14.5px] font-semibold">Inventory Value Trend</h2>
-          <AreaChart data={d.valueTrend} label="Inventory Value Trend" />
-        </section>
-        <section className={CARD}>
-          <h2 className="mb-3 text-[14.5px] font-semibold">Warehouse Utilization</h2>
-          <div className="flex flex-col gap-2.5">
-            {d.utilization.map((w) => <ProgressBar key={w.name} label={w.name} value={w.pct} />)}
-          </div>
-        </section>
-      </div>
-
-      <div className="grid gap-4 lg:grid-cols-2">
-        <section className={CARD}>
-          <h2 className="mb-3 text-[14.5px] font-semibold">Purchase Orders</h2>
-          <BarChart values={d.poWeeks} label="Purchase Orders by week" />
-        </section>
-        <section className={CARD}>
-          <h2 className="mb-3 text-[14.5px] font-semibold">Top Selling Products</h2>
-          <div className="flex flex-col gap-2.5">
-            {d.topProducts.map((p) => <ProgressBar key={p.name} label={p.name} value={p.pct} />)}
-          </div>
-        </section>
-      </div>
-
-      <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-        <section className={CARD}>
-          <h2 className="mb-2 text-[14.5px] font-semibold">Recent Stock Activity</h2>
-          <div className="divide-y divide-border">
-            {d.activity.map((a) => (
-              <ActivityFeedItem key={a.action} icon={<Package />} tone={a.tone} actor={a.actor} action={a.action} time={a.time} />
-            ))}
-          </div>
-        </section>
-        <div className="flex flex-col gap-4">
-          <section className="rounded-[16px] border border-brand-border bg-gradient-to-br from-ai-1 to-ai-2 p-5 shadow-xs">
-            <div className="mb-2 flex items-center gap-2 text-[14.5px] font-semibold text-primary">
-              <Sparkles className="size-4" /> AI Recommendations
-              <span className="ml-auto rounded-full bg-brand-weak px-2 py-0.5 font-mono text-[10px] font-bold tracking-wide text-primary uppercase">Advisory</span>
-            </div>
-            <ul className="flex flex-col gap-2 text-[13px] text-muted-foreground">
-              {d.recommendations.map((r) => <li key={r}>{r}</li>)}
-            </ul>
-          </section>
-          <section className={CARD}>
-            <h2 className="mb-2 text-[14.5px] font-semibold">Upcoming Deliveries</h2>
-            <ul className="flex flex-col gap-2 text-[13px]">
-              {d.deliveries.map((x) => (
-                <li key={x.po} className="flex items-center justify-between">
-                  <span><span className="font-mono text-faint">{x.date}</span> · {x.supplier}</span>
-                  <span className="rounded-full bg-surface-3 px-2 py-0.5 font-mono text-[11px]">{x.po}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
+      {isLoading || !data ? (
+        <div className="grid grid-cols-2 gap-3.5 md:grid-cols-3 xl:grid-cols-6">
+          {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-28 w-full" />)}
         </div>
-      </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 gap-3.5 md:grid-cols-3 xl:grid-cols-6">
+            <KpiCard icon={<Package className="size-4" />} label="Products" value={data.totalProducts} />
+            <KpiCard icon={<DollarSign className="size-4" />} label="Stock value" value={`$${data.stockValue}`} />
+            <KpiCard icon={<Boxes className="size-4" />} label="Stock units" value={data.totalStockUnits} />
+            <KpiCard icon={<AlertTriangle className="size-4" />} label="Low stock" value={data.lowStockCount} />
+            <KpiCard icon={<ShoppingCart className="size-4" />} label="Pending POs" value={data.pendingPurchaseOrders} />
+            <KpiCard icon={<ArrowRightLeft className="size-4" />} label="Pending transfers" value={data.pendingTransfers} />
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
+            <section className={CARD}>
+              <h2 className="mb-3 text-[14.5px] font-semibold">Recent stock activity</h2>
+              {data.recentMovements.length === 0 ? (
+                <EmptyState title="No movements yet" description="Stock changes will appear here." />
+              ) : (
+                <div className="divide-y divide-border">
+                  {data.recentMovements.map((m) => (
+                    <div key={m.id} className="flex items-center gap-3 py-2.5 text-[13px]">
+                      <StatusBadge tone="brand">{m.type}</StatusBadge>
+                      <div className="min-w-0 flex-1">
+                        <span className="font-semibold">{m.productName}</span>{' '}
+                        <span className="font-mono text-xs text-muted-foreground">{m.sku}</span>
+                        <div className="text-xs text-muted-foreground">{m.warehouseName} · now {m.afterQty}</div>
+                      </div>
+                      <span className="shrink-0 font-mono text-[11px] text-faint tabular-nums">
+                        {new Date(m.createdAt).toLocaleString()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            <section className={CARD}>
+              <h2 className="mb-3 text-[14.5px] font-semibold">Top products by value</h2>
+              {data.topProducts.length === 0 ? (
+                <EmptyState title="No stock" description="Top products appear once stock is recorded." />
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Product</TableHead>
+                      <TableHead className="text-right">Units</TableHead>
+                      <TableHead className="text-right">Value</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {data.topProducts.map((p) => (
+                      <TableRow key={p.productId}>
+                        <TableCell>
+                          <div className="text-[13px] font-semibold">{p.name}</div>
+                          <div className="font-mono text-xs text-muted-foreground">{p.sku}</div>
+                        </TableCell>
+                        <TableCell className="text-right tabular-nums">{p.units}</TableCell>
+                        <TableCell className="text-right font-mono tabular-nums">${p.value}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </section>
+          </div>
+        </>
+      )}
     </div>
   );
 }
