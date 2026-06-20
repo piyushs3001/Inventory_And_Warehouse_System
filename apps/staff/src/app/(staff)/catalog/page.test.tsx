@@ -24,7 +24,7 @@ const renderPage = () =>
     </QueryClientProvider>,
   );
 
-describe('CatalogPage (staff, read-only)', () => {
+describe('CatalogPage (staff, read-only list)', () => {
   it('renders the catalog with selling price and category', async () => {
     mock.onGet('/products').reply(200, [PRODUCT]);
     mock.onGet('/categories').reply(200, [CATEGORY]);
@@ -32,20 +32,37 @@ describe('CatalogPage (staff, read-only)', () => {
     await waitFor(() => expect(screen.getByText('Cola')).toBeInTheDocument());
     expect(screen.getByText('COLA-1')).toBeInTheDocument();
     expect(screen.getByText('1.20')).toBeInTheDocument();
+    expect(screen.getByText('Beverages')).toBeInTheDocument();
   });
 
-  it('distinguishes a no-match search from a truly empty catalog', async () => {
+  it('links each row to its read-only detail page', async () => {
+    mock.onGet('/products').reply(200, [PRODUCT]);
+    mock.onGet('/categories').reply(200, [CATEGORY]);
+    renderPage();
+    await waitFor(() => expect(screen.getByText('Cola')).toBeInTheDocument());
+    expect(screen.getByRole('link', { name: /view/i })).toHaveAttribute(
+      'href',
+      '/catalog/p1',
+    );
+  });
+
+  it('filters the list by name or SKU via client-side search', async () => {
+    const OTHER = { ...PRODUCT, id: 'p2', name: 'Water', sku: 'WTR-1' };
+    mock.onGet('/products').reply(200, [PRODUCT, OTHER]);
+    mock.onGet('/categories').reply(200, [CATEGORY]);
+    renderPage();
+    await waitFor(() => expect(screen.getByText('Cola')).toBeInTheDocument());
+    await userEvent.type(screen.getByLabelText('Search'), 'wtr');
+    await waitFor(() => expect(screen.queryByText('Cola')).not.toBeInTheDocument());
+    expect(screen.getByText('Water')).toBeInTheDocument();
+  });
+
+  it('shows the empty-state for a truly empty catalog', async () => {
     mock.onGet('/products').reply(200, []);
     mock.onGet('/categories').reply(200, []);
     renderPage();
-    // No search yet → truly-empty copy.
     await waitFor(() =>
       expect(screen.getByText('The product catalog is empty.')).toBeInTheDocument(),
-    );
-    // With a search term → no-match copy.
-    await userEvent.type(screen.getByLabelText('Search catalog'), 'zzz');
-    await waitFor(() =>
-      expect(screen.getByText('No products match your search.')).toBeInTheDocument(),
     );
   });
 
@@ -54,45 +71,8 @@ describe('CatalogPage (staff, read-only)', () => {
     mock.onGet('/categories').reply(200, [CATEGORY]);
     renderPage();
     await waitFor(() => expect(screen.getByText('Cola')).toBeInTheDocument());
-    expect(screen.queryByRole('button', { name: /new product/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /edit/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /new product/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: /edit/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /archive|delete/i })).not.toBeInTheDocument();
-  });
-
-  it('expands a product row to show its variants (read-only, lazy-loaded)', async () => {
-    const VARIANT = {
-      id: 'v1', productId: 'p1', sku: 'COLA-1-RED', barcode: null,
-      attributes: { color: 'Red' }, status: 'ACTIVE', createdAt: '',
-    };
-    mock.onGet('/products').reply(200, [PRODUCT]);
-    mock.onGet('/categories').reply(200, [CATEGORY]);
-    mock.onGet('/products/p1/variants').reply(200, [VARIANT]);
-    renderPage();
-    await waitFor(() => expect(screen.getByText('Cola')).toBeInTheDocument());
-
-    await userEvent.click(screen.getByRole('button', { name: /expand variants/i }));
-    await waitFor(() =>
-      expect(screen.getByText('COLA-1-RED')).toBeInTheDocument(),
-    );
-    expect(screen.getByText('color: Red')).toBeInTheDocument();
-  });
-
-  it('shows a read-only barcode for a variant on demand', async () => {
-    const VARIANT = {
-      id: 'v1', productId: 'p1', sku: 'COLA-1-RED', barcode: null,
-      attributes: {}, status: 'ACTIVE', createdAt: '',
-    };
-    mock.onGet('/products').reply(200, [PRODUCT]);
-    mock.onGet('/categories').reply(200, [CATEGORY]);
-    mock.onGet('/products/p1/variants').reply(200, [VARIANT]);
-    mock.onGet(/\/products\/p1\/variants\/v1\/barcode/).reply(200, {
-      value: 'COLA-1-RED', symbology: 'code128', png: 'data:image/png;base64,AAA',
-    });
-    renderPage();
-    await waitFor(() => expect(screen.getByText('Cola')).toBeInTheDocument());
-    await userEvent.click(screen.getByRole('button', { name: /expand variants/i }));
-    await userEvent.click(await screen.findByRole('button', { name: /show barcode/i }));
-    const img = await screen.findByRole('img', { name: /barcode for COLA-1-RED/i });
-    expect(img).toHaveAttribute('src', 'data:image/png;base64,AAA');
   });
 });

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   useWarehousesControllerList,
@@ -10,16 +11,12 @@ import {
 import { useUsersControllerFindAll } from '@iws/api-client';
 import { WarehouseStatus } from '@iws/api-client';
 import type { WarehouseDto } from '@iws/api-client';
-import { Button } from '@iws/ui';
+import { Button, buttonVariants } from '@iws/ui';
 import { PageHead } from '@iws/ui';
 import { StatusBadge } from '@iws/ui';
 import { EmptyState } from '@iws/ui';
-import { Skeleton } from '@iws/ui';
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from '@iws/ui';
 import { EntityAvatar } from '@iws/ui';
-import { WarehouseFormDialog } from './warehouse-form-dialog';
+import { DataTable, type DataTableColumn } from '@iws/ui';
 import { AssignStaffDialog } from './assign-staff-dialog';
 
 export default function WarehousesPage() {
@@ -28,22 +25,10 @@ export default function WarehousesPage() {
     includeArchived ? { includeArchived: true } : undefined,
   );
   const { data: users } = useUsersControllerFindAll();
-  const [editing, setEditing] = useState<WarehouseDto | null>(null);
-  const [creating, setCreating] = useState(false);
   const [assigning, setAssigning] = useState<WarehouseDto | null>(null);
 
   const queryClient = useQueryClient();
   const archive = useWarehousesControllerArchive();
-
-  const onArchive = async (id: string): Promise<void> => {
-    if (!confirm('Archive this warehouse?')) return;
-    await archive.mutateAsync({ id });
-    await queryClient.invalidateQueries({
-      queryKey: getWarehousesControllerListQueryKey(
-        includeArchived ? { includeArchived: true } : undefined,
-      ),
-    });
-  };
 
   const invalidateList = async (): Promise<void> => {
     await queryClient.invalidateQueries({
@@ -53,86 +38,113 @@ export default function WarehousesPage() {
     });
   };
 
+  const onArchive = async (id: string): Promise<void> => {
+    if (!confirm('Archive this warehouse?')) return;
+    await archive.mutateAsync({ id });
+    await invalidateList();
+  };
+
+  const columns: DataTableColumn<WarehouseDto>[] = [
+    {
+      key: 'name',
+      header: 'Name',
+      cell: (w) => (
+        <div className="flex items-center gap-2.5">
+          <EntityAvatar name={w.name} />
+          <span className="text-[13px] font-semibold">{w.name}</span>
+        </div>
+      ),
+      sortValue: (w) => w.name,
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      cell: (w) => (
+        <StatusBadge tone={w.status === WarehouseStatus.ACTIVE ? 'ok' : 'muted'}>
+          {w.status}
+        </StatusBadge>
+      ),
+      sortValue: (w) => w.status,
+    },
+    {
+      key: 'capacity',
+      header: 'Capacity',
+      align: 'right',
+      className: 'font-mono tabular-nums',
+      cell: (w) => w.capacity ?? '—',
+      sortValue: (w) => w.capacity ?? 0,
+    },
+    {
+      key: 'contact',
+      header: 'Contact',
+      cell: (w) => w.contactPerson ?? '—',
+    },
+    {
+      key: 'actions',
+      header: 'Actions',
+      align: 'right',
+      cell: (w) => (
+        <div className="flex justify-end gap-2">
+          <Link
+            className={buttonVariants({ variant: 'outline', size: 'sm' })}
+            href={`/warehouses/${w.id}/edit`}
+          >
+            Edit
+          </Link>
+          <Button variant="outline" size="sm" onClick={() => setAssigning(w)}>
+            Assign staff
+          </Button>
+          {w.status === WarehouseStatus.ACTIVE && (
+            <Button variant="outline" size="sm" onClick={() => onArchive(w.id)}>
+              Archive
+            </Button>
+          )}
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div className="flex flex-col gap-4">
       <PageHead
         title="Warehouses"
         actions={
-          <>
-            <label className="flex items-center gap-2 text-sm text-muted-foreground">
-              <input type="checkbox" checked={includeArchived} onChange={(e) => setIncludeArchived(e.target.checked)} />
-              Include archived
-            </label>
-            <Button onClick={() => setCreating(true)}>New warehouse</Button>
-          </>
+          <Link className={buttonVariants()} href="/warehouses/new">
+            New warehouse
+          </Link>
         }
       />
 
-      {isLoading ? (
-        <div className="flex flex-col gap-2">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-12 w-full" />
-          ))}
-        </div>
-      ) : (warehouses ?? []).length === 0 ? (
-        <EmptyState
-          title="No warehouses"
-          description="Create a warehouse to start tracking stock."
-          action={<Button onClick={() => setCreating(true)}>New warehouse</Button>}
-        />
-      ) : (
-        <div className="rounded-xl bg-card ring-1 ring-foreground/10 overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Capacity</TableHead>
-                <TableHead>Contact</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {(warehouses ?? []).map((w) => (
-                <TableRow key={w.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-2.5">
-                      <EntityAvatar name={w.name} />
-                      <div className="text-[13px] font-semibold">{w.name}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <StatusBadge tone={w.status === WarehouseStatus.ACTIVE ? 'ok' : 'muted'}>{w.status}</StatusBadge>
-                  </TableCell>
-                  <TableCell className="text-right font-mono tabular-nums">{w.capacity ?? '—'}</TableCell>
-                  <TableCell>{w.contactPerson ?? '—'}</TableCell>
-                  <TableCell className="space-x-2 text-right">
-                    <Button variant="outline" size="sm" onClick={() => setEditing(w)}>Edit</Button>
-                    <Button variant="outline" size="sm" onClick={() => setAssigning(w)}>Assign staff</Button>
-                    {w.status === WarehouseStatus.ACTIVE && (
-                      <Button variant="outline" size="sm" onClick={() => onArchive(w.id)}>Archive</Button>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
+      <DataTable
+        rows={warehouses ?? []}
+        getRowKey={(w) => w.id}
+        isLoading={isLoading}
+        columns={columns}
+        searchPlaceholder="Search warehouses…"
+        searchFilter={(w, q) => w.name.toLowerCase().includes(q)}
+        toolbar={
+          <label className="flex items-center gap-2 text-sm text-muted-foreground">
+            <input
+              type="checkbox"
+              checked={includeArchived}
+              onChange={(e) => setIncludeArchived(e.target.checked)}
+            />
+            Include archived
+          </label>
+        }
+        empty={
+          <EmptyState
+            title="No warehouses"
+            description="Create a warehouse to start tracking stock."
+            action={
+              <Link className={buttonVariants()} href="/warehouses/new">
+                New warehouse
+              </Link>
+            }
+          />
+        }
+      />
 
-      {creating && (
-        <WarehouseFormDialog
-          onClose={() => setCreating(false)}
-          onSuccess={invalidateList}
-        />
-      )}
-      {editing && (
-        <WarehouseFormDialog
-          warehouse={editing}
-          onClose={() => setEditing(null)}
-          onSuccess={invalidateList}
-        />
-      )}
       {assigning && (
         <AssignStaffDialog
           warehouse={assigning}

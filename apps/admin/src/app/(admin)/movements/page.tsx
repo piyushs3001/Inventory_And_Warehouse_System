@@ -12,12 +12,11 @@ import {
   PageHead,
   StatusBadge,
   EmptyState,
-  Skeleton,
-  Button,
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  DataTable,
+  type DataTableColumn,
 } from '@iws/ui';
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 100;
 
 const TYPE_TONE: Record<MovementType, 'ok' | 'transit' | 'warn' | 'reserved' | 'danger'> = {
   [MovementType.RECEIVE]: 'ok',
@@ -45,7 +44,6 @@ export default function MovementsPage() {
   const [productId, setProductId] = useState('');
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
-  const [page, setPage] = useState(1);
 
   const params = {
     ...(type ? { type: type as MovementType } : {}),
@@ -53,7 +51,6 @@ export default function MovementsPage() {
     ...(productId ? { productId } : {}),
     ...(from ? { from: new Date(from).toISOString() } : {}),
     ...(to ? { to: new Date(to).toISOString() } : {}),
-    page,
     pageSize: PAGE_SIZE,
   };
 
@@ -62,10 +59,74 @@ export default function MovementsPage() {
   const { data: products } = useProductsControllerList();
 
   const rows = data?.data ?? [];
-  const total = data?.total ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
-  const resetTo1 = <T,>(setter: (v: T) => void) => (v: T) => { setter(v); setPage(1); };
+  const columns: DataTableColumn<StockMovementDto>[] = [
+    {
+      key: 'when',
+      header: 'When',
+      className: 'whitespace-nowrap text-xs text-muted-foreground',
+      cell: (m) => new Date(m.createdAt).toLocaleString(),
+      sortValue: (m) => m.createdAt,
+    },
+    {
+      key: 'type',
+      header: 'Type',
+      cell: (m) => <StatusBadge tone={TYPE_TONE[m.type]}>{m.type}</StatusBadge>,
+      sortValue: (m) => m.type,
+    },
+    {
+      key: 'product',
+      header: 'Product',
+      cell: (m) => (
+        <div>
+          <div className="text-[13px] font-semibold">{m.productName}</div>
+          <div className="font-mono text-xs text-muted-foreground">{m.sku}</div>
+        </div>
+      ),
+      sortValue: (m) => m.productName,
+    },
+    {
+      key: 'warehouse',
+      header: 'Warehouse',
+      cell: (m) => m.warehouseName,
+      sortValue: (m) => m.warehouseName,
+    },
+    {
+      key: 'change',
+      header: 'Change',
+      className: 'font-mono text-xs tabular-nums',
+      cell: (m) => deltaSummary(m),
+    },
+    {
+      key: 'before',
+      header: 'Before',
+      align: 'right',
+      className: 'tabular-nums',
+      cell: (m) => m.beforeQty,
+      sortValue: (m) => m.beforeQty,
+    },
+    {
+      key: 'after',
+      header: 'After',
+      align: 'right',
+      className: 'tabular-nums',
+      cell: (m) => m.afterQty,
+      sortValue: (m) => m.afterQty,
+    },
+    {
+      key: 'reason',
+      header: 'Reason',
+      className: 'max-w-[16rem] truncate text-sm text-muted-foreground',
+      cell: (m) => <span title={m.reason ?? ''}>{m.reason ?? '—'}</span>,
+    },
+    {
+      key: 'by',
+      header: 'By',
+      className: 'text-sm',
+      cell: (m) => m.userName ?? '—',
+      sortValue: (m) => m.userName ?? '',
+    },
+  ];
 
   return (
     <div className="flex flex-col gap-4">
@@ -74,112 +135,71 @@ export default function MovementsPage() {
         Append-only ledger of every stock quantity change. Read-only.
       </p>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <select
-          aria-label="Filter by type"
-          value={type}
-          onChange={(e) => resetTo1(setType)(e.target.value)}
-          className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-        >
-          <option value="">All types</option>
-          {Object.values(MovementType).map((t) => (
-            <option key={t} value={t}>{t}</option>
-          ))}
-        </select>
-        <select
-          aria-label="Filter by warehouse"
-          value={warehouseId}
-          onChange={(e) => resetTo1(setWarehouseId)(e.target.value)}
-          className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-        >
-          <option value="">All warehouses</option>
-          {(warehouses ?? []).map((w) => (
-            <option key={w.id} value={w.id}>{w.name}</option>
-          ))}
-        </select>
-        <select
-          aria-label="Filter by product"
-          value={productId}
-          onChange={(e) => resetTo1(setProductId)(e.target.value)}
-          className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-        >
-          <option value="">All products</option>
-          {(products ?? []).map((p) => (
-            <option key={p.id} value={p.id}>{p.name}</option>
-          ))}
-        </select>
-        <label className="flex items-center gap-1.5 text-sm text-muted-foreground">
-          From
-          <input type="date" value={from} onChange={(e) => resetTo1(setFrom)(e.target.value)}
-            className="h-9 rounded-md border border-input bg-background px-2 text-sm" />
-        </label>
-        <label className="flex items-center gap-1.5 text-sm text-muted-foreground">
-          To
-          <input type="date" value={to} onChange={(e) => resetTo1(setTo)(e.target.value)}
-            className="h-9 rounded-md border border-input bg-background px-2 text-sm" />
-        </label>
-      </div>
-
-      {isLoading ? (
-        <div className="flex flex-col gap-2">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-12 w-full" />
-          ))}
-        </div>
-      ) : rows.length === 0 ? (
-        <EmptyState title="No movements" description="No stock movements match the current filters." />
-      ) : (
-        <>
-          <div className="rounded-xl bg-card ring-1 ring-foreground/10 overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>When</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Product</TableHead>
-                  <TableHead>Warehouse</TableHead>
-                  <TableHead>Change</TableHead>
-                  <TableHead className="text-right">Before</TableHead>
-                  <TableHead className="text-right">After</TableHead>
-                  <TableHead>Reason</TableHead>
-                  <TableHead>By</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rows.map((m: StockMovementDto) => (
-                  <TableRow key={m.id}>
-                    <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
-                      {new Date(m.createdAt).toLocaleString()}
-                    </TableCell>
-                    <TableCell><StatusBadge tone={TYPE_TONE[m.type]}>{m.type}</StatusBadge></TableCell>
-                    <TableCell>
-                      <div className="text-[13px] font-semibold">{m.productName}</div>
-                      <div className="font-mono text-xs text-muted-foreground">{m.sku}</div>
-                    </TableCell>
-                    <TableCell>{m.warehouseName}</TableCell>
-                    <TableCell className="font-mono text-xs tabular-nums">{deltaSummary(m)}</TableCell>
-                    <TableCell className="text-right tabular-nums">{m.beforeQty}</TableCell>
-                    <TableCell className="text-right tabular-nums">{m.afterQty}</TableCell>
-                    <TableCell className="max-w-[16rem] truncate text-sm text-muted-foreground" title={m.reason ?? ''}>
-                      {m.reason ?? '—'}
-                    </TableCell>
-                    <TableCell className="text-sm">{m.userName ?? '—'}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <span>{total} movement{total === 1 ? '' : 's'}</span>
-            <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>Previous</Button>
-              <span>Page {page} of {totalPages}</span>
-              <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>Next</Button>
-            </div>
-          </div>
-        </>
-      )}
+      <DataTable
+        rows={rows}
+        getRowKey={(m) => m.id}
+        isLoading={isLoading}
+        searchPlaceholder="Search by product or type…"
+        searchFilter={(m, q) =>
+          m.productName.toLowerCase().includes(q) ||
+          m.sku.toLowerCase().includes(q) ||
+          m.type.toLowerCase().includes(q)
+        }
+        toolbar={
+          <>
+            <select
+              aria-label="Filter by type"
+              value={type}
+              onChange={(e) => setType(e.target.value)}
+              className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+            >
+              <option value="">All types</option>
+              {Object.values(MovementType).map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+            <select
+              aria-label="Filter by warehouse"
+              value={warehouseId}
+              onChange={(e) => setWarehouseId(e.target.value)}
+              className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+            >
+              <option value="">All warehouses</option>
+              {(warehouses ?? []).map((w) => (
+                <option key={w.id} value={w.id}>{w.name}</option>
+              ))}
+            </select>
+            <select
+              aria-label="Filter by product"
+              value={productId}
+              onChange={(e) => setProductId(e.target.value)}
+              className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+            >
+              <option value="">All products</option>
+              {(products ?? []).map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+            <label className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              From
+              <input type="date" value={from} onChange={(e) => setFrom(e.target.value)}
+                className="h-9 rounded-md border border-input bg-background px-2 text-sm" />
+            </label>
+            <label className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              To
+              <input type="date" value={to} onChange={(e) => setTo(e.target.value)}
+                className="h-9 rounded-md border border-input bg-background px-2 text-sm" />
+            </label>
+          </>
+        }
+        empty={
+          <EmptyState
+            title="No movements"
+            description="No stock movements match the current filters."
+          />
+        }
+        columns={columns}
+      />
     </div>
   );
 }

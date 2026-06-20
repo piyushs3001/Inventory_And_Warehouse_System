@@ -5,41 +5,55 @@ import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import MockAdapter from 'axios-mock-adapter';
 import { AXIOS_INSTANCE } from '@iws/api-client';
-import { UserFormDialog } from './user-form-dialog';
+import { UserForm } from './user-form';
 import { Role, UserStatus } from '@iws/api-client';
 import type { UserDto } from '@iws/api-client';
 
 let mock: MockAdapter;
 beforeEach(() => { mock = new MockAdapter(AXIOS_INSTANCE); });
 
-const renderDialog = (onClose = vi.fn()) =>
+const renderForm = (onDone = vi.fn()) =>
   render(
     <QueryClientProvider client={new QueryClient()}>
-      <UserFormDialog onClose={onClose} />
+      <UserForm onDone={onDone} />
     </QueryClientProvider>,
   );
 
-describe('UserFormDialog (create)', () => {
-  it('posts a new user and closes', async () => {
-    const onClose = vi.fn();
+describe('UserForm (create)', () => {
+  it('posts a new user and calls onDone', async () => {
+    const onDone = vi.fn();
     mock.onPost('/users').reply(201, { id: '2' });
-    renderDialog(onClose);
+    renderForm(onDone);
 
     await userEvent.type(screen.getByLabelText(/name/i), 'Jane Staff');
     await userEvent.type(screen.getByLabelText(/email/i), 'jane@iws.local');
     await userEvent.type(screen.getByLabelText(/password/i), 'Passw0rd!');
     await userEvent.click(screen.getByRole('button', { name: /create/i }));
 
-    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    await waitFor(() => expect(onDone).toHaveBeenCalled());
     expect(JSON.parse(mock.history.post[0].data)).toMatchObject({
       name: 'Jane Staff', email: 'jane@iws.local',
     });
   });
+
+  it('surfaces an inline error when the create fails', async () => {
+    const onDone = vi.fn();
+    mock.onPost('/users').reply(409, { message: 'Email already in use' });
+    renderForm(onDone);
+
+    await userEvent.type(screen.getByLabelText(/name/i), 'Dup User');
+    await userEvent.type(screen.getByLabelText(/email/i), 'dup@iws.local');
+    await userEvent.type(screen.getByLabelText(/password/i), 'Passw0rd!');
+    await userEvent.click(screen.getByRole('button', { name: /create/i }));
+
+    await waitFor(() => expect(screen.getByRole('alert')).toBeInTheDocument());
+    expect(onDone).not.toHaveBeenCalled();
+  });
 });
 
-describe('UserFormDialog (edit)', () => {
-  it('patches existing user and closes', async () => {
-    const onClose = vi.fn();
+describe('UserForm (edit)', () => {
+  it('patches existing user and calls onDone', async () => {
+    const onDone = vi.fn();
     const existingUser: UserDto = {
       id: '1',
       name: 'Alice Manager',
@@ -55,11 +69,11 @@ describe('UserFormDialog (edit)', () => {
 
     render(
       <QueryClientProvider client={new QueryClient()}>
-        <UserFormDialog user={existingUser} onClose={onClose} />
+        <UserForm user={existingUser} onDone={onDone} />
       </QueryClientProvider>,
     );
 
-    // Edit mode: email/password fields not shown; name pre-filled
+    // Edit mode: email/password fields not shown; name pre-filled.
     const nameInput = screen.getByLabelText(/name/i);
     expect(nameInput).toHaveValue('Alice Manager');
     expect(screen.queryByLabelText(/email/i)).not.toBeInTheDocument();
@@ -68,7 +82,7 @@ describe('UserFormDialog (edit)', () => {
     await userEvent.type(nameInput, 'Alice Updated');
     await userEvent.click(screen.getByRole('button', { name: /save/i }));
 
-    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    await waitFor(() => expect(onDone).toHaveBeenCalled());
     expect(mock.history.patch).toHaveLength(1);
     expect(JSON.parse(mock.history.patch[0].data)).toMatchObject({
       name: 'Alice Updated',

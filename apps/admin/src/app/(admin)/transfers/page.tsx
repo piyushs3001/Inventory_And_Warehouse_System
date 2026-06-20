@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   useTransfersControllerList,
@@ -8,31 +9,26 @@ import {
   useTransfersControllerApprove,
   useTransfersControllerCancel,
   useTransfersControllerReceive,
-  useWarehousesControllerList,
-  useProductsControllerList,
   StockTransferStatus,
 } from '@iws/api-client';
 import type { TransferDto } from '@iws/api-client';
 import {
   Button,
+  buttonVariants,
   PageHead,
   StatusBadge,
   EmptyState,
-  Skeleton,
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  DataTable,
+  type DataTableColumn,
 } from '@iws/ui';
-import { CreateTransferDialog } from './create-transfer-dialog';
 import { TRANSFER_STATUS_TONE } from './transfer-status';
 
 export default function TransfersPage() {
   const [status, setStatus] = useState('');
-  const [creating, setCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const params = status ? { status: status as StockTransferStatus } : {};
   const { data: transfers, isLoading } = useTransfersControllerList(params);
-  const { data: warehouses } = useWarehousesControllerList();
-  const { data: products } = useProductsControllerList();
 
   const approve = useTransfersControllerApprove();
   const cancel = useTransfersControllerCancel();
@@ -56,68 +52,91 @@ export default function TransfersPage() {
     }
   };
 
+  const columns: DataTableColumn<TransferDto>[] = [
+    {
+      key: 'code',
+      header: 'Code',
+      cell: (t) => <span className="font-mono text-xs font-semibold">{t.code}</span>,
+      sortValue: (t) => t.code,
+    },
+    {
+      key: 'from',
+      header: 'From',
+      cell: (t) => t.sourceWarehouseName,
+      sortValue: (t) => t.sourceWarehouseName,
+    },
+    {
+      key: 'to',
+      header: 'To',
+      cell: (t) => t.destinationWarehouseName,
+      sortValue: (t) => t.destinationWarehouseName,
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      cell: (t) => (
+        <StatusBadge tone={TRANSFER_STATUS_TONE[t.status]}>{t.status.replace(/_/g, ' ')}</StatusBadge>
+      ),
+      sortValue: (t) => t.status,
+    },
+    {
+      key: 'lines',
+      header: 'Lines',
+      align: 'right',
+      cell: (t) => <span className="tabular-nums">{t.lines.length}</span>,
+      sortValue: (t) => t.lines.length,
+    },
+    {
+      key: 'actions',
+      header: 'Actions',
+      align: 'right',
+      cell: (t) => (
+        <div className="flex justify-end gap-2">
+          {t.status === StockTransferStatus.REQUESTED && (
+            <Button size="sm" disabled={pending} onClick={() => act(() => approve.mutateAsync({ id: t.id }))}>Approve</Button>
+          )}
+          {t.status === StockTransferStatus.APPROVED && (
+            <Button size="sm" disabled={pending} onClick={() => act(() => receive.mutateAsync({ id: t.id }))}>Receive</Button>
+          )}
+          {(t.status === StockTransferStatus.REQUESTED || t.status === StockTransferStatus.APPROVED) && (
+            <Button size="sm" variant="outline" disabled={pending} onClick={() => act(() => cancel.mutateAsync({ id: t.id }))}>Cancel</Button>
+          )}
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div className="flex flex-col gap-4">
-      <PageHead title="Stock Transfers" actions={<Button onClick={() => setCreating(true)}>New transfer</Button>} />
-
-      <div className="flex flex-wrap items-center gap-3">
-        <select aria-label="Filter by status" value={status} onChange={(e) => setStatus(e.target.value)}
-          className="h-9 rounded-md border border-input bg-background px-3 text-sm">
-          <option value="">All statuses</option>
-          {Object.values(StockTransferStatus).map((s) => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}
-        </select>
-      </div>
+      <PageHead
+        title="Stock Transfers"
+        actions={<Link className={buttonVariants()} href="/transfers/new">New transfer</Link>}
+      />
 
       {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
 
-      {isLoading ? (
-        <div className="flex flex-col gap-2">{Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}</div>
-      ) : list.length === 0 ? (
-        <EmptyState title={status ? 'No matches' : 'No transfers'} description={status ? 'No transfers in this status.' : 'Move stock between warehouses with a transfer.'}
-          action={<Button onClick={() => setCreating(true)}>New transfer</Button>} />
-      ) : (
-        <div className="rounded-xl bg-card ring-1 ring-foreground/10 overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Code</TableHead>
-                <TableHead>From</TableHead>
-                <TableHead>To</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Lines</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {list.map((t: TransferDto) => (
-                <TableRow key={t.id}>
-                  <TableCell className="font-mono text-xs font-semibold">{t.code}</TableCell>
-                  <TableCell>{t.sourceWarehouseName}</TableCell>
-                  <TableCell>{t.destinationWarehouseName}</TableCell>
-                  <TableCell><StatusBadge tone={TRANSFER_STATUS_TONE[t.status]}>{t.status.replace(/_/g, ' ')}</StatusBadge></TableCell>
-                  <TableCell className="text-right tabular-nums">{t.lines.length}</TableCell>
-                  <TableCell className="space-x-2 text-right">
-                    {t.status === StockTransferStatus.REQUESTED && (
-                      <Button size="sm" disabled={pending} onClick={() => act(() => approve.mutateAsync({ id: t.id }))}>Approve</Button>
-                    )}
-                    {t.status === StockTransferStatus.APPROVED && (
-                      <Button size="sm" disabled={pending} onClick={() => act(() => receive.mutateAsync({ id: t.id }))}>Receive</Button>
-                    )}
-                    {(t.status === StockTransferStatus.REQUESTED || t.status === StockTransferStatus.APPROVED) && (
-                      <Button size="sm" variant="outline" disabled={pending} onClick={() => act(() => cancel.mutateAsync({ id: t.id }))}>Cancel</Button>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
-
-      {creating && (
-        <CreateTransferDialog warehouses={warehouses ?? []} products={products ?? []}
-          onClose={() => setCreating(false)} onSuccess={invalidate} />
-      )}
+      <DataTable
+        rows={list}
+        getRowKey={(t) => t.id}
+        isLoading={isLoading}
+        searchPlaceholder="Search by code…"
+        searchFilter={(t, q) => t.code.toLowerCase().includes(q)}
+        toolbar={
+          <select aria-label="Filter by status" value={status} onChange={(e) => setStatus(e.target.value)}
+            className="h-9 rounded-md border border-input bg-background px-3 text-sm">
+            <option value="">All statuses</option>
+            {Object.values(StockTransferStatus).map((s) => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}
+          </select>
+        }
+        empty={
+          <EmptyState
+            title={status ? 'No matches' : 'No transfers'}
+            description={status ? 'No transfers in this status.' : 'Move stock between warehouses with a transfer.'}
+            action={<Link className={buttonVariants()} href="/transfers/new">New transfer</Link>}
+          />
+        }
+        columns={columns}
+      />
     </div>
   );
 }

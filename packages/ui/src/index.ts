@@ -10,6 +10,7 @@ export * from './components/ui/barcode-controls';
 export * from './components/ui/button';
 export * from './components/ui/card';
 export * from './components/ui/coming-soon';
+export * from './components/ui/data-table';
 export * from './components/ui/dialog';
 export * from './components/ui/empty-state';
 export * from './components/ui/entity-avatar';

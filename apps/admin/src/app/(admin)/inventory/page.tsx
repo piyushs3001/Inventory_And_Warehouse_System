@@ -14,27 +14,22 @@ import {
   PageHead,
   StatusBadge,
   EmptyState,
-  Skeleton,
-  Input,
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  DataTable,
+  type DataTableColumn,
   EntityAvatar,
 } from '@iws/ui';
 import { AdjustStockDialog, type AdjustContext } from './adjust-stock-dialog';
 import { ReserveStockDialog, type ReserveContext } from './reserve-stock-dialog';
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 100;
 
 export default function InventoryPage() {
-  const [search, setSearch] = useState('');
   const [warehouseId, setWarehouseId] = useState('');
   const [lowStock, setLowStock] = useState(false);
-  const [page, setPage] = useState(1);
 
   const params = {
-    ...(search ? { search } : {}),
     ...(warehouseId ? { warehouseId } : {}),
     ...(lowStock ? { lowStock: true } : {}),
-    page,
     pageSize: PAGE_SIZE,
   };
 
@@ -48,14 +43,121 @@ export default function InventoryPage() {
 
   const queryClient = useQueryClient();
   const rows = data?.data ?? [];
-  const total = data?.total ?? 0;
-  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   const invalidate = async (): Promise<void> => {
     await queryClient.invalidateQueries({
       queryKey: getInventoryControllerListQueryKey(params),
     });
   };
+
+  const columns: DataTableColumn<InventoryItemDto>[] = [
+    {
+      key: 'product',
+      header: 'Product',
+      cell: (r) => (
+        <div className="flex items-center gap-2.5">
+          <EntityAvatar name={r.productName} />
+          <div>
+            <div className="text-[13px] font-semibold">{r.productName}</div>
+            <div className="font-mono text-xs text-muted-foreground">{r.sku}</div>
+          </div>
+        </div>
+      ),
+      sortValue: (r) => r.productName,
+    },
+    {
+      key: 'warehouse',
+      header: 'Warehouse',
+      cell: (r) => r.warehouseName,
+      sortValue: (r) => r.warehouseName,
+    },
+    {
+      key: 'available',
+      header: 'Available',
+      align: 'right',
+      className: 'tabular-nums',
+      cell: (r) => (
+        <span className="inline-flex items-center gap-2">
+          {r.lowStock && <StatusBadge tone="warn">Low</StatusBadge>}
+          {r.available}
+        </span>
+      ),
+      sortValue: (r) => r.available,
+    },
+    {
+      key: 'reserved',
+      header: 'Reserved',
+      align: 'right',
+      className: 'tabular-nums',
+      cell: (r) => r.reserved,
+      sortValue: (r) => r.reserved,
+    },
+    {
+      key: 'damaged',
+      header: 'Damaged',
+      align: 'right',
+      className: 'tabular-nums',
+      cell: (r) => r.damaged,
+      sortValue: (r) => r.damaged,
+    },
+    {
+      key: 'inTransit',
+      header: 'In transit',
+      align: 'right',
+      className: 'tabular-nums',
+      cell: (r) => r.inTransit,
+      sortValue: (r) => r.inTransit,
+    },
+    {
+      key: 'total',
+      header: 'Total',
+      align: 'right',
+      className: 'font-semibold tabular-nums',
+      cell: (r) => r.total,
+      sortValue: (r) => r.total,
+    },
+    {
+      key: 'actions',
+      header: 'Actions',
+      align: 'right',
+      cell: (r) => (
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() =>
+              setAdjustCtx({
+                productId: r.productId,
+                warehouseId: r.warehouseId,
+                productName: r.productName,
+                warehouseName: r.warehouseName,
+                available: r.available,
+                damaged: r.damaged,
+              })
+            }
+          >
+            Adjust
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={r.available < 1}
+            onClick={() =>
+              setReserveCtx({
+                productId: r.productId,
+                warehouseId: r.warehouseId,
+                productName: r.productName,
+                warehouseName: r.warehouseName,
+                available: r.available,
+              })
+            }
+          >
+            Reserve
+          </Button>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div className="flex flex-col gap-4">
@@ -64,144 +166,52 @@ export default function InventoryPage() {
         actions={<Button onClick={() => setAdding(true)}>Adjust stock</Button>}
       />
 
-      <div className="flex flex-wrap items-center gap-3">
-        <Input
-          aria-label="Search inventory"
-          placeholder="Search by product or SKU…"
-          value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          className="max-w-xs"
-        />
-        <select
-          aria-label="Filter by warehouse"
-          value={warehouseId}
-          onChange={(e) => { setWarehouseId(e.target.value); setPage(1); }}
-          className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-        >
-          <option value="">All warehouses</option>
-          {(warehouses ?? []).map((w) => (
-            <option key={w.id} value={w.id}>{w.name}</option>
-          ))}
-        </select>
-        <label className="flex items-center gap-2 text-sm text-muted-foreground">
-          <input
-            type="checkbox"
-            checked={lowStock}
-            onChange={(e) => { setLowStock(e.target.checked); setPage(1); }}
+      <DataTable
+        rows={rows}
+        getRowKey={(r) => r.id}
+        isLoading={isLoading}
+        searchPlaceholder="Search by product or warehouse…"
+        searchFilter={(r, q) =>
+          r.productName.toLowerCase().includes(q) ||
+          r.sku.toLowerCase().includes(q) ||
+          r.warehouseName.toLowerCase().includes(q)
+        }
+        toolbar={
+          <>
+            <select
+              aria-label="Filter by warehouse"
+              value={warehouseId}
+              onChange={(e) => setWarehouseId(e.target.value)}
+              className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+            >
+              <option value="">All warehouses</option>
+              {(warehouses ?? []).map((w) => (
+                <option key={w.id} value={w.id}>{w.name}</option>
+              ))}
+            </select>
+            <label className="flex items-center gap-2 text-sm text-muted-foreground">
+              <input
+                type="checkbox"
+                checked={lowStock}
+                onChange={(e) => setLowStock(e.target.checked)}
+              />
+              Low stock only
+            </label>
+          </>
+        }
+        empty={
+          <EmptyState
+            title={warehouseId || lowStock ? 'No matches' : 'No stock yet'}
+            description={
+              warehouseId || lowStock
+                ? 'No inventory matches the current filters.'
+                : 'Use “Adjust stock” to record opening quantities.'
+            }
+            action={<Button onClick={() => setAdding(true)}>Adjust stock</Button>}
           />
-          Low stock only
-        </label>
-      </div>
-
-      {isLoading ? (
-        <div className="flex flex-col gap-2">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-12 w-full" />
-          ))}
-        </div>
-      ) : rows.length === 0 ? (
-        <EmptyState
-          title={search || warehouseId || lowStock ? 'No matches' : 'No stock yet'}
-          description={
-            search || warehouseId || lowStock
-              ? 'No inventory matches the current filters.'
-              : 'Use “Adjust stock” to record opening quantities.'
-          }
-          action={<Button onClick={() => setAdding(true)}>Adjust stock</Button>}
-        />
-      ) : (
-        <>
-          <div className="rounded-xl bg-card ring-1 ring-foreground/10 overflow-hidden">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Product</TableHead>
-                  <TableHead>Warehouse</TableHead>
-                  <TableHead className="text-right">Available</TableHead>
-                  <TableHead className="text-right">Reserved</TableHead>
-                  <TableHead className="text-right">Damaged</TableHead>
-                  <TableHead className="text-right">In transit</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rows.map((r: InventoryItemDto) => (
-                  <TableRow key={r.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-2.5">
-                        <EntityAvatar name={r.productName} />
-                        <div>
-                          <div className="text-[13px] font-semibold">{r.productName}</div>
-                          <div className="font-mono text-xs text-muted-foreground">{r.sku}</div>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>{r.warehouseName}</TableCell>
-                    <TableCell className="text-right tabular-nums">
-                      <span className="inline-flex items-center gap-2">
-                        {r.lowStock && <StatusBadge tone="warn">Low</StatusBadge>}
-                        {r.available}
-                      </span>
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">{r.reserved}</TableCell>
-                    <TableCell className="text-right tabular-nums">{r.damaged}</TableCell>
-                    <TableCell className="text-right tabular-nums">{r.inTransit}</TableCell>
-                    <TableCell className="text-right font-semibold tabular-nums">{r.total}</TableCell>
-                    <TableCell className="space-x-2 text-right">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          setAdjustCtx({
-                            productId: r.productId,
-                            warehouseId: r.warehouseId,
-                            productName: r.productName,
-                            warehouseName: r.warehouseName,
-                            available: r.available,
-                            damaged: r.damaged,
-                          })
-                        }
-                      >
-                        Adjust
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={r.available < 1}
-                        onClick={() =>
-                          setReserveCtx({
-                            productId: r.productId,
-                            warehouseId: r.warehouseId,
-                            productName: r.productName,
-                            warehouseName: r.warehouseName,
-                            available: r.available,
-                          })
-                        }
-                      >
-                        Reserve
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-
-          <div className="flex items-center justify-between text-sm text-muted-foreground">
-            <span>{total} item{total === 1 ? '' : 's'}</span>
-            <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>
-                Previous
-              </Button>
-              <span>Page {page} of {totalPages}</span>
-              <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>
-                Next
-              </Button>
-            </div>
-          </div>
-        </>
-      )}
+        }
+        columns={columns}
+      />
 
       {(adding || adjustCtx) && (
         <AdjustStockDialog

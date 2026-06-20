@@ -13,8 +13,8 @@ import {
   PageHead,
   StatusBadge,
   EmptyState,
-  Skeleton,
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  DataTable,
+  type DataTableColumn,
 } from '@iws/ui';
 import { ReceiveGoodsDialog } from './receive-goods-dialog';
 
@@ -39,6 +39,56 @@ export default function ReceiveStockPage() {
     });
   };
 
+  const columns: DataTableColumn<PurchaseOrderDto>[] = [
+    {
+      key: 'code',
+      header: 'Code',
+      className: 'font-mono text-xs font-semibold',
+      cell: (po) => po.code,
+      sortValue: (po) => po.code,
+    },
+    {
+      key: 'supplier',
+      header: 'Supplier',
+      cell: (po) => po.supplierName,
+      sortValue: (po) => po.supplierName,
+    },
+    {
+      key: 'warehouse',
+      header: 'Warehouse',
+      cell: (po) => po.warehouseName,
+      sortValue: (po) => po.warehouseName,
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      cell: (po) => (
+        <StatusBadge tone={po.status === PurchaseOrderStatus.APPROVED ? 'transit' : 'warn'}>
+          {po.status.replace(/_/g, ' ')}
+        </StatusBadge>
+      ),
+      sortValue: (po) => po.status,
+    },
+    {
+      key: 'outstanding',
+      header: 'Outstanding lines',
+      align: 'right',
+      className: 'tabular-nums',
+      cell: (po) => po.lines.filter((l) => l.outstandingQty > 0).length,
+      sortValue: (po) => po.lines.filter((l) => l.outstandingQty > 0).length,
+    },
+    {
+      key: 'actions',
+      header: 'Actions',
+      align: 'right',
+      cell: (po) => (
+        <div className="flex justify-end gap-2">
+          <Button size="sm" onClick={() => setReceiving(po)}>Receive</Button>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div className="flex flex-col gap-4">
       <PageHead title="Receive Stock" />
@@ -46,54 +96,24 @@ export default function ReceiveStockPage() {
         Approved purchase orders awaiting delivery into your warehouse(s).
       </p>
 
-      {isLoading ? (
-        <div className="flex flex-col gap-2">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-12 w-full" />
-          ))}
-        </div>
-      ) : incoming.length === 0 ? (
-        <EmptyState
-          title="Nothing to receive"
-          description="No approved purchase orders are awaiting receipt for your warehouses."
-        />
-      ) : (
-        <div className="rounded-xl bg-card ring-1 ring-foreground/10 overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Code</TableHead>
-                <TableHead>Supplier</TableHead>
-                <TableHead>Warehouse</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Outstanding lines</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {incoming.map((po) => {
-                const outstanding = po.lines.filter((l) => l.outstandingQty > 0).length;
-                return (
-                  <TableRow key={po.id}>
-                    <TableCell className="font-mono text-xs font-semibold">{po.code}</TableCell>
-                    <TableCell>{po.supplierName}</TableCell>
-                    <TableCell>{po.warehouseName}</TableCell>
-                    <TableCell>
-                      <StatusBadge tone={po.status === PurchaseOrderStatus.APPROVED ? 'transit' : 'warn'}>
-                        {po.status.replace(/_/g, ' ')}
-                      </StatusBadge>
-                    </TableCell>
-                    <TableCell className="text-right tabular-nums">{outstanding}</TableCell>
-                    <TableCell className="text-right">
-                      <Button size="sm" onClick={() => setReceiving(po)}>Receive</Button>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
-        </div>
-      )}
+      <DataTable
+        rows={incoming}
+        getRowKey={(po) => po.id}
+        isLoading={isLoading}
+        searchPlaceholder="Search by code, supplier or warehouse…"
+        searchFilter={(po, q) =>
+          po.code.toLowerCase().includes(q) ||
+          po.supplierName.toLowerCase().includes(q) ||
+          po.warehouseName.toLowerCase().includes(q)
+        }
+        empty={
+          <EmptyState
+            title="Nothing to receive"
+            description="No approved purchase orders are awaiting receipt for your warehouses."
+          />
+        }
+        columns={columns}
+      />
 
       {receiving && (
         <ReceiveGoodsDialog po={receiving} onClose={() => setReceiving(null)} onSuccess={invalidate} />

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   useProductsControllerList,
@@ -10,32 +11,27 @@ import {
 } from '@iws/api-client';
 import { ProductStatus } from '@iws/api-client';
 import type { ProductDto } from '@iws/api-client';
-import { Button } from '@iws/ui';
-import { PageHead } from '@iws/ui';
-import { StatusBadge } from '@iws/ui';
-import { EmptyState } from '@iws/ui';
-import { Skeleton } from '@iws/ui';
-import { Input } from '@iws/ui';
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Button,
+  buttonVariants,
+  PageHead,
+  StatusBadge,
+  EmptyState,
+  EntityAvatar,
+  DataTable,
+  type DataTableColumn,
 } from '@iws/ui';
-import { EntityAvatar } from '@iws/ui';
-import { ProductFormDialog } from './product-form-dialog';
 
 export default function ProductsPage() {
-  const [search, setSearch] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [includeArchived, setIncludeArchived] = useState(false);
 
   const params = {
-    ...(search ? { search } : {}),
     ...(categoryId ? { categoryId } : {}),
     ...(includeArchived ? { includeArchived: true } : {}),
   };
   const { data: products, isLoading } = useProductsControllerList(params);
   const { data: categories } = useCategoriesControllerList();
-  const [editing, setEditing] = useState<ProductDto | null>(null);
-  const [creating, setCreating] = useState(false);
 
   const queryClient = useQueryClient();
   const archive = useProductsControllerArchive();
@@ -55,114 +51,120 @@ export default function ProductsPage() {
     await invalidateList();
   };
 
+  const columns: DataTableColumn<ProductDto>[] = [
+    {
+      key: 'name',
+      header: 'Name',
+      cell: (p) => (
+        <div className="flex items-center gap-2.5">
+          <EntityAvatar name={p.name} />
+          <span className="text-[13px] font-semibold">{p.name}</span>
+        </div>
+      ),
+      sortValue: (p) => p.name,
+    },
+    {
+      key: 'sku',
+      header: 'SKU',
+      cell: (p) => <span className="font-mono text-xs">{p.sku}</span>,
+      sortValue: (p) => p.sku,
+    },
+    {
+      key: 'category',
+      header: 'Category',
+      cell: (p) => (p.categoryId ? (categoryName.get(p.categoryId) ?? '—') : '—'),
+      sortValue: (p) => (p.categoryId ? (categoryName.get(p.categoryId) ?? '') : ''),
+    },
+    {
+      key: 'cost',
+      header: 'Cost',
+      align: 'right',
+      cell: (p) => <span className="font-mono tabular-nums">{p.costPrice}</span>,
+      sortValue: (p) => Number(p.costPrice),
+    },
+    {
+      key: 'sell',
+      header: 'Sell',
+      align: 'right',
+      cell: (p) => <span className="font-mono tabular-nums">{p.sellingPrice}</span>,
+      sortValue: (p) => Number(p.sellingPrice),
+    },
+    {
+      key: 'reorder',
+      header: 'Reorder',
+      align: 'right',
+      cell: (p) => <span className="font-mono tabular-nums">{p.reorderLevel}</span>,
+      sortValue: (p) => p.reorderLevel,
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      cell: (p) => (
+        <StatusBadge tone={p.status === ProductStatus.ACTIVE ? 'ok' : 'muted'}>{p.status}</StatusBadge>
+      ),
+      sortValue: (p) => p.status,
+    },
+    {
+      key: 'actions',
+      header: 'Actions',
+      align: 'right',
+      cell: (p) => (
+        <div className="flex justify-end gap-2">
+          <Link className={buttonVariants({ variant: 'outline', size: 'sm' })} href={`/products/${p.id}`}>View</Link>
+          <Link className={buttonVariants({ variant: 'outline', size: 'sm' })} href={`/products/${p.id}/edit`}>Edit</Link>
+          {p.status === ProductStatus.ACTIVE && (
+            <Button variant="outline" size="sm" onClick={() => onArchive(p.id)}>Archive</Button>
+          )}
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div className="flex flex-col gap-4">
       <PageHead
         title="Products"
-        actions={<Button onClick={() => setCreating(true)}>New product</Button>}
+        actions={
+          <Link className={buttonVariants()} href="/products/new">New product</Link>
+        }
       />
 
-      <div className="flex flex-wrap items-center gap-3">
-        <Input
-          aria-label="Search products"
-          placeholder="Search by name or SKU…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="max-w-xs"
-        />
-        <select
-          aria-label="Filter by category"
-          value={categoryId}
-          onChange={(e) => setCategoryId(e.target.value)}
-          className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-        >
-          <option value="">All categories</option>
-          {(categories ?? []).map((c) => (
-            <option key={c.id} value={c.id}>{c.name}</option>
-          ))}
-        </select>
-        <label className="flex items-center gap-2 text-sm text-muted-foreground">
-          <input type="checkbox" checked={includeArchived} onChange={(e) => setIncludeArchived(e.target.checked)} />
-          Include archived
-        </label>
-      </div>
-
-      {isLoading ? (
-        <div className="flex flex-col gap-2">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-12 w-full" />
-          ))}
-        </div>
-      ) : list.length === 0 ? (
-        <EmptyState
-          title={search || categoryId ? 'No matches' : 'No products'}
-          description={
-            search || categoryId
-              ? 'No products match the current filters.'
-              : 'Create a product to build out the catalog.'
-          }
-          action={<Button onClick={() => setCreating(true)}>New product</Button>}
-        />
-      ) : (
-        <div className="rounded-xl bg-card ring-1 ring-foreground/10 overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>SKU</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead className="text-right">Cost</TableHead>
-                <TableHead className="text-right">Sell</TableHead>
-                <TableHead className="text-right">Reorder</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {list.map((p) => (
-                <TableRow key={p.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-2.5">
-                      <EntityAvatar name={p.name} />
-                      <div className="text-[13px] font-semibold">{p.name}</div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="font-mono text-xs">{p.sku}</TableCell>
-                  <TableCell>{p.categoryId ? (categoryName.get(p.categoryId) ?? '—') : '—'}</TableCell>
-                  <TableCell className="text-right font-mono tabular-nums">{p.costPrice}</TableCell>
-                  <TableCell className="text-right font-mono tabular-nums">{p.sellingPrice}</TableCell>
-                  <TableCell className="text-right font-mono tabular-nums">{p.reorderLevel}</TableCell>
-                  <TableCell>
-                    <StatusBadge tone={p.status === ProductStatus.ACTIVE ? 'ok' : 'muted'}>{p.status}</StatusBadge>
-                  </TableCell>
-                  <TableCell className="space-x-2 text-right">
-                    <Button variant="outline" size="sm" onClick={() => setEditing(p)}>Edit</Button>
-                    {p.status === ProductStatus.ACTIVE && (
-                      <Button variant="outline" size="sm" onClick={() => onArchive(p.id)}>Archive</Button>
-                    )}
-                  </TableCell>
-                </TableRow>
+      <DataTable
+        rows={list}
+        getRowKey={(p) => p.id}
+        isLoading={isLoading}
+        columns={columns}
+        searchPlaceholder="Search by name or SKU…"
+        searchFilter={(p, q) =>
+          p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q)
+        }
+        toolbar={
+          <>
+            <select
+              aria-label="Filter by category"
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
+              className="h-9 rounded-md border border-input bg-background px-3 text-sm"
+            >
+              <option value="">All categories</option>
+              {(categories ?? []).map((c) => (
+                <option key={c.id} value={c.id}>{c.name}</option>
               ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
-
-      {creating && (
-        <ProductFormDialog
-          categories={categories ?? []}
-          onClose={() => setCreating(false)}
-          onSuccess={invalidateList}
-        />
-      )}
-      {editing && (
-        <ProductFormDialog
-          product={editing}
-          categories={categories ?? []}
-          onClose={() => setEditing(null)}
-          onSuccess={invalidateList}
-        />
-      )}
+            </select>
+            <label className="flex items-center gap-2 text-sm text-muted-foreground">
+              <input type="checkbox" checked={includeArchived} onChange={(e) => setIncludeArchived(e.target.checked)} />
+              Include archived
+            </label>
+          </>
+        }
+        empty={
+          <EmptyState
+            title="No products"
+            description="Create a product to build out the catalog."
+            action={<Link className={buttonVariants()} href="/products/new">New product</Link>}
+          />
+        }
+      />
     </div>
   );
 }

@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useReportsControllerRun, useAiControllerSummarize } from '@iws/api-client';
-import type { ReportDto, ReportSummaryDto } from '@iws/api-client';
+import type { ReportDto, ReportSummaryDto, ReportDtoRowsItem } from '@iws/api-client';
 import {
   PageHead, Button, Skeleton, EmptyState,
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  DataTable, type DataTableColumn,
 } from '@iws/ui';
 
 const TYPES = [
@@ -13,6 +13,10 @@ const TYPES = [
   { key: 'purchase', label: 'Purchase' },
   { key: 'warehouse', label: 'Warehouse' },
 ] as const;
+
+// DataTable needs a stable row key; report rows are keyless objects, so we tag
+// each with its source index.
+type ReportRow = ReportDtoRowsItem & { __i: number };
 
 function downloadCsv(report: ReportDto): void {
   const esc = (v: unknown): string => {
@@ -49,6 +53,27 @@ export default function ReportsPage() {
     setType(key);
     setSummary(null);
   };
+
+  const rows: ReportRow[] = useMemo(
+    () => (data?.rows ?? []).map((r, i) => ({ ...r, __i: i })),
+    [data],
+  );
+
+  const columns: DataTableColumn<ReportRow>[] = useMemo(
+    () =>
+      (data?.columns ?? []).map((c) => ({
+        key: c.key,
+        header: c.label,
+        align: c.numeric ? 'right' : 'left',
+        className: c.numeric ? 'font-mono tabular-nums' : undefined,
+        cell: (row) => String(row[c.key] ?? '—'),
+        sortValue: (row) => {
+          const v = row[c.key];
+          return c.numeric ? Number(v ?? 0) : String(v ?? '');
+        },
+      })),
+    [data],
+  );
 
   return (
     <div className="flex flex-col gap-4">
@@ -102,37 +127,17 @@ export default function ReportsPage() {
             ))}
           </div>
 
-          {data.rows.length === 0 ? (
-            <EmptyState title="No data" description="This report has no rows for your scope." />
-          ) : (
-            <div className="rounded-xl bg-card ring-1 ring-foreground/10 overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    {data.columns.map((c) => (
-                      <TableHead key={c.key} className={c.numeric ? 'text-right' : undefined}>
-                        {c.label}
-                      </TableHead>
-                    ))}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {data.rows.map((row, i) => (
-                    <TableRow key={i}>
-                      {data.columns.map((c) => (
-                        <TableCell
-                          key={c.key}
-                          className={c.numeric ? 'text-right font-mono tabular-nums' : undefined}
-                        >
-                          {String(row[c.key] ?? '—')}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
+          <DataTable
+            rows={rows}
+            getRowKey={(r) => String(r.__i)}
+            pageSize={20}
+            searchPlaceholder="Search rows…"
+            searchFilter={(r, q) =>
+              data.columns.some((c) => String(r[c.key] ?? '').toLowerCase().includes(q))
+            }
+            empty={<EmptyState title="No data" description="This report has no rows for your scope." />}
+            columns={columns}
+          />
         </>
       )}
     </div>
