@@ -223,14 +223,6 @@ describe('LoginPage registration', () => {
 });
 
 describe('LoginPage pending (no-backend) controls', () => {
-  it('"Continue with SSO" shows a not-configured notice', async () => {
-    const user = userEvent.setup();
-    render(<LoginPage />);
-    await user.click(screen.getByRole('button', { name: /continue with sso/i }));
-    expect(screen.getByText(/single sign-on isn.t configured yet/i)).toBeInTheDocument();
-    expect(login).not.toHaveBeenCalled();
-  });
-
   it('"Forgot password?" shows an unavailable notice', async () => {
     const user = userEvent.setup();
     render(<LoginPage />);

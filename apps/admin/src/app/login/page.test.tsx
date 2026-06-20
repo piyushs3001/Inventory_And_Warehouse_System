@@ -27,7 +27,9 @@ beforeEach(() => {
 describe('AdminLoginPage', () => {
   it('is sign-in only on the distinct Admin Portal layout (no Create-account tab/register)', () => {
     render(<LoginPage />);
-    expect(screen.getByText('Admin Portal')).toBeInTheDocument();
+    // The split-screen redesign shows the "Admin Portal" badge in two responsive
+    // slots (desktop brand panel + mobile card), so there are 1+ matches.
+    expect(screen.getAllByText('Admin Portal').length).toBeGreaterThan(0);
     expect(screen.getByRole('heading', { name: /sign in to continue/i })).toBeInTheDocument();
     expect(screen.queryByRole('tab', { name: /create account/i })).not.toBeInTheDocument();
     expect(screen.queryByLabelText('Full name')).not.toBeInTheDocument();

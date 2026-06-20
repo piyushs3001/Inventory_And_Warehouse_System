@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import { AlertTriangle, Check, Eye, EyeOff, Shield } from 'lucide-react';
+import { AlertTriangle, Check, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@iws/auth';
 import { authControllerRegister, getAccessRole, Role } from '@iws/api-client';
 import type { ErrorResponseDto } from '@iws/api-client';
@@ -111,7 +111,7 @@ export default function LoginPage() {
 
   // Success banner shown on the sign-in panel after a successful registration.
   const [flash, setFlash] = useState<string | null>(null);
-  // "Feature not wired yet" notice for SSO / forgot-password.
+  // "Feature not wired yet" notice for forgot-password.
   const [notice, setNotice] = useState<string | null>(null);
 
   const onSignIn = async (e: FormEvent): Promise<void> => {
@@ -399,18 +399,6 @@ export default function LoginPage() {
                 className="flex h-[46px] w-full items-center justify-center rounded-md bg-primary text-[14.5px] font-medium text-primary-foreground shadow-xs transition-colors hover:bg-primary-2 disabled:pointer-events-none disabled:opacity-50"
               >
                 {submitting ? 'Signing in…' : 'Sign in'}
-              </button>
-
-              <div className="my-[1.15rem] flex items-center gap-[0.85rem] text-xs text-faint before:h-px before:flex-1 before:bg-border after:h-px after:flex-1 after:bg-border">
-                or
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setNotice('Single sign-on isn’t configured yet.')}
-                className="flex h-11 w-full items-center justify-center gap-[0.6rem] rounded-md border border-border-strong bg-surface text-sm font-medium text-foreground transition-colors hover:border-muted-foreground hover:bg-surface-2"
-              >
-                <Shield className="size-4" aria-hidden /> Continue with SSO
               </button>
 
               <p className="mt-[1.35rem] text-center text-[13px] text-muted-foreground">
