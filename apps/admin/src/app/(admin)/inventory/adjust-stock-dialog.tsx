@@ -10,6 +10,7 @@ import {
   Button,
   Input,
   Label,
+  SimpleSelect,
   Dialog,
   DialogContent,
   DialogHeader,
@@ -101,18 +102,17 @@ export function AdjustStockDialog({
             {locked ? (
               <Input id="adj-product" value={context!.productName} readOnly disabled />
             ) : (
-              <select
+              <SimpleSelect
                 id="adj-product"
+                className="w-full"
                 value={productId}
-                onChange={(e) => setProductId(e.target.value)}
-                required
-                className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-              >
-                <option value="">Select a product…</option>
-                {products.map((p) => (
-                  <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>
-                ))}
-              </select>
+                onValueChange={setProductId}
+                placeholder="Select a product…"
+                options={[
+                  { value: '', label: 'Select a product…' },
+                  ...products.map((p) => ({ value: p.id, label: `${p.name} (${p.sku})` })),
+                ]}
+              />
             )}
           </div>
           <div className="flex flex-col gap-2">
@@ -120,32 +120,32 @@ export function AdjustStockDialog({
             {locked ? (
               <Input id="adj-warehouse" value={context!.warehouseName} readOnly disabled />
             ) : (
-              <select
+              <SimpleSelect
                 id="adj-warehouse"
+                className="w-full"
                 value={warehouseId}
-                onChange={(e) => setWarehouseId(e.target.value)}
-                required
-                className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-              >
-                <option value="">Select a warehouse…</option>
-                {warehouses.map((w) => (
-                  <option key={w.id} value={w.id}>{w.name}</option>
-                ))}
-              </select>
+                onValueChange={setWarehouseId}
+                placeholder="Select a warehouse…"
+                options={[
+                  { value: '', label: 'Select a warehouse…' },
+                  ...warehouses.map((w) => ({ value: w.id, label: w.name })),
+                ]}
+              />
             )}
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-2">
               <Label htmlFor="adj-bucket">Bucket</Label>
-              <select
+              <SimpleSelect
                 id="adj-bucket"
+                className="w-full"
                 value={bucket}
-                onChange={(e) => setBucket(e.target.value as AdjustableBucket)}
-                className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-              >
-                <option value={AdjustableBucket.AVAILABLE}>Available</option>
-                <option value={AdjustableBucket.DAMAGED}>Damaged</option>
-              </select>
+                onValueChange={(v) => setBucket(v as AdjustableBucket)}
+                options={[
+                  { value: AdjustableBucket.AVAILABLE, label: 'Available' },
+                  { value: AdjustableBucket.DAMAGED, label: 'Damaged' },
+                ]}
+              />
             </div>
             <div className="flex flex-col gap-2">
               <Label htmlFor="adj-delta">Change (+/−)</Label>

@@ -13,6 +13,7 @@ import {
   StatusBadge,
   EmptyState,
   DataTable,
+  SimpleSelect,
   type DataTableColumn,
 } from '@iws/ui';
 import { PO_STATUS_TONE } from './po-status';
@@ -97,17 +98,19 @@ export default function PurchaseOrdersPage() {
           po.code.toLowerCase().includes(q) || po.supplierName.toLowerCase().includes(q)
         }
         toolbar={
-          <select
+          <SimpleSelect
             aria-label="Filter by status"
+            className="w-48"
             value={status}
-            onChange={(e) => setStatus(e.target.value)}
-            className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-          >
-            <option value="">All statuses</option>
-            {Object.values(PurchaseOrderStatus).map((s) => (
-              <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>
-            ))}
-          </select>
+            onValueChange={setStatus}
+            options={[
+              { value: '', label: 'All statuses' },
+              ...Object.values(PurchaseOrderStatus).map((s) => ({
+                value: s,
+                label: s.replace(/_/g, ' '),
+              })),
+            ]}
+          />
         }
         empty={
           <EmptyState

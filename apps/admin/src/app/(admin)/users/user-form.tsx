@@ -12,6 +12,7 @@ import { Role } from '@iws/api-client';
 import { Button } from '@iws/ui';
 import { Input } from '@iws/ui';
 import { Label } from '@iws/ui';
+import { SimpleSelect } from '@iws/ui';
 
 /**
  * Create/edit user form (no Dialog wrapper — rendered on dedicated routes).
@@ -92,19 +93,15 @@ export function UserForm({
         </>
       )}
       <div className="flex flex-col gap-2">
-        <Label htmlFor="role">Role</Label>
-        <select
-          id="role"
-          className="rounded border p-2"
+        <Label>Role</Label>
+        <SimpleSelect
+          aria-label="Role"
+          className="w-full"
           value={role}
-          onChange={(e) => setRole(e.target.value as Role)}
-        >
-          {Object.values(Role).map((r) => (
-            <option key={r} value={r}>
-              {r}
-            </option>
-          ))}
-        </select>
+          onValueChange={(v) => setRole(v as Role)}
+          options={Object.values(Role).map((r) => ({ value: r, label: r }))}
+          placeholder="Select a role"
+        />
       </div>
       {error && (
         <p role="alert" className="text-sm text-red-600">

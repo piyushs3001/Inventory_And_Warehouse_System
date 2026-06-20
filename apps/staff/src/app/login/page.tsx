@@ -7,8 +7,7 @@ import { useAuth } from '@iws/auth';
 import { authControllerRegister, getAccessRole, Role } from '@iws/api-client';
 import type { ErrorResponseDto } from '@iws/api-client';
 import type { ErrorType } from '@iws/api-client';
-import { Input } from '@iws/ui';
-import { Label } from '@iws/ui';
+import { Checkbox, Input, Label } from '@iws/ui';
 
 type Tab = 'signin' | 'register';
 
@@ -364,10 +363,10 @@ export default function LoginPage() {
               />
 
               <div className="mt-[0.1rem] mb-[1.35rem] flex items-center justify-between text-[12.5px]">
-                <label className="flex cursor-pointer items-center gap-[0.45rem] text-muted-foreground">
-                  <input type="checkbox" checked={stay} onChange={(e) => setStay(e.target.checked)} className="accent-primary" />
+                <Label className="flex cursor-pointer items-center gap-[0.45rem] text-[12.5px] font-normal text-muted-foreground">
+                  <Checkbox checked={stay} onCheckedChange={(v) => setStay(v === true)} />
                   Stay signed in
-                </label>
+                </Label>
                 <button type="button" onClick={() => setNotice('Password reset isn’t available yet.')} className="font-medium text-primary-2">
                   Forgot password?
                 </button>
@@ -441,10 +440,10 @@ export default function LoginPage() {
               <PasswordField id="r-password" label="Password" value={rPassword} onChange={setRPassword} autoComplete="new-password" meter />
               <PasswordField id="r-confirm" label="Confirm password" value={rConfirm} onChange={setRConfirm} autoComplete="new-password" />
 
-              <label className="mb-5 flex items-start gap-[0.55rem] text-xs leading-relaxed text-muted-foreground">
-                <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} className="mt-[0.15rem] accent-primary" />
+              <Label className="mb-5 flex items-start gap-[0.55rem] text-xs leading-relaxed font-normal text-muted-foreground">
+                <Checkbox checked={agree} onCheckedChange={(v) => setAgree(v === true)} className="mt-[0.15rem]" />
                 <span>I agree to the Terms of Service and Privacy Policy.</span>
-              </label>
+              </Label>
 
               {registerError && (
                 <p role="alert" className="mb-3 text-sm text-destructive">

@@ -16,6 +16,7 @@ import { PageHead } from '@iws/ui';
 import { StatusBadge } from '@iws/ui';
 import { EmptyState } from '@iws/ui';
 import { EntityAvatar } from '@iws/ui';
+import { Checkbox, Label } from '@iws/ui';
 import { DataTable, type DataTableColumn } from '@iws/ui';
 import { AssignStaffDialog } from './assign-staff-dialog';
 
@@ -123,14 +124,13 @@ export default function WarehousesPage() {
         searchPlaceholder="Search warehouses…"
         searchFilter={(w, q) => w.name.toLowerCase().includes(q)}
         toolbar={
-          <label className="flex items-center gap-2 text-sm text-muted-foreground">
-            <input
-              type="checkbox"
+          <Label className="flex items-center gap-2 text-sm font-normal text-muted-foreground">
+            <Checkbox
               checked={includeArchived}
-              onChange={(e) => setIncludeArchived(e.target.checked)}
+              onCheckedChange={(v) => setIncludeArchived(v === true)}
             />
             Include archived
-          </label>
+          </Label>
         }
         empty={
           <EmptyState

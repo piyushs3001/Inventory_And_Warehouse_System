@@ -41,7 +41,7 @@ function SelectTrigger({
       data-slot="select-trigger"
       data-size={size}
       className={cn(
-        "flex w-fit items-center justify-between gap-1.5 rounded-lg border border-input bg-transparent py-2 pr-2 pl-2.5 text-sm whitespace-nowrap transition-colors outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 data-placeholder:text-muted-foreground data-[size=default]:h-8 data-[size=sm]:h-7 data-[size=sm]:rounded-[min(var(--radius-md),10px)] *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 dark:bg-input/30 dark:hover:bg-input/50 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        "flex w-fit items-center justify-between gap-1.5 rounded-md border border-input bg-transparent py-2 pr-2 pl-3 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow,border-color] outline-none select-none hover:border-border-strong focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 data-placeholder:text-muted-foreground data-[size=default]:h-9 data-[size=sm]:h-7 data-[size=sm]:rounded-[min(var(--radius-md),10px)] *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-1.5 dark:bg-input/30 dark:hover:bg-input/50 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className
       )}
       {...props}
@@ -187,8 +187,73 @@ function SelectScrollDownButton({
   )
 }
 
+export type SimpleSelectOption = {
+  value: string
+  label: React.ReactNode
+  disabled?: boolean
+}
+
+/**
+ * One-shot styled dropdown — a drop-in replacement for a native <select>.
+ * Pass `value` + `onValueChange` + `options`; renders the full popover Select
+ * with a placeholder, checkmarks, and keyboard support. Full-width by default.
+ */
+function SimpleSelect({
+  value,
+  onValueChange,
+  options,
+  placeholder = "Select…",
+  className,
+  size = "default",
+  disabled,
+  id,
+  name,
+  "aria-label": ariaLabel,
+}: {
+  value?: string
+  onValueChange?: (value: string) => void
+  options: SimpleSelectOption[]
+  placeholder?: string
+  className?: string
+  size?: "sm" | "default"
+  disabled?: boolean
+  id?: string
+  name?: string
+  "aria-label"?: string
+}) {
+  return (
+    <Select
+      value={value}
+      onValueChange={(v) => onValueChange?.(v ?? "")}
+      disabled={disabled}
+      name={name}
+    >
+      <SelectTrigger id={id} size={size} aria-label={ariaLabel} className={cn("w-full", className)}>
+        <SelectValue>
+          {(val: string | null) => {
+            const opt = options.find((o) => o.value === val)
+            return opt ? (
+              opt.label
+            ) : (
+              <span className="text-muted-foreground">{placeholder}</span>
+            )
+          }}
+        </SelectValue>
+      </SelectTrigger>
+      <SelectContent>
+        {options.map((o) => (
+          <SelectItem key={o.value} value={o.value} disabled={o.disabled}>
+            {o.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  )
+}
+
 export {
   Select,
+  SimpleSelect,
   SelectContent,
   SelectGroup,
   SelectItem,

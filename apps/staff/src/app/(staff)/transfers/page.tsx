@@ -17,6 +17,7 @@ import {
   StatusBadge,
   EmptyState,
   DataTable,
+  SimpleSelect,
   type DataTableColumn,
 } from '@iws/ui';
 import { TRANSFER_STATUS_TONE } from './transfer-status';
@@ -117,11 +118,19 @@ export default function StaffTransfersPage() {
         searchPlaceholder="Search by code…"
         searchFilter={(t, q) => t.code.toLowerCase().includes(q)}
         toolbar={
-          <select aria-label="Filter by status" value={status} onChange={(e) => setStatus(e.target.value)}
-            className="h-9 rounded-md border border-input bg-background px-3 text-sm">
-            <option value="">All statuses</option>
-            {Object.values(StockTransferStatus).map((s) => <option key={s} value={s}>{s.replace(/_/g, ' ')}</option>)}
-          </select>
+          <SimpleSelect
+            aria-label="Filter by status"
+            className="w-48"
+            value={status}
+            onValueChange={setStatus}
+            options={[
+              { value: '', label: 'All statuses' },
+              ...Object.values(StockTransferStatus).map((s) => ({
+                value: s,
+                label: s.replace(/_/g, ' '),
+              })),
+            ]}
+          />
         }
         empty={
           <EmptyState

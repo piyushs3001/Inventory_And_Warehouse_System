@@ -13,6 +13,7 @@ import {
   EmptyState,
   Skeleton,
   Button,
+  SimpleSelect,
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@iws/ui';
 
@@ -70,28 +71,26 @@ export default function MovementHistoryPage() {
       <PageHead title="Movement History" />
 
       <div className="flex flex-wrap items-center gap-3">
-        <select
+        <SimpleSelect
           aria-label="Filter by type"
+          className="w-44"
           value={type}
-          onChange={(e) => reset(() => setType(e.target.value))}
-          className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-        >
-          <option value="">All types</option>
-          {Object.values(MovementType).map((t) => (
-            <option key={t} value={t}>{t}</option>
-          ))}
-        </select>
-        <select
+          onValueChange={(v) => reset(() => setType(v))}
+          options={[
+            { value: '', label: 'All types' },
+            ...Object.values(MovementType).map((t) => ({ value: t, label: t })),
+          ]}
+        />
+        <SimpleSelect
           aria-label="Filter by product"
+          className="w-48"
           value={productId}
-          onChange={(e) => reset(() => setProductId(e.target.value))}
-          className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-        >
-          <option value="">All products</option>
-          {(products ?? []).map((p) => (
-            <option key={p.id} value={p.id}>{p.name}</option>
-          ))}
-        </select>
+          onValueChange={(v) => reset(() => setProductId(v))}
+          options={[
+            { value: '', label: 'All products' },
+            ...(products ?? []).map((p) => ({ value: p.id, label: p.name })),
+          ]}
+        />
         <label className="flex items-center gap-1.5 text-sm text-muted-foreground">
           From
           <input type="date" value={from} onChange={(e) => reset(() => setFrom(e.target.value))}

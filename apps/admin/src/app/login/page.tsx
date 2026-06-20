@@ -6,8 +6,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@iws/auth';
 import { getAccessRole, Role } from '@iws/api-client';
 import type { ErrorResponseDto, ErrorType } from '@iws/api-client';
-import { Input } from '@iws/ui';
-import { Label } from '@iws/ui';
+import { Checkbox, Input, Label } from '@iws/ui';
 
 // Admin Portal login — sign-in only, on a split-screen layout that echoes the
 // Staff app but reads as the admin surface: an austere "command console" brand
@@ -179,10 +178,10 @@ export default function AdminLoginPage() {
             </div>
 
             <div className="mt-[0.1rem] mb-[1.35rem] flex items-center justify-between text-[12.5px]">
-              <label className="flex cursor-pointer items-center gap-[0.45rem] text-muted-foreground">
-                <input type="checkbox" checked={stay} onChange={(e) => setStay(e.target.checked)} className="accent-primary" />
+              <Label className="flex cursor-pointer items-center gap-[0.45rem] text-[12.5px] font-normal text-muted-foreground">
+                <Checkbox checked={stay} onCheckedChange={(v) => setStay(v === true)} />
                 Stay signed in
-              </label>
+              </Label>
               <button type="button" onClick={() => setNotice('Password reset isn’t available yet — contact a Super Admin.')} className="font-medium text-primary-2">
                 Forgot password?
               </button>

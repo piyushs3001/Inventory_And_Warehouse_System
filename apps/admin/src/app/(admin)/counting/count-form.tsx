@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from 'react';
 import { useStockCountsControllerCreate, useWarehousesControllerList } from '@iws/api-client';
-import { Button, Input, Label } from '@iws/ui';
+import { Button, Input, Label, SimpleSelect } from '@iws/ui';
 
 function errorMessage(err: unknown): string {
   const message = (err as { response?: { data?: { message?: string } } })
@@ -36,11 +36,15 @@ export function CountForm({ onDone }: { onDone: (id: string) => void }) {
       </p>
       <div className="flex flex-col gap-2">
         <Label htmlFor="ct-warehouse">Warehouse</Label>
-        <select id="ct-warehouse" value={warehouseId} onChange={(e) => setWarehouseId(e.target.value)} required
-          className="h-9 rounded-md border border-input bg-background px-3 text-sm">
-          <option value="">Select…</option>
-          {options.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
-        </select>
+        <SimpleSelect
+          id="ct-warehouse"
+          aria-label="Warehouse"
+          className="w-full"
+          value={warehouseId}
+          onValueChange={setWarehouseId}
+          placeholder="Select a warehouse…"
+          options={options.map((w) => ({ value: w.id, label: w.name }))}
+        />
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="ct-notes">Notes</Label>

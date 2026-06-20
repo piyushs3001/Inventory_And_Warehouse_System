@@ -11,6 +11,7 @@ import type { CategoryDto } from '@iws/api-client';
 import { Button } from '@iws/ui';
 import { Input } from '@iws/ui';
 import { Label } from '@iws/ui';
+import { SimpleSelect } from '@iws/ui';
 
 function errorMessage(err: unknown): string {
   const message = (err as { response?: { data?: { message?: string } } })
@@ -72,17 +73,16 @@ export function CategoryForm({
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="cat-parent">Parent category</Label>
-        <select
-          id="cat-parent"
+        <SimpleSelect
+          aria-label="Parent category"
+          className="w-full"
           value={parentId}
-          onChange={(e) => setParentId(e.target.value)}
-          className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-        >
-          <option value="">None (root)</option>
-          {parentOptions.map((c) => (
-            <option key={c.id} value={c.id}>{c.name}</option>
-          ))}
-        </select>
+          onValueChange={setParentId}
+          options={[
+            { value: '', label: 'None (root)' },
+            ...parentOptions.map((c) => ({ value: c.id, label: c.name })),
+          ]}
+        />
       </div>
       {error && (
         <p role="alert" className="text-sm text-red-600">

@@ -9,6 +9,7 @@ import {
 } from '@iws/api-client';
 import type { UserDto } from '@iws/api-client';
 import { Button } from '@iws/ui';
+import { Checkbox, Label } from '@iws/ui';
 import {
   Dialog,
   DialogContent,
@@ -54,15 +55,16 @@ export function AssignWarehousesDialog({
         </DialogHeader>
         <div className="flex flex-col gap-2">
           {(warehouses ?? []).map((w) => (
-            <label key={w.id} className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                aria-label={w.name}
+            <div key={w.id} className="flex items-center gap-2">
+              <Checkbox
+                id={`wh-${w.id}`}
                 checked={selected.has(w.id)}
-                onChange={() => toggle(w.id)}
+                onCheckedChange={() => toggle(w.id)}
               />
-              <span>{w.name}</span>
-            </label>
+              <Label htmlFor={`wh-${w.id}`} className="text-sm font-normal">
+                {w.name}
+              </Label>
+            </div>
           ))}
           {!warehouses?.length && (
             <p className="text-sm text-muted-foreground">No warehouses.</p>

@@ -9,7 +9,7 @@ import {
   useWarehousesControllerList,
   useProductsControllerList,
 } from '@iws/api-client';
-import { Button, Input, Label } from '@iws/ui';
+import { Button, Input, Label, SimpleSelect } from '@iws/ui';
 
 function errorMessage(err: unknown): string {
   const message = (err as { response?: { data?: { message?: string } } })
@@ -90,19 +90,27 @@ export function CreatePoForm({ onDone }: { onDone: () => void }) {
       <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-2">
           <Label htmlFor="po-supplier">Supplier</Label>
-          <select id="po-supplier" value={supplierId} onChange={(e) => setSupplierId(e.target.value)} required
-            className="h-9 rounded-md border border-input bg-background px-3 text-sm">
-            <option value="">Select…</option>
-            {(suppliers ?? []).map((s) => <option key={s.id} value={s.id}>{s.name}</option>)}
-          </select>
+          <SimpleSelect
+            id="po-supplier"
+            aria-label="Supplier"
+            className="w-full"
+            value={supplierId}
+            onValueChange={setSupplierId}
+            placeholder="Select…"
+            options={(suppliers ?? []).map((s) => ({ value: s.id, label: s.name }))}
+          />
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="po-warehouse">Destination warehouse</Label>
-          <select id="po-warehouse" value={warehouseId} onChange={(e) => setWarehouseId(e.target.value)} required
-            className="h-9 rounded-md border border-input bg-background px-3 text-sm">
-            <option value="">Select…</option>
-            {(warehouses ?? []).map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
-          </select>
+          <SimpleSelect
+            id="po-warehouse"
+            aria-label="Destination warehouse"
+            className="w-full"
+            value={warehouseId}
+            onValueChange={setWarehouseId}
+            placeholder="Select…"
+            options={(warehouses ?? []).map((w) => ({ value: w.id, label: w.name }))}
+          />
         </div>
       </div>
       <div className="flex flex-col gap-2">
@@ -115,15 +123,17 @@ export function CreatePoForm({ onDone }: { onDone: () => void }) {
         <div className="flex flex-col gap-2">
           {lines.map((line, i) => (
             <div key={i} className="grid grid-cols-[1fr_5rem_6rem_2rem] items-center gap-2">
-              <select
+              <SimpleSelect
                 aria-label={`Line ${i + 1} product`}
+                className="w-full"
                 value={line.productId}
-                onChange={(e) => setLine(i, { productId: e.target.value })}
-                className="h-9 rounded-md border border-input bg-background px-2 text-sm"
-              >
-                <option value="">Select product…</option>
-                {(products ?? []).map((p) => <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>)}
-              </select>
+                onValueChange={(v) => setLine(i, { productId: v })}
+                placeholder="Select product…"
+                options={(products ?? []).map((p) => ({
+                  value: p.id,
+                  label: `${p.name} (${p.sku})`,
+                }))}
+              />
               <Input aria-label={`Line ${i + 1} quantity`} type="number" min={1} placeholder="Qty"
                 value={line.quantity} onChange={(e) => setLine(i, { quantity: e.target.value })} />
               <Input aria-label={`Line ${i + 1} unit cost`} type="number" min={0} step="0.01" placeholder="Unit cost"

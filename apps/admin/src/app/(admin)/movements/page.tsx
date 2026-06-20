@@ -14,6 +14,7 @@ import {
   EmptyState,
   DataTable,
   type DataTableColumn,
+  SimpleSelect,
 } from '@iws/ui';
 
 const PAGE_SIZE = 100;
@@ -147,39 +148,36 @@ export default function MovementsPage() {
         }
         toolbar={
           <>
-            <select
+            <SimpleSelect
               aria-label="Filter by type"
+              className="w-44"
               value={type}
-              onChange={(e) => setType(e.target.value)}
-              className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-            >
-              <option value="">All types</option>
-              {Object.values(MovementType).map((t) => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </select>
-            <select
+              onValueChange={setType}
+              options={[
+                { value: '', label: 'All types' },
+                ...Object.values(MovementType).map((t) => ({ value: t, label: t })),
+              ]}
+            />
+            <SimpleSelect
               aria-label="Filter by warehouse"
+              className="w-44"
               value={warehouseId}
-              onChange={(e) => setWarehouseId(e.target.value)}
-              className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-            >
-              <option value="">All warehouses</option>
-              {(warehouses ?? []).map((w) => (
-                <option key={w.id} value={w.id}>{w.name}</option>
-              ))}
-            </select>
-            <select
+              onValueChange={setWarehouseId}
+              options={[
+                { value: '', label: 'All warehouses' },
+                ...(warehouses ?? []).map((w) => ({ value: w.id, label: w.name })),
+              ]}
+            />
+            <SimpleSelect
               aria-label="Filter by product"
+              className="w-44"
               value={productId}
-              onChange={(e) => setProductId(e.target.value)}
-              className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-            >
-              <option value="">All products</option>
-              {(products ?? []).map((p) => (
-                <option key={p.id} value={p.id}>{p.name}</option>
-              ))}
-            </select>
+              onValueChange={setProductId}
+              options={[
+                { value: '', label: 'All products' },
+                ...(products ?? []).map((p) => ({ value: p.id, label: p.name })),
+              ]}
+            />
             <label className="flex items-center gap-1.5 text-sm text-muted-foreground">
               From
               <input type="date" value={from} onChange={(e) => setFrom(e.target.value)}

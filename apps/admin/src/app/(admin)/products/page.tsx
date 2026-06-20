@@ -19,6 +19,9 @@ import {
   EmptyState,
   EntityAvatar,
   DataTable,
+  SimpleSelect,
+  Checkbox,
+  Label,
   type DataTableColumn,
 } from '@iws/ui';
 
@@ -140,21 +143,23 @@ export default function ProductsPage() {
         }
         toolbar={
           <>
-            <select
+            <SimpleSelect
               aria-label="Filter by category"
+              className="w-48"
               value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
-              className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-            >
-              <option value="">All categories</option>
-              {(categories ?? []).map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
-              ))}
-            </select>
-            <label className="flex items-center gap-2 text-sm text-muted-foreground">
-              <input type="checkbox" checked={includeArchived} onChange={(e) => setIncludeArchived(e.target.checked)} />
+              onValueChange={setCategoryId}
+              options={[
+                { value: '', label: 'All categories' },
+                ...(categories ?? []).map((c) => ({ value: c.id, label: c.name })),
+              ]}
+            />
+            <Label className="flex items-center gap-2 text-sm font-normal text-muted-foreground">
+              <Checkbox
+                checked={includeArchived}
+                onCheckedChange={(v) => setIncludeArchived(v === true)}
+              />
               Include archived
-            </label>
+            </Label>
           </>
         }
         empty={

@@ -10,6 +10,7 @@ import type { ProductDto } from '@iws/api-client';
 import { Button } from '@iws/ui';
 import { Input } from '@iws/ui';
 import { Label } from '@iws/ui';
+import { SimpleSelect } from '@iws/ui';
 
 function errorMessage(err: unknown): string {
   const message = (err as { response?: { data?: { message?: string } } })
@@ -84,17 +85,16 @@ export function ProductForm({
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="prod-category">Category</Label>
-        <select
-          id="prod-category"
+        <SimpleSelect
+          aria-label="Category"
+          className="w-full"
           value={categoryId}
-          onChange={(e) => setCategoryId(e.target.value)}
-          className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-        >
-          <option value="">None</option>
-          {(categories ?? []).map((c) => (
-            <option key={c.id} value={c.id}>{c.name}</option>
-          ))}
-        </select>
+          onValueChange={setCategoryId}
+          options={[
+            { value: '', label: 'None' },
+            ...(categories ?? []).map((c) => ({ value: c.id, label: c.name })),
+          ]}
+        />
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="prod-unit">Unit</Label>

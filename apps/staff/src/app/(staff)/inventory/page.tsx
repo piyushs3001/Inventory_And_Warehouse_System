@@ -16,6 +16,9 @@ import {
   DataTable,
   type DataTableColumn,
   EntityAvatar,
+  SimpleSelect,
+  Checkbox,
+  Label,
 } from '@iws/ui';
 import { ReserveStockDialog, type ReserveContext } from './reserve-stock-dialog';
 
@@ -158,25 +161,23 @@ export default function ViewInventoryPage() {
         }
         toolbar={
           <>
-            <select
+            <SimpleSelect
               aria-label="Filter by warehouse"
+              className="w-48"
               value={warehouseId}
-              onChange={(e) => setWarehouseId(e.target.value)}
-              className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-            >
-              <option value="">All my warehouses</option>
-              {(warehouses ?? []).map((w) => (
-                <option key={w.id} value={w.id}>{w.name}</option>
-              ))}
-            </select>
-            <label className="flex items-center gap-2 text-sm text-muted-foreground">
-              <input
-                type="checkbox"
+              onValueChange={setWarehouseId}
+              options={[
+                { value: '', label: 'All my warehouses' },
+                ...(warehouses ?? []).map((w) => ({ value: w.id, label: w.name })),
+              ]}
+            />
+            <Label className="flex items-center gap-2 text-sm font-normal text-muted-foreground">
+              <Checkbox
                 checked={lowStock}
-                onChange={(e) => setLowStock(e.target.checked)}
+                onCheckedChange={(v) => setLowStock(v === true)}
               />
               Low stock only
-            </label>
+            </Label>
           </>
         }
         empty={

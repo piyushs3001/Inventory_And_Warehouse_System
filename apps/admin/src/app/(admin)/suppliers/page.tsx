@@ -18,6 +18,8 @@ import {
   EmptyState,
   EntityAvatar,
   DataTable,
+  Checkbox,
+  Label,
   type DataTableColumn,
 } from '@iws/ui';
 import { SupplierPerformanceDialog } from './supplier-performance-dialog';
@@ -121,10 +123,13 @@ export default function SuppliersPage() {
           (s.contactName?.toLowerCase().includes(q) ?? false)
         }
         toolbar={
-          <label className="flex items-center gap-2 text-sm text-muted-foreground">
-            <input type="checkbox" checked={includeInactive} onChange={(e) => setIncludeInactive(e.target.checked)} />
+          <Label className="flex items-center gap-2 text-sm font-normal text-muted-foreground">
+            <Checkbox
+              checked={includeInactive}
+              onCheckedChange={(v) => setIncludeInactive(v === true)}
+            />
             Include inactive
-          </label>
+          </Label>
         }
         empty={
           <EmptyState

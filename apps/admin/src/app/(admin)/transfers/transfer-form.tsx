@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useTransfersControllerCreate } from '@iws/api-client';
 import type { ProductDto, WarehouseDto } from '@iws/api-client';
-import { Button, Input, Label } from '@iws/ui';
+import { Button, Input, Label, SimpleSelect } from '@iws/ui';
 
 function errorMessage(err: unknown): string {
   const message = (err as { response?: { data?: { message?: string } } })
@@ -83,19 +83,27 @@ export function TransferForm({
       <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-2">
           <Label htmlFor="tr-source">From (source)</Label>
-          <select id="tr-source" value={sourceWarehouseId} onChange={(e) => setSourceWarehouseId(e.target.value)} required
-            className="h-9 rounded-md border border-input bg-background px-3 text-sm">
-            <option value="">Select…</option>
-            {sources.map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
-          </select>
+          <SimpleSelect
+            id="tr-source"
+            className="w-full"
+            value={sourceWarehouseId}
+            onValueChange={setSourceWarehouseId}
+            placeholder="Select…"
+            options={sources.map((w) => ({ value: w.id, label: w.name }))}
+          />
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="tr-dest">To (destination)</Label>
-          <select id="tr-dest" value={destinationWarehouseId} onChange={(e) => setDestinationWarehouseId(e.target.value)} required
-            className="h-9 rounded-md border border-input bg-background px-3 text-sm">
-            <option value="">Select…</option>
-            {warehouses.filter((w) => w.id !== sourceWarehouseId).map((w) => <option key={w.id} value={w.id}>{w.name}</option>)}
-          </select>
+          <SimpleSelect
+            id="tr-dest"
+            className="w-full"
+            value={destinationWarehouseId}
+            onValueChange={setDestinationWarehouseId}
+            placeholder="Select…"
+            options={warehouses
+              .filter((w) => w.id !== sourceWarehouseId)
+              .map((w) => ({ value: w.id, label: w.name }))}
+          />
         </div>
       </div>
 
@@ -103,12 +111,14 @@ export function TransferForm({
         <Label>Lines</Label>
         {lines.map((line, i) => (
           <div key={i} className="grid grid-cols-[1fr_6rem_2rem] items-center gap-2">
-            <select aria-label={`Line ${i + 1} product`} value={line.productId}
-              onChange={(e) => setLine(i, { productId: e.target.value })}
-              className="h-9 rounded-md border border-input bg-background px-2 text-sm">
-              <option value="">Select product…</option>
-              {products.map((p) => <option key={p.id} value={p.id}>{p.name} ({p.sku})</option>)}
-            </select>
+            <SimpleSelect
+              aria-label={`Line ${i + 1} product`}
+              className="w-full"
+              value={line.productId}
+              onValueChange={(v) => setLine(i, { productId: v })}
+              placeholder="Select product…"
+              options={products.map((p) => ({ value: p.id, label: `${p.name} (${p.sku})` }))}
+            />
             <Input aria-label={`Line ${i + 1} quantity`} type="number" min={1} placeholder="Qty"
               value={line.quantity} onChange={(e) => setLine(i, { quantity: e.target.value })} />
             <Button type="button" variant="outline" size="sm" disabled={lines.length === 1} onClick={() => removeLine(i)} aria-label={`Remove line ${i + 1}`}>×</Button>

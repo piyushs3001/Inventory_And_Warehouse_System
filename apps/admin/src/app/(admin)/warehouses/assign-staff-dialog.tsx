@@ -5,6 +5,7 @@ import { useWarehousesControllerAssignStaff } from '@iws/api-client';
 import { useUsersControllerFindAll } from '@iws/api-client';
 import type { WarehouseDto } from '@iws/api-client';
 import { Button } from '@iws/ui';
+import { Checkbox, Label } from '@iws/ui';
 import {
   Dialog,
   DialogContent,
@@ -53,16 +54,15 @@ export function AssignStaffDialog({
         </DialogHeader>
         <div className="flex flex-col gap-2">
           {(users ?? []).map((u) => (
-            <label key={u.id} className="flex items-center gap-2">
-              <input
-                type="checkbox"
+            <Label key={u.id} className="flex items-center gap-2 text-sm font-normal">
+              <Checkbox
                 aria-label={u.name}
                 checked={selected.has(u.id)}
-                onChange={() => toggle(u.id)}
+                onCheckedChange={() => toggle(u.id)}
               />
               <span>{u.name}</span>
               <span className="text-xs text-muted-foreground">{u.email}</span>
-            </label>
+            </Label>
           ))}
           {!users?.length && (
             <p className="text-sm text-muted-foreground">No users available.</p>

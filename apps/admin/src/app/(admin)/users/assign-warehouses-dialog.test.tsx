@@ -42,7 +42,9 @@ describe('AssignWarehousesDialog', () => {
     renderDialog(onClose);
 
     await waitFor(() => screen.getByText('Central Warehouse'));
-    await userEvent.click(screen.getByLabelText('Central Warehouse'));
+    await userEvent.click(
+      screen.getByRole('checkbox', { name: 'Central Warehouse' }),
+    );
     await userEvent.click(screen.getByRole('button', { name: /save/i }));
 
     await waitFor(() => expect(onClose).toHaveBeenCalled());
