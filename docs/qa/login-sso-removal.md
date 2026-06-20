@@ -39,10 +39,10 @@ The shared `notice` / `setNotice` state was **kept** — it is still used by the
 | 6 | Admin valid sign-in still works (→ dashboard) | Regression | **Passed** | Re-verified 2026-06-20: `admin@iws.local` signs in, lands on `/` |
 | 7 | Staff valid sign-in still works (→ `/home`) | Regression | **Passed** | Re-verified: Warehouse Manager signs in, lands on `/home` |
 | 8 | Staff invalid credentials rejected in place | Negative | **Passed** | Wrong password → "Invalid credentials", no navigation |
-| 9 | Admin login renders the **redesigned** split-screen: brand panel ("Command over every warehouse."), governance footer ("Role-scoped access · Audit-logged · Approvals-first"), Admin Portal badge | Positive | **Passed** | `screenshots/qa-login-no-sso-admin.png` (full page) |
+| 9 | Admin login renders the **redesigned** split-screen: brand panel ("Command over every warehouse."), governance footer ("Role-scoped access · Audit-logged · Approvals-first"), Admin Portal badge | Positive | **Passed** | Verified live via Playwright DOM assertions (full-page screenshot captured but not persisted — see note) |
 | 10 | Admin wrong-role (STAFF) rejected in place with a Staff-app link | Negative | **Passed** | Covered by admin unit test `rejects a valid STAFF account in place` |
 
-**Screenshots:** `screenshots/qa-login-no-sso-staff.png`, `screenshots/qa-login-no-sso-admin.png`
+**Screenshots:** captured during the run (full-page admin + staff login) but not persisted to the repo — an environment quirk cleared untracked image files between capture and commit. All scenarios above were verified live in the browser via Playwright DOM assertions (element presence/absence, navigation, notices); the result column reflects what was observed.
 
 ## Bugs found
 
