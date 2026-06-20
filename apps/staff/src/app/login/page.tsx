@@ -1,14 +1,16 @@
 'use client';
 
-import { useState, type FormEvent, type ReactNode } from 'react';
+import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { AlertTriangle, Check, Eye, EyeOff } from 'lucide-react';
+import Link from 'next/link';
+import { AlertTriangle, Check } from 'lucide-react';
 import { useAuth } from '@iws/auth';
 import { authControllerRegister, getAccessRole, Role } from '@iws/api-client';
 import type { ErrorResponseDto } from '@iws/api-client';
 import type { ErrorType } from '@iws/api-client';
 import { Input } from '@iws/ui';
 import { Label } from '@iws/ui';
+import { PasswordField } from './password-field';
 
 type Tab = 'signin' | 'register';
 
@@ -21,70 +23,6 @@ const ADMIN_APP_URL = process.env.NEXT_PUBLIC_ADMIN_URL ?? 'http://localhost:500
 // Inputs match the wireframe scale (44px, strong border, brand focus ring) —
 // the shared <Input> default is the compact 32px form-grid size.
 const INPUT = 'h-11 rounded-md border-border-strong bg-surface px-3.5 text-sm';
-
-/** Password input with a show/hide eye toggle and an optional strength meter. */
-function PasswordField({
-  id,
-  label,
-  value,
-  onChange,
-  autoComplete,
-  meter = false,
-}: {
-  id: string;
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  autoComplete?: string;
-  meter?: boolean;
-}): ReactNode {
-  const [show, setShow] = useState(false);
-  // 0–4 bars: length, mixed case, a digit, a symbol.
-  const strength = meter
-    ? [value.length >= 8, /[a-z]/.test(value) && /[A-Z]/.test(value), /\d/.test(value), /[^A-Za-z0-9]/.test(value)].filter(
-        Boolean,
-      ).length
-    : 0;
-
-  return (
-    <div className="mb-[1.05rem]">
-      <Label htmlFor={id} className="mb-[0.42rem] block text-[12.5px] font-medium">
-        {label}
-      </Label>
-      <div className="relative">
-        <Input
-          id={id}
-          type={show ? 'text' : 'password'}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          autoComplete={autoComplete}
-          className={`${INPUT} pr-11`}
-          required
-        />
-        <button
-          type="button"
-          onClick={() => setShow((v) => !v)}
-          aria-label={show ? 'Hide password' : 'Show password'}
-          aria-pressed={show}
-          title={show ? 'Hide password' : 'Show password'}
-          className="absolute top-1/2 right-[0.4rem] grid size-[34px] -translate-y-1/2 place-items-center rounded-lg text-faint transition-colors hover:bg-surface-2 hover:text-foreground focus-visible:text-foreground focus-visible:outline-none"
-        >
-          {show ? <EyeOff className="size-4" aria-hidden /> : <Eye className="size-4" aria-hidden />}
-        </button>
-      </div>
-      {meter && (
-        <div className="mt-2 flex gap-1" aria-hidden>
-          {[0, 1, 2, 3].map((i) => (
-            <i
-              key={i}
-              className={`h-1 flex-1 rounded-[3px] transition-colors ${i < strength ? 'bg-ok' : 'bg-surface-3'}`}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
 
 export default function LoginPage() {
   const { login, logout } = useAuth();
@@ -111,13 +49,10 @@ export default function LoginPage() {
 
   // Success banner shown on the sign-in panel after a successful registration.
   const [flash, setFlash] = useState<string | null>(null);
-  // "Feature not wired yet" notice for forgot-password.
-  const [notice, setNotice] = useState<string | null>(null);
 
   const onSignIn = async (e: FormEvent): Promise<void> => {
     e.preventDefault();
     setError(null);
-    setNotice(null);
     setFlash(null);
     setWrongApp(false);
     setSubmitting(true);
@@ -170,7 +105,6 @@ export default function LoginPage() {
       setRConfirm('');
       setTab('signin');
       setError(null);
-      setNotice(null);
       setFlash('Account created — it’s awaiting administrator approval. You can sign in once an admin activates it.');
     } catch (err) {
       const ex = err as ErrorType<ErrorResponseDto>;
@@ -191,7 +125,6 @@ export default function LoginPage() {
   const switchTab = (t: Tab): void => {
     setTab(t);
     setError(null);
-    setNotice(null);
     setFlash(null);
     setRegisterError(null);
     setWrongApp(false);
@@ -368,9 +301,9 @@ export default function LoginPage() {
                   <input type="checkbox" checked={stay} onChange={(e) => setStay(e.target.checked)} className="accent-primary" />
                   Stay signed in
                 </label>
-                <button type="button" onClick={() => setNotice('Password reset isn’t available yet.')} className="font-medium text-primary-2">
+                <Link href="/forgot-password" className="font-medium text-primary-2">
                   Forgot password?
-                </button>
+                </Link>
               </div>
 
               {flash && (
@@ -391,8 +324,6 @@ export default function LoginPage() {
                   </a>
                 </p>
               )}
-              {notice && <p className="mb-3 text-[12.5px] text-muted-foreground">{notice}</p>}
-
               <button
                 type="submit"
                 disabled={submitting}

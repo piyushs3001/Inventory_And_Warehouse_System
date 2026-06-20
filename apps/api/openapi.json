@@ -629,6 +629,124 @@
         ]
       }
     },
+    "/auth/forgot-password": {
+      "post": {
+        "description": "Send a password-reset link to the email if it belongs to an active account. Always returns the same generic message — it never reveals whether an account exists.",
+        "operationId": "AuthController_forgotPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request body or parameters failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Request a password reset",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/reset-password/validate": {
+      "get": {
+        "description": "Report whether a reset token is still usable (exists, unexpired, unused) so the reset page can show a friendly state before submit.",
+        "operationId": "AuthController_validateResetToken",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResetTokenStatusDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Check a reset token",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/reset-password": {
+      "post": {
+        "description": "Set a new password using a valid reset token. Invalidates the token and any existing sessions for that user.",
+        "operationId": "AuthController_resetPassword",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MessageDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The reset link is invalid or has expired.\n\nRequest body or parameters failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Reset a password",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
     "/auth/refresh": {
       "post": {
         "description": "Rotate the token pair using a valid refresh token (sent as the bearer token).",
@@ -5556,6 +5674,76 @@
         "required": [
           "name",
           "email",
+          "password"
+        ]
+      },
+      "ForgotPasswordDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Email of the account to reset.",
+            "example": "rosa@company.com"
+          },
+          "app": {
+            "enum": [
+              "staff",
+              "admin"
+            ],
+            "type": "string",
+            "description": "Which app requested the reset; the link points back to it.",
+            "example": "staff"
+          }
+        },
+        "required": [
+          "email",
+          "app"
+        ]
+      },
+      "MessageDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "A generic, non-revealing acknowledgement message.",
+            "example": "If an account exists for that email, a reset link has been sent."
+          }
+        },
+        "required": [
+          "message"
+        ]
+      },
+      "ResetTokenStatusDto": {
+        "type": "object",
+        "properties": {
+          "valid": {
+            "type": "boolean",
+            "description": "True when the token is valid and can be used to reset.",
+            "example": true
+          }
+        },
+        "required": [
+          "valid"
+        ]
+      },
+      "ResetPasswordDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "The reset token from the email link.",
+            "example": "a1b2c3..."
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "description": "New password (min 8 chars).",
+            "example": "S3curePass!"
+          }
+        },
+        "required": [
+          "token",
           "password"
         ]
       },

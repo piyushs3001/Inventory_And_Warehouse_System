@@ -25,9 +25,14 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  AuthControllerValidateResetTokenParams,
   ErrorResponseDto,
+  ForgotPasswordDto,
   LoginDto,
+  MessageDto,
   RegisterDto,
+  ResetPasswordDto,
+  ResetTokenStatusDto,
   TokensDto,
   UserDto
 } from '../model';
@@ -171,6 +176,228 @@ export const useAuthControllerRegister = <TError = ErrorType<ErrorResponseDto>,
         TContext
       > => {
       return useMutation(getAuthControllerRegisterMutationOptions(options), queryClient);
+    }
+    /**
+ * Send a password-reset link to the email if it belongs to an active account. Always returns the same generic message — it never reveals whether an account exists.
+ * @summary Request a password reset
+ */
+export const authControllerForgotPassword = (
+    forgotPasswordDto: BodyType<ForgotPasswordDto>,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<MessageDto>(
+      {url: `/auth/forgot-password`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: forgotPasswordDto, signal
+    },
+      options);
+    }
+
+
+
+export const getAuthControllerForgotPasswordMutationOptions = <TError = ErrorType<ErrorResponseDto>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof authControllerForgotPassword>>, TError,{data: BodyType<ForgotPasswordDto>}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof authControllerForgotPassword>>, TError,{data: BodyType<ForgotPasswordDto>}, TContext> => {
+
+const mutationKey = ['authControllerForgotPassword'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof authControllerForgotPassword>>, {data: BodyType<ForgotPasswordDto>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  authControllerForgotPassword(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AuthControllerForgotPasswordMutationResult = NonNullable<Awaited<ReturnType<typeof authControllerForgotPassword>>>
+    export type AuthControllerForgotPasswordMutationBody = BodyType<ForgotPasswordDto>
+    export type AuthControllerForgotPasswordMutationError = ErrorType<ErrorResponseDto>
+
+    /**
+ * @summary Request a password reset
+ */
+export const useAuthControllerForgotPassword = <TError = ErrorType<ErrorResponseDto>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof authControllerForgotPassword>>, TError,{data: BodyType<ForgotPasswordDto>}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof authControllerForgotPassword>>,
+        TError,
+        {data: BodyType<ForgotPasswordDto>},
+        TContext
+      > => {
+      return useMutation(getAuthControllerForgotPasswordMutationOptions(options), queryClient);
+    }
+    /**
+ * Report whether a reset token is still usable (exists, unexpired, unused) so the reset page can show a friendly state before submit.
+ * @summary Check a reset token
+ */
+export const authControllerValidateResetToken = (
+    params: AuthControllerValidateResetTokenParams,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<ResetTokenStatusDto>(
+      {url: `/auth/reset-password/validate`, method: 'GET',
+        params, signal
+    },
+      options);
+    }
+
+
+
+
+export const getAuthControllerValidateResetTokenQueryKey = (params?: AuthControllerValidateResetTokenParams,) => {
+    return [
+    `/auth/reset-password/validate`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getAuthControllerValidateResetTokenQueryOptions = <TData = Awaited<ReturnType<typeof authControllerValidateResetToken>>, TError = ErrorType<unknown>>(params: AuthControllerValidateResetTokenParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof authControllerValidateResetToken>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAuthControllerValidateResetTokenQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof authControllerValidateResetToken>>> = ({ signal }) => authControllerValidateResetToken(params, requestOptions, signal);
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof authControllerValidateResetToken>>, TError, TData> & { queryKey: DataTag<QueryKey, TData, TError> }
+}
+
+export type AuthControllerValidateResetTokenQueryResult = NonNullable<Awaited<ReturnType<typeof authControllerValidateResetToken>>>
+export type AuthControllerValidateResetTokenQueryError = ErrorType<unknown>
+
+
+export function useAuthControllerValidateResetToken<TData = Awaited<ReturnType<typeof authControllerValidateResetToken>>, TError = ErrorType<unknown>>(
+ params: AuthControllerValidateResetTokenParams, options: { query:Partial<UseQueryOptions<Awaited<ReturnType<typeof authControllerValidateResetToken>>, TError, TData>> & Pick<
+        DefinedInitialDataOptions<
+          Awaited<ReturnType<typeof authControllerValidateResetToken>>,
+          TError,
+          Awaited<ReturnType<typeof authControllerValidateResetToken>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  DefinedUseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAuthControllerValidateResetToken<TData = Awaited<ReturnType<typeof authControllerValidateResetToken>>, TError = ErrorType<unknown>>(
+ params: AuthControllerValidateResetTokenParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof authControllerValidateResetToken>>, TError, TData>> & Pick<
+        UndefinedInitialDataOptions<
+          Awaited<ReturnType<typeof authControllerValidateResetToken>>,
+          TError,
+          Awaited<ReturnType<typeof authControllerValidateResetToken>>
+        > , 'initialData'
+      >, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+export function useAuthControllerValidateResetToken<TData = Awaited<ReturnType<typeof authControllerValidateResetToken>>, TError = ErrorType<unknown>>(
+ params: AuthControllerValidateResetTokenParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof authControllerValidateResetToken>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+  ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> }
+/**
+ * @summary Check a reset token
+ */
+
+export function useAuthControllerValidateResetToken<TData = Awaited<ReturnType<typeof authControllerValidateResetToken>>, TError = ErrorType<unknown>>(
+ params: AuthControllerValidateResetTokenParams, options?: { query?:Partial<UseQueryOptions<Awaited<ReturnType<typeof authControllerValidateResetToken>>, TError, TData>>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient
+ ):  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> } {
+
+  const queryOptions = getAuthControllerValidateResetTokenQueryOptions(params,options)
+
+  const query = useQuery(queryOptions, queryClient) as  UseQueryResult<TData, TError> & { queryKey: DataTag<QueryKey, TData, TError> };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+/**
+ * Set a new password using a valid reset token. Invalidates the token and any existing sessions for that user.
+ * @summary Reset a password
+ */
+export const authControllerResetPassword = (
+    resetPasswordDto: BodyType<ResetPasswordDto>,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<MessageDto>(
+      {url: `/auth/reset-password`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: resetPasswordDto, signal
+    },
+      options);
+    }
+
+
+
+export const getAuthControllerResetPasswordMutationOptions = <TError = ErrorType<ErrorResponseDto>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof authControllerResetPassword>>, TError,{data: BodyType<ResetPasswordDto>}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof authControllerResetPassword>>, TError,{data: BodyType<ResetPasswordDto>}, TContext> => {
+
+const mutationKey = ['authControllerResetPassword'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof authControllerResetPassword>>, {data: BodyType<ResetPasswordDto>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  authControllerResetPassword(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AuthControllerResetPasswordMutationResult = NonNullable<Awaited<ReturnType<typeof authControllerResetPassword>>>
+    export type AuthControllerResetPasswordMutationBody = BodyType<ResetPasswordDto>
+    export type AuthControllerResetPasswordMutationError = ErrorType<ErrorResponseDto>
+
+    /**
+ * @summary Reset a password
+ */
+export const useAuthControllerResetPassword = <TError = ErrorType<ErrorResponseDto>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof authControllerResetPassword>>, TError,{data: BodyType<ResetPasswordDto>}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof authControllerResetPassword>>,
+        TError,
+        {data: BodyType<ResetPasswordDto>},
+        TContext
+      > => {
+      return useMutation(getAuthControllerResetPasswordMutationOptions(options), queryClient);
     }
     /**
  * Rotate the token pair using a valid refresh token (sent as the bearer token).

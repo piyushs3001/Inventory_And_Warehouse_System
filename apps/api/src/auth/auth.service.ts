@@ -1,19 +1,26 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { UserStatus } from '@prisma/client';
+import { createHash, randomBytes } from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service';
+import { MailService } from '../mail/mail.service';
 import { PasswordService } from './password.service';
 import { JwtPayload, Tokens } from './auth.types';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
   private readonly accessTtl = '15m';
   private readonly refreshTtl = '7d';
+  // Password-reset tokens live for one hour and can be used once.
+  private readonly resetTtlMs = 60 * 60 * 1000;
   // A valid bcrypt hash compared against when the email is unknown, so login
   // takes ~the same time whether or not the user exists (no timing enumeration).
   private readonly dummyHash =
@@ -24,6 +31,7 @@ export class AuthService {
     private readonly jwt: JwtService,
     private readonly passwords: PasswordService,
     private readonly config: ConfigService,
+    private readonly mail: MailService,
   ) {}
 
   async login(email: string, password: string): Promise<Tokens> {
@@ -110,5 +118,90 @@ export class AuthService {
       where: { id: userId },
       data: { hashedRefreshToken },
     });
+  }
+
+  /**
+   * Begin a password reset. Always resolves without revealing whether the email
+   * maps to an account (no enumeration). Only ACTIVE users get an email; a new
+   * request invalidates the user's prior outstanding tokens.
+   */
+  async requestPasswordReset(
+    email: string,
+    app: 'staff' | 'admin',
+  ): Promise<void> {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user || user.status !== UserStatus.ACTIVE) return;
+
+    await this.prisma.passwordResetToken.deleteMany({
+      where: { userId: user.id },
+    });
+
+    const rawToken = randomBytes(32).toString('hex');
+    await this.prisma.passwordResetToken.create({
+      data: {
+        userId: user.id,
+        tokenHash: this.hashToken(rawToken),
+        expiresAt: new Date(Date.now() + this.resetTtlMs),
+      },
+    });
+
+    const resetUrl = `${this.appBaseUrl(app)}/reset-password?token=${rawToken}`;
+    try {
+      await this.mail.sendPasswordReset(user.email, resetUrl);
+    } catch (err) {
+      // Never surface mail failures to the caller — the response stays generic.
+      this.logger.error('Failed to send password-reset email', err as Error);
+    }
+  }
+
+  /** True when the token exists, is unused, and has not expired. */
+  async validateResetToken(token: string): Promise<boolean> {
+    const row = await this.prisma.passwordResetToken.findUnique({
+      where: { tokenHash: this.hashToken(token) },
+    });
+    return this.isTokenUsable(row);
+  }
+
+  /**
+   * Consume a reset token: set the new password, mark the token used, and clear
+   * any stored refresh token (logging out existing sessions) — all atomically.
+   */
+  async resetPassword(token: string, password: string): Promise<void> {
+    const row = await this.prisma.passwordResetToken.findUnique({
+      where: { tokenHash: this.hashToken(token) },
+    });
+    if (!this.isTokenUsable(row) || !row) {
+      throw new BadRequestException(
+        'This reset link is invalid or has expired.',
+      );
+    }
+
+    const passwordHash = await this.passwords.hash(password);
+    await this.prisma.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: row.userId },
+        data: { passwordHash, hashedRefreshToken: null },
+      });
+      await tx.passwordResetToken.update({
+        where: { id: row.id },
+        data: { usedAt: new Date() },
+      });
+    });
+  }
+
+  private isTokenUsable(
+    row: { expiresAt: Date; usedAt: Date | null } | null,
+  ): boolean {
+    return Boolean(row && !row.usedAt && row.expiresAt.getTime() > Date.now());
+  }
+
+  private hashToken(raw: string): string {
+    return createHash('sha256').update(raw).digest('hex');
+  }
+
+  private appBaseUrl(app: 'staff' | 'admin'): string {
+    return app === 'admin'
+      ? (this.config.get<string>('ADMIN_APP_URL') ?? 'http://localhost:5001')
+      : (this.config.get<string>('STAFF_APP_URL') ?? 'http://localhost:5000');
   }
 }

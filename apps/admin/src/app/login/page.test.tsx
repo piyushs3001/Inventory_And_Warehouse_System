@@ -82,4 +82,10 @@ describe('AdminLoginPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /show password/i }));
     expect(pw).toHaveAttribute('type', 'text');
   });
+
+  it('"Forgot password?" links to the /forgot-password page', () => {
+    render(<LoginPage />);
+    const link = screen.getByRole('link', { name: /forgot password/i });
+    expect(link).toHaveAttribute('href', '/forgot-password');
+  });
 });

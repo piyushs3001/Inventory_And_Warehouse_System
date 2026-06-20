@@ -1,6 +1,11 @@
-import { UnauthorizedException, ForbiddenException } from '@nestjs/common';
+import {
+  UnauthorizedException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Role, UserStatus } from '@prisma/client';
+import { createHash } from 'node:crypto';
 import { AuthService } from './auth.service';
 import { PasswordService } from './password.service';
 
@@ -13,11 +18,33 @@ type UserRow = {
   hashedRefreshToken: string | null;
 };
 
-function makeService(user: UserRow | null) {
-  const store = { user };
-  const prisma = {
+type TokenRow = {
+  id: string;
+  userId: string;
+  tokenHash: string;
+  expiresAt: Date;
+  usedAt: Date | null;
+};
+
+function sha256(raw: string): string {
+  return createHash('sha256').update(raw).digest('hex');
+}
+
+function makeService(
+  user: UserRow | null,
+  configValues: Record<string, string> = {},
+) {
+  const store: { user: UserRow | null; tokens: TokenRow[] } = {
+    user,
+    tokens: [],
+  };
+  let tokenSeq = 0;
+
+  const prisma: Record<string, unknown> = {
     user: {
-      findUnique: jest.fn().mockResolvedValue(store.user),
+      findUnique: jest
+        .fn()
+        .mockImplementation(() => Promise.resolve(store.user)),
       update: jest
         .fn()
         .mockImplementation(({ data }: { data: Partial<UserRow> }) => {
@@ -25,17 +52,67 @@ function makeService(user: UserRow | null) {
           return Promise.resolve(store.user);
         }),
     },
+    passwordResetToken: {
+      findUnique: jest
+        .fn()
+        .mockImplementation(({ where }: { where: { tokenHash: string } }) =>
+          Promise.resolve(
+            store.tokens.find((t) => t.tokenHash === where.tokenHash) ?? null,
+          ),
+        ),
+      create: jest
+        .fn()
+        .mockImplementation(
+          ({ data }: { data: Omit<TokenRow, 'id' | 'usedAt'> }) => {
+            const row: TokenRow = {
+              id: `t${++tokenSeq}`,
+              usedAt: null,
+              ...data,
+            };
+            store.tokens.push(row);
+            return Promise.resolve(row);
+          },
+        ),
+      deleteMany: jest
+        .fn()
+        .mockImplementation(({ where }: { where: { userId: string } }) => {
+          store.tokens = store.tokens.filter((t) => t.userId !== where.userId);
+          return Promise.resolve({ count: 0 });
+        }),
+      update: jest
+        .fn()
+        .mockImplementation(
+          ({
+            where,
+            data,
+          }: {
+            where: { id: string };
+            data: Partial<TokenRow>;
+          }) => {
+            const row = store.tokens.find((t) => t.id === where.id);
+            if (row) Object.assign(row, data);
+            return Promise.resolve(row);
+          },
+        ),
+    },
   };
+  prisma.$transaction = (fn: (tx: unknown) => unknown) => fn(prisma);
+
   const jwt = new JwtService({ secret: 'test' });
   const passwords = new PasswordService();
-  const config = { getOrThrow: () => 'test-secret' };
+  const config = {
+    getOrThrow: () => 'test-secret',
+    get: (key: string) => configValues[key],
+  };
+  const mail = { sendPasswordReset: jest.fn().mockResolvedValue(undefined) };
   const service = new AuthService(
     prisma as never,
     jwt,
     passwords,
     config as never,
+    mail as never,
   );
-  return { service, prisma, passwords, store };
+  return { service, prisma, passwords, store, mail };
 }
 
 describe('AuthService', () => {
@@ -132,5 +209,147 @@ describe('AuthService', () => {
     await expect(service.login('gone@a.com', 'correct')).rejects.toBeInstanceOf(
       UnauthorizedException,
     );
+  });
+
+  describe('password reset', () => {
+    function activeUser(): UserRow {
+      return {
+        id: 'u1',
+        email: 'rosa@a.com',
+        role: Role.STAFF,
+        status: UserStatus.ACTIVE,
+        passwordHash: 'old-hash',
+        hashedRefreshToken: 'old-refresh',
+      };
+    }
+
+    it('creates a token and emails a staff reset link for an ACTIVE user', async () => {
+      const { service, store, mail } = makeService(activeUser(), {
+        STAFF_APP_URL: 'http://staff.test',
+        ADMIN_APP_URL: 'http://admin.test',
+      });
+
+      await service.requestPasswordReset('rosa@a.com', 'staff');
+
+      expect(store.tokens).toHaveLength(1);
+      expect(store.tokens[0].expiresAt.getTime()).toBeGreaterThan(Date.now());
+      expect(mail.sendPasswordReset).toHaveBeenCalledTimes(1);
+      const [to, url] = mail.sendPasswordReset.mock.calls[0] as [
+        string,
+        string,
+      ];
+      expect(to).toBe('rosa@a.com');
+      expect(url).toMatch(/^http:\/\/staff\.test\/reset-password\?token=/);
+    });
+
+    it('uses the admin base URL when app=admin', async () => {
+      const { service, mail } = makeService(activeUser(), {
+        STAFF_APP_URL: 'http://staff.test',
+        ADMIN_APP_URL: 'http://admin.test',
+      });
+      await service.requestPasswordReset('rosa@a.com', 'admin');
+      const [, url] = mail.sendPasswordReset.mock.calls[0] as [string, string];
+      expect(url).toMatch(/^http:\/\/admin\.test\/reset-password\?token=/);
+    });
+
+    it('does nothing for an unknown email (no token, no mail)', async () => {
+      const { service, store, mail } = makeService(null);
+      await service.requestPasswordReset('nobody@a.com', 'staff');
+      expect(store.tokens).toHaveLength(0);
+      expect(mail.sendPasswordReset).not.toHaveBeenCalled();
+    });
+
+    it('does nothing for a non-ACTIVE user', async () => {
+      const pending = { ...activeUser(), status: UserStatus.PENDING_APPROVAL };
+      const { service, store, mail } = makeService(pending);
+      await service.requestPasswordReset('rosa@a.com', 'staff');
+      expect(store.tokens).toHaveLength(0);
+      expect(mail.sendPasswordReset).not.toHaveBeenCalled();
+    });
+
+    it('invalidates prior outstanding tokens on a new request', async () => {
+      const { service, store } = makeService(activeUser());
+      await service.requestPasswordReset('rosa@a.com', 'staff');
+      await service.requestPasswordReset('rosa@a.com', 'staff');
+      expect(store.tokens).toHaveLength(1);
+    });
+
+    it('still resolves when sending the email fails', async () => {
+      const { service, mail } = makeService(activeUser());
+      mail.sendPasswordReset.mockRejectedValueOnce(new Error('smtp down'));
+      await expect(
+        service.requestPasswordReset('rosa@a.com', 'staff'),
+      ).resolves.toBeUndefined();
+    });
+
+    it('validateResetToken: true for an unused, unexpired token', async () => {
+      const { service, store } = makeService(activeUser());
+      store.tokens.push({
+        id: 't1',
+        userId: 'u1',
+        tokenHash: sha256('raw'),
+        expiresAt: new Date(Date.now() + 60_000),
+        usedAt: null,
+      });
+      await expect(service.validateResetToken('raw')).resolves.toBe(true);
+    });
+
+    it('validateResetToken: false for missing / expired / used', async () => {
+      const { service, store } = makeService(activeUser());
+      await expect(service.validateResetToken('missing')).resolves.toBe(false);
+      store.tokens.push({
+        id: 't1',
+        userId: 'u1',
+        tokenHash: sha256('expired'),
+        expiresAt: new Date(Date.now() - 1),
+        usedAt: null,
+      });
+      store.tokens.push({
+        id: 't2',
+        userId: 'u1',
+        tokenHash: sha256('used'),
+        expiresAt: new Date(Date.now() + 60_000),
+        usedAt: new Date(),
+      });
+      await expect(service.validateResetToken('expired')).resolves.toBe(false);
+      await expect(service.validateResetToken('used')).resolves.toBe(false);
+    });
+
+    it('resetPassword: updates the hash, marks the token used, clears refresh', async () => {
+      const { service, store, passwords } = makeService(activeUser());
+      store.tokens.push({
+        id: 't1',
+        userId: 'u1',
+        tokenHash: sha256('raw'),
+        expiresAt: new Date(Date.now() + 60_000),
+        usedAt: null,
+      });
+
+      await service.resetPassword('raw', 'newPassword1');
+
+      expect(store.user?.hashedRefreshToken).toBeNull();
+      expect(store.tokens[0].usedAt).toBeInstanceOf(Date);
+      // New hash verifies against the new password.
+      await expect(
+        passwords.compare('newPassword1', store.user!.passwordHash),
+      ).resolves.toBe(true);
+    });
+
+    it('resetPassword: rejects an invalid / expired / used token with 400', async () => {
+      const { service, store } = makeService(activeUser());
+      await expect(
+        service.resetPassword('missing', 'newPassword1'),
+      ).rejects.toBeInstanceOf(BadRequestException);
+      store.tokens.push({
+        id: 't1',
+        userId: 'u1',
+        tokenHash: sha256('used'),
+        expiresAt: new Date(Date.now() + 60_000),
+        usedAt: new Date(),
+      });
+      await expect(
+        service.resetPassword('used', 'newPassword1'),
+      ).rejects.toBeInstanceOf(BadRequestException);
+    });
   });
 });

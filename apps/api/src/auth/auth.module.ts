@@ -9,9 +9,10 @@ import { RefreshStrategy } from './strategies/refresh.strategy';
 import { ScopeService } from './scope.service';
 import { ScopeGuard } from './guards/scope.guard';
 import { UsersModule } from '../users/users.module';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
-  imports: [PassportModule, JwtModule.register({}), UsersModule],
+  imports: [PassportModule, JwtModule.register({}), UsersModule, MailModule],
   controllers: [AuthController],
   providers: [
     AuthService,

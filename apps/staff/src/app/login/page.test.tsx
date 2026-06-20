@@ -222,11 +222,10 @@ describe('LoginPage registration', () => {
   });
 });
 
-describe('LoginPage pending (no-backend) controls', () => {
-  it('"Forgot password?" shows an unavailable notice', async () => {
-    const user = userEvent.setup();
+describe('LoginPage forgot-password link', () => {
+  it('"Forgot password?" links to the /forgot-password page', () => {
     render(<LoginPage />);
-    await user.click(screen.getByRole('button', { name: /forgot password/i }));
-    expect(screen.getByText(/password reset isn.t available yet/i)).toBeInTheDocument();
+    const link = screen.getByRole('link', { name: /forgot password/i });
+    expect(link).toHaveAttribute('href', '/forgot-password');
   });
 });

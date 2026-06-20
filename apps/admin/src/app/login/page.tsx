@@ -2,12 +2,13 @@
 
 import { useState, type FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff } from 'lucide-react';
+import Link from 'next/link';
 import { useAuth } from '@iws/auth';
 import { getAccessRole, Role } from '@iws/api-client';
 import type { ErrorResponseDto, ErrorType } from '@iws/api-client';
 import { Input } from '@iws/ui';
 import { Label } from '@iws/ui';
+import { PasswordField } from './password-field';
 
 // Admin Portal login — sign-in only, on a split-screen layout that echoes the
 // Staff app but reads as the admin surface: an austere "command console" brand
@@ -23,17 +24,14 @@ export default function AdminLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [stay, setStay] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [wrongApp, setWrongApp] = useState(false);
-  const [notice, setNotice] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const onSubmit = async (e: FormEvent): Promise<void> => {
     e.preventDefault();
     setError(null);
-    setNotice(null);
     setWrongApp(false);
     setSubmitting(true);
     try {
@@ -152,40 +150,22 @@ export default function AdminLoginPage() {
               />
             </div>
 
-            <div className="mb-[1.05rem]">
-              <Label htmlFor="password" className="mb-[0.42rem] block text-[12.5px] font-medium">
-                Password
-              </Label>
-              <div className="relative">
-                <Input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="current-password"
-                  className={`${INPUT} pr-11`}
-                  required
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  aria-pressed={showPassword}
-                  className="absolute top-1/2 right-[0.4rem] grid size-[34px] -translate-y-1/2 place-items-center rounded-lg text-faint transition-colors hover:bg-surface-2 hover:text-foreground focus-visible:text-foreground focus-visible:outline-none"
-                >
-                  {showPassword ? <EyeOff className="size-4" aria-hidden /> : <Eye className="size-4" aria-hidden />}
-                </button>
-              </div>
-            </div>
+            <PasswordField
+              id="password"
+              label="Password"
+              value={password}
+              onChange={setPassword}
+              autoComplete="current-password"
+            />
 
             <div className="mt-[0.1rem] mb-[1.35rem] flex items-center justify-between text-[12.5px]">
               <label className="flex cursor-pointer items-center gap-[0.45rem] text-muted-foreground">
                 <input type="checkbox" checked={stay} onChange={(e) => setStay(e.target.checked)} className="accent-primary" />
                 Stay signed in
               </label>
-              <button type="button" onClick={() => setNotice('Password reset isn’t available yet — contact a Super Admin.')} className="font-medium text-primary-2">
+              <Link href="/forgot-password" className="font-medium text-primary-2">
                 Forgot password?
-              </button>
+              </Link>
             </div>
 
             {error && (
@@ -201,8 +181,6 @@ export default function AdminLoginPage() {
                 </a>
               </p>
             )}
-            {notice && <p className="mb-3 text-[12.5px] text-muted-foreground">{notice}</p>}
-
             <button
               type="submit"
               disabled={submitting}

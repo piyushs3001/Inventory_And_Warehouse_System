@@ -5,9 +5,11 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
+  ApiBadRequestResponse,
   ApiBearerAuth,
   ApiConflictResponse,
   ApiCreatedResponse,
@@ -22,6 +24,10 @@ import { UsersService } from '../users/users.service';
 import { Throttle } from '@nestjs/throttler';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { MessageDto } from './dto/message.dto';
+import { ResetTokenStatusDto } from './dto/reset-token-status.dto';
 
 // Brute-force guard on credential endpoints: 10 attempts/min/IP in real
 // environments; effectively disabled under test so the serial e2e suite (which
@@ -86,6 +92,60 @@ export class AuthController {
   })
   register(@Body() dto: RegisterDto) {
     return this.users.registerSelfSignup(dto);
+  }
+
+  @Post('forgot-password')
+  @Throttle(AUTH_THROTTLE)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Request a password reset',
+    description:
+      'Send a password-reset link to the email if it belongs to an active ' +
+      'account. Always returns the same generic message — it never reveals ' +
+      'whether an account exists.',
+  })
+  @ApiOkResponse({ type: MessageDto })
+  @ApiValidationError()
+  async forgotPassword(@Body() dto: ForgotPasswordDto): Promise<MessageDto> {
+    await this.auth.requestPasswordReset(dto.email, dto.app);
+    return {
+      message:
+        'If an account exists for that email, a reset link has been sent.',
+    };
+  }
+
+  @Get('reset-password/validate')
+  @ApiOperation({
+    summary: 'Check a reset token',
+    description:
+      'Report whether a reset token is still usable (exists, unexpired, ' +
+      'unused) so the reset page can show a friendly state before submit.',
+  })
+  @ApiOkResponse({ type: ResetTokenStatusDto })
+  async validateResetToken(
+    @Query('token') token: string,
+  ): Promise<ResetTokenStatusDto> {
+    return { valid: await this.auth.validateResetToken(token ?? '') };
+  }
+
+  @Post('reset-password')
+  @Throttle(AUTH_THROTTLE)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Reset a password',
+    description:
+      'Set a new password using a valid reset token. Invalidates the token ' +
+      'and any existing sessions for that user.',
+  })
+  @ApiOkResponse({ type: MessageDto })
+  @ApiValidationError()
+  @ApiBadRequestResponse({
+    type: ErrorResponseDto,
+    description: 'The reset link is invalid or has expired.',
+  })
+  async resetPassword(@Body() dto: ResetPasswordDto): Promise<MessageDto> {
+    await this.auth.resetPassword(dto.token, dto.password);
+    return { message: 'Your password has been updated.' };
   }
 
   @Post('refresh')
