@@ -20,7 +20,7 @@ describe('Sidebar (staff)', () => {
 
   it('renders a count badge on a staff task item', () => {
     render(<Sidebar surface="staff" role={Role.STAFF} />);
-    const receive = screen.getByRole('link', { name: /receive stock/i });
-    expect(receive).toHaveTextContent('2');
+    const dispatch = screen.getByRole('link', { name: /dispatch stock/i });
+    expect(dispatch).toHaveTextContent('5');
   });
 });

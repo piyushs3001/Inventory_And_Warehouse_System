@@ -1146,6 +1146,110 @@
         ]
       }
     },
+    "/activity-logs": {
+      "get": {
+        "operationId": "ActivityController_list",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "entityType",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "action",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityLogListDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Browse the activity log (Super Admin — global audit, read-only)",
+        "tags": [
+          "activity-logs"
+        ]
+      }
+    },
     "/categories": {
       "get": {
         "description": "Global catalog reference data; available to any authenticated user.",
@@ -1838,6 +1942,2700 @@
           "products"
         ]
       }
+    },
+    "/inventory": {
+      "get": {
+        "description": "Scope-filtered stock per (product x warehouse). Any authenticated user; staff see only their assigned warehouses. Paginated.",
+        "operationId": "InventoryController_list",
+        "parameters": [
+          {
+            "name": "warehouseId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "productId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lowStock",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryListDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "List inventory (four buckets per SKU) within scope",
+        "tags": [
+          "inventory"
+        ]
+      }
+    },
+    "/inventory/adjust": {
+      "post": {
+        "description": "Applies a signed change to the available or damaged bucket and writes an ADJUSTMENT movement in the same transaction.",
+        "operationId": "InventoryController_adjust",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdjustStockDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryItemDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request body or parameters failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Adjust a stock bucket (reason required)",
+        "tags": [
+          "inventory"
+        ]
+      }
+    },
+    "/inventory/reserve": {
+      "post": {
+        "description": "Moves units from available to reserved within the same warehouse and writes a movement. Stock is not removed from the warehouse.",
+        "operationId": "InventoryController_reserve",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReserveStockDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryItemDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request body or parameters failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Reserve stock (available -> reserved)",
+        "tags": [
+          "inventory"
+        ]
+      }
+    },
+    "/notifications": {
+      "get": {
+        "operationId": "NotificationsController_list",
+        "parameters": [
+          {
+            "name": "unreadOnly",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NotificationDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "List the caller's notifications (newest first)",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/notifications/{id}/read": {
+      "patch": {
+        "operationId": "NotificationsController_markRead",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Notification id (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NotificationDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found (or not yours).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Mark one of your notifications as read",
+        "tags": [
+          "notifications"
+        ]
+      }
+    },
+    "/movements": {
+      "get": {
+        "description": "Append-only quantity ledger within the caller's scope. Filter by product, warehouse, type and date range. Paginated, newest first.",
+        "operationId": "MovementsController_list",
+        "parameters": [
+          {
+            "name": "productId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "warehouseId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "RECEIVE",
+                "TRANSFER",
+                "ADJUSTMENT",
+                "SALE",
+                "RETURN"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "description": "ISO date/time lower bound.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "description": "ISO date/time upper bound.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "pageSize",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MovementListDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Browse the stock movement ledger (immutable, scope-filtered)",
+        "tags": [
+          "movements"
+        ]
+      }
+    },
+    "/suppliers": {
+      "get": {
+        "description": "Global reference data; available to any authenticated user.",
+        "operationId": "SuppliersController_list",
+        "parameters": [
+          {
+            "name": "includeInactive",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SupplierDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "List suppliers",
+        "tags": [
+          "suppliers"
+        ]
+      },
+      "post": {
+        "operationId": "SuppliersController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSupplierDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupplierDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request body or parameters failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Create a supplier",
+        "tags": [
+          "suppliers"
+        ]
+      }
+    },
+    "/suppliers/{id}/performance": {
+      "get": {
+        "operationId": "SuppliersController_performance",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Supplier id (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupplierPerformanceDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Supplier not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Supplier performance metrics (from PO/receipt history)",
+        "tags": [
+          "suppliers"
+        ]
+      }
+    },
+    "/suppliers/{id}": {
+      "get": {
+        "operationId": "SuppliersController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Supplier id (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupplierDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Supplier not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Get a supplier by id",
+        "tags": [
+          "suppliers"
+        ]
+      },
+      "patch": {
+        "operationId": "SuppliersController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Supplier id (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSupplierDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupplierDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request body or parameters failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Supplier not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Update a supplier",
+        "tags": [
+          "suppliers"
+        ]
+      },
+      "delete": {
+        "description": "Soft-delete (status → INACTIVE); purchase history is preserved.",
+        "operationId": "SuppliersController_deactivate",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Supplier id (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SupplierDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Supplier not found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Deactivate a supplier",
+        "tags": [
+          "suppliers"
+        ]
+      }
+    },
+    "/purchase-orders": {
+      "get": {
+        "description": "Scope-filtered to the caller's warehouses. Filter by status/supplier/warehouse.",
+        "operationId": "PurchaseOrdersController_list",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "DRAFT",
+                "SENT",
+                "APPROVED",
+                "PARTIALLY_RECEIVED",
+                "COMPLETED",
+                "CANCELLED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "supplierId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "warehouseId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PurchaseOrderDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "List purchase orders in scope",
+        "tags": [
+          "purchase-orders"
+        ]
+      },
+      "post": {
+        "operationId": "PurchaseOrdersController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePurchaseOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseOrderDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request body or parameters failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Create a purchase order (Draft)",
+        "tags": [
+          "purchase-orders"
+        ]
+      }
+    },
+    "/purchase-orders/{id}": {
+      "get": {
+        "operationId": "PurchaseOrdersController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Purchase order id (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseOrderDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found or out of scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Get a purchase order by id (within scope)",
+        "tags": [
+          "purchase-orders"
+        ]
+      },
+      "patch": {
+        "operationId": "PurchaseOrdersController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Purchase order id (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePurchaseOrderDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseOrderDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request body or parameters failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found or out of scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Update a draft purchase order",
+        "tags": [
+          "purchase-orders"
+        ]
+      }
+    },
+    "/purchase-orders/{id}/send": {
+      "post": {
+        "operationId": "PurchaseOrdersController_send",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Purchase order id (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseOrderDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found or out of scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Send a draft PO to the supplier (Draft → Sent)",
+        "tags": [
+          "purchase-orders"
+        ]
+      }
+    },
+    "/purchase-orders/{id}/approve": {
+      "post": {
+        "operationId": "PurchaseOrdersController_approve",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Purchase order id (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseOrderDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found or out of scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Approve a sent PO (Sent → Approved)",
+        "tags": [
+          "purchase-orders"
+        ]
+      }
+    },
+    "/purchase-orders/{id}/cancel": {
+      "post": {
+        "operationId": "PurchaseOrdersController_cancel",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Purchase order id (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseOrderDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found or out of scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Cancel a Draft/Sent PO",
+        "tags": [
+          "purchase-orders"
+        ]
+      }
+    },
+    "/purchase-orders/{id}/close": {
+      "post": {
+        "description": "Terminal transition for a PO the supplier will not fully deliver.",
+        "operationId": "PurchaseOrdersController_close",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Purchase order id (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseOrderDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found or out of scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Close out a Partially Received PO (short-ship → Completed)",
+        "tags": [
+          "purchase-orders"
+        ]
+      }
+    },
+    "/purchase-orders/{id}/receipts": {
+      "post": {
+        "description": "Records a delivery: updates line received/damaged, writes RECEIVE movements (sound→available, damaged→damaged), advances PO status — all in one transaction.",
+        "operationId": "PurchaseOrdersController_receive",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Purchase order id (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReceiveGoodsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoodsReceiptDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request body or parameters failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found or out of scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Receive goods against a PO",
+        "tags": [
+          "purchase-orders"
+        ]
+      }
+    },
+    "/receipts/{id}": {
+      "get": {
+        "operationId": "ReceiptsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Goods receipt id (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoodsReceiptDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found or out of scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Get a goods receipt by id (within scope)",
+        "tags": [
+          "receipts"
+        ]
+      }
+    },
+    "/transfers": {
+      "get": {
+        "description": "Visible when the caller has scope over the source OR destination warehouse.",
+        "operationId": "TransfersController_list",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "REQUESTED",
+                "APPROVED",
+                "COMPLETED",
+                "CANCELLED"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TransferDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "List transfers in scope",
+        "tags": [
+          "transfers"
+        ]
+      },
+      "post": {
+        "operationId": "TransfersController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTransferDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request body or parameters failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Request a transfer (source available → in-transit)",
+        "tags": [
+          "transfers"
+        ]
+      }
+    },
+    "/transfers/{id}": {
+      "get": {
+        "operationId": "TransfersController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Transfer id (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found or out of scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Get a transfer by id (within scope)",
+        "tags": [
+          "transfers"
+        ]
+      }
+    },
+    "/transfers/{id}/approve": {
+      "post": {
+        "operationId": "TransfersController_approve",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Transfer id (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found or out of scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Approve a requested transfer (source-scope required)",
+        "tags": [
+          "transfers"
+        ]
+      }
+    },
+    "/transfers/{id}/cancel": {
+      "post": {
+        "operationId": "TransfersController_cancel",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Transfer id (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found or out of scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Cancel a transfer (release the in-transit hold)",
+        "tags": [
+          "transfers"
+        ]
+      }
+    },
+    "/transfers/{id}/receive": {
+      "post": {
+        "description": "Source in-transit cleared, destination available increased — one transaction, two Transfer movements per line.",
+        "operationId": "TransfersController_receive",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Transfer id (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found or out of scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Receive an approved transfer (destination-scope required)",
+        "tags": [
+          "transfers"
+        ]
+      }
+    },
+    "/stock-counts": {
+      "get": {
+        "operationId": "StockCountsController_list",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "OPEN",
+                "RECONCILED",
+                "CANCELLED"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "warehouseId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StockCountDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "List stock counts in scope",
+        "tags": [
+          "stock-counts"
+        ]
+      },
+      "post": {
+        "operationId": "StockCountsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateStockCountDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockCountDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request body or parameters failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Open a count session (snapshots system available per product)",
+        "tags": [
+          "stock-counts"
+        ]
+      }
+    },
+    "/stock-counts/{id}": {
+      "get": {
+        "operationId": "StockCountsController_findOne",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Stock count id (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockCountDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found or out of scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Get a stock count (with per-line variance)",
+        "tags": [
+          "stock-counts"
+        ]
+      }
+    },
+    "/stock-counts/{id}/counts": {
+      "patch": {
+        "operationId": "StockCountsController_enterCounts",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Stock count id (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnterCountsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockCountDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request body or parameters failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found or out of scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Enter counted quantities for an open session",
+        "tags": [
+          "stock-counts"
+        ]
+      }
+    },
+    "/stock-counts/{id}/reconcile": {
+      "post": {
+        "operationId": "StockCountsController_reconcile",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Stock count id (UUID).",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockCountDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found or out of scope.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Reconcile a count — write Adjustment movements to match physical",
+        "tags": [
+          "stock-counts"
+        ]
+      }
+    },
+    "/dashboard": {
+      "get": {
+        "description": "All figures are filtered to the caller scope (Super Admin: global; others: assigned warehouses).",
+        "operationId": "DashboardController_get",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Role/scope-aware dashboard KPIs",
+        "tags": [
+          "dashboard"
+        ]
+      }
+    },
+    "/reports/{type}": {
+      "get": {
+        "operationId": "ReportsController_run",
+        "parameters": [
+          {
+            "name": "type",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "inventory",
+                "purchase",
+                "warehouse"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Run a report (inventory | purchase | warehouse), scope-filtered",
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/reports/{type}/export": {
+      "get": {
+        "description": "PDF/Excel export is deferred pending object storage; CSV is generated inline.",
+        "operationId": "ReportsController_export",
+        "parameters": [
+          {
+            "name": "type",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "inventory",
+                "purchase",
+                "warehouse"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "CSV file",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Export a report as CSV (download)",
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/ai/reorder-suggestions": {
+      "get": {
+        "description": "Ranks low-stock products by projected days-to-stockout. Reproducible, no LLM.",
+        "operationId": "AiController_reorder",
+        "parameters": [
+          {
+            "name": "warehouseId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReorderSuggestionDto"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Reorder suggestions (statistical, advisory — not auto-applied)",
+        "tags": [
+          "ai"
+        ]
+      }
+    },
+    "/ai/forecast": {
+      "post": {
+        "operationId": "AiController_forecast",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForecastRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForecastResultDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request body or parameters failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Demand forecast (moving-average baseline, advisory)",
+        "tags": [
+          "ai"
+        ]
+      }
+    },
+    "/ai/chat": {
+      "post": {
+        "operationId": "AiController_chat",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request body or parameters failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Chat assistant (RAG over scoped inventory; requires an LLM provider)",
+        "tags": [
+          "ai"
+        ]
+      }
+    },
+    "/ai/summarize-report": {
+      "post": {
+        "operationId": "AiController_summarize",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SummarizeRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportSummaryDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request body or parameters failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Plain-language summary of a report (figure-accurate)",
+        "tags": [
+          "ai"
+        ]
+      }
+    },
+    "/ai/generate-po": {
+      "post": {
+        "description": "Creates Draft purchase orders only — a human reviews and sends. Nothing is sent automatically.",
+        "operationId": "AiController_generatePo",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GeneratePoRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GeneratePoResultDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Request body or parameters failed validation.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid access token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Authenticated, but the role or warehouse scope is not allowed.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "access-token": []
+          }
+        ],
+        "summary": "Generate Draft POs from reorder suggestions (grouped by supplier)",
+        "tags": [
+          "ai"
+        ]
+      }
     }
   },
   "info": {
@@ -2324,6 +5122,82 @@
           "userIds"
         ]
       },
+      "ActivityLogDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string",
+            "nullable": true
+          },
+          "userName": {
+            "type": "string",
+            "nullable": true
+          },
+          "action": {
+            "type": "string",
+            "example": "PO_APPROVE"
+          },
+          "entityType": {
+            "type": "string",
+            "example": "PurchaseOrder"
+          },
+          "entityId": {
+            "type": "string",
+            "nullable": true
+          },
+          "warehouseId": {
+            "type": "string",
+            "nullable": true
+          },
+          "summary": {
+            "type": "string",
+            "example": "Approved PO-00007"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "action",
+          "entityType",
+          "summary",
+          "createdAt"
+        ]
+      },
+      "ActivityLogListDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActivityLogDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "example": 540
+          },
+          "page": {
+            "type": "number",
+            "example": 1
+          },
+          "pageSize": {
+            "type": "number",
+            "example": 20
+          }
+        },
+        "required": [
+          "data",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
       "CategoryDto": {
         "type": "object",
         "properties": {
@@ -2582,6 +5456,1817 @@
             ]
           }
         }
+      },
+      "InventoryItemDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Inventory item id (UUID)."
+          },
+          "productId": {
+            "type": "string",
+            "description": "Product id (UUID)."
+          },
+          "productName": {
+            "type": "string",
+            "description": "Product name.",
+            "example": "Cola 330ml Can"
+          },
+          "sku": {
+            "type": "string",
+            "description": "Product SKU.",
+            "example": "COLA-330"
+          },
+          "warehouseId": {
+            "type": "string",
+            "description": "Warehouse id (UUID)."
+          },
+          "warehouseName": {
+            "type": "string",
+            "description": "Warehouse name.",
+            "example": "Central DC"
+          },
+          "available": {
+            "type": "number",
+            "description": "Available units (sellable, on hand).",
+            "example": 120
+          },
+          "reserved": {
+            "type": "number",
+            "description": "Reserved units (allocated, still in warehouse).",
+            "example": 10
+          },
+          "damaged": {
+            "type": "number",
+            "description": "Damaged units (unsellable).",
+            "example": 2
+          },
+          "inTransit": {
+            "type": "number",
+            "description": "In-transit units (moving between warehouses).",
+            "example": 0
+          },
+          "total": {
+            "type": "number",
+            "description": "Total on hand = available + reserved + damaged + inTransit.",
+            "example": 132
+          },
+          "reorderLevel": {
+            "type": "number",
+            "description": "Reorder threshold for this product.",
+            "example": 50
+          },
+          "lowStock": {
+            "type": "boolean",
+            "description": "True when available is at or below the reorder level (server-computed).",
+            "example": false
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Last update timestamp."
+          }
+        },
+        "required": [
+          "id",
+          "productId",
+          "productName",
+          "sku",
+          "warehouseId",
+          "warehouseName",
+          "available",
+          "reserved",
+          "damaged",
+          "inTransit",
+          "total",
+          "reorderLevel",
+          "lowStock",
+          "updatedAt"
+        ]
+      },
+      "InventoryListDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InventoryItemDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "description": "Total matching rows (ignoring pagination).",
+            "example": 240
+          },
+          "page": {
+            "type": "number",
+            "description": "Current page (1-based).",
+            "example": 1
+          },
+          "pageSize": {
+            "type": "number",
+            "description": "Page size.",
+            "example": 20
+          }
+        },
+        "required": [
+          "data",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "AdjustableBucket": {
+        "type": "string",
+        "enum": [
+          "AVAILABLE",
+          "DAMAGED"
+        ],
+        "description": "Bucket to adjust."
+      },
+      "AdjustStockDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Product id (UUID)."
+          },
+          "warehouseId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Warehouse id (UUID) — must be within your scope."
+          },
+          "bucket": {
+            "description": "Bucket to adjust.",
+            "example": "AVAILABLE",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AdjustableBucket"
+              }
+            ]
+          },
+          "delta": {
+            "type": "number",
+            "description": "Signed change to apply to the bucket (e.g. +5 to add, -3 to remove). Must be non-zero and may not drive the bucket below zero.",
+            "example": 5
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500,
+            "description": "Reason for the adjustment (required — audit trail).",
+            "example": "Cycle count correction"
+          }
+        },
+        "required": [
+          "productId",
+          "warehouseId",
+          "bucket",
+          "delta",
+          "reason"
+        ]
+      },
+      "ReserveStockDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Product id (UUID)."
+          },
+          "warehouseId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Warehouse id (UUID) — must be within your scope."
+          },
+          "quantity": {
+            "type": "number",
+            "minimum": 1,
+            "description": "Units to move from available to reserved. Must not exceed available.",
+            "example": 10
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500,
+            "description": "Optional note describing what the stock is reserved for.",
+            "example": "SO-4821"
+          }
+        },
+        "required": [
+          "productId",
+          "warehouseId",
+          "quantity"
+        ]
+      },
+      "NotificationDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "example": "LOW_STOCK"
+          },
+          "title": {
+            "type": "string",
+            "example": "Low stock: Cola 330ml Can"
+          },
+          "body": {
+            "type": "string",
+            "nullable": true
+          },
+          "link": {
+            "type": "string",
+            "nullable": true
+          },
+          "read": {
+            "type": "boolean",
+            "example": false
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "title",
+          "read",
+          "createdAt"
+        ]
+      },
+      "MovementType": {
+        "type": "string",
+        "enum": [
+          "RECEIVE",
+          "TRANSFER",
+          "ADJUSTMENT",
+          "SALE",
+          "RETURN"
+        ],
+        "description": "Movement type."
+      },
+      "StockMovementDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Movement id (UUID)."
+          },
+          "productId": {
+            "type": "string",
+            "description": "Product id (UUID)."
+          },
+          "productName": {
+            "type": "string",
+            "description": "Product name.",
+            "example": "Cola 330ml Can"
+          },
+          "sku": {
+            "type": "string",
+            "description": "Product SKU.",
+            "example": "COLA-330"
+          },
+          "warehouseId": {
+            "type": "string",
+            "description": "Warehouse id (UUID)."
+          },
+          "warehouseName": {
+            "type": "string",
+            "description": "Warehouse name.",
+            "example": "Central DC"
+          },
+          "type": {
+            "description": "Movement type.",
+            "example": "ADJUSTMENT",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/MovementType"
+              }
+            ]
+          },
+          "availableDelta": {
+            "type": "number",
+            "description": "Signed change to the available bucket.",
+            "example": -10
+          },
+          "reservedDelta": {
+            "type": "number",
+            "description": "Signed change to the reserved bucket.",
+            "example": 10
+          },
+          "damagedDelta": {
+            "type": "number",
+            "description": "Signed change to the damaged bucket.",
+            "example": 0
+          },
+          "inTransitDelta": {
+            "type": "number",
+            "description": "Signed change to the in-transit bucket.",
+            "example": 0
+          },
+          "beforeQty": {
+            "type": "number",
+            "description": "Total on hand before the movement.",
+            "example": 132
+          },
+          "afterQty": {
+            "type": "number",
+            "description": "Total on hand after the movement.",
+            "example": 132
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true,
+            "description": "Reason / note."
+          },
+          "refType": {
+            "type": "string",
+            "nullable": true,
+            "description": "Source document type (e.g. PO, TRANSFER, COUNT)."
+          },
+          "refId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Source document id."
+          },
+          "userId": {
+            "type": "string",
+            "description": "Acting user id (UUID)."
+          },
+          "userName": {
+            "type": "string",
+            "nullable": true,
+            "description": "Acting user name."
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "When the movement was recorded."
+          }
+        },
+        "required": [
+          "id",
+          "productId",
+          "productName",
+          "sku",
+          "warehouseId",
+          "warehouseName",
+          "type",
+          "availableDelta",
+          "reservedDelta",
+          "damagedDelta",
+          "inTransitDelta",
+          "beforeQty",
+          "afterQty",
+          "userId",
+          "createdAt"
+        ]
+      },
+      "MovementListDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StockMovementDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "description": "Total matching rows (ignoring pagination).",
+            "example": 540
+          },
+          "page": {
+            "type": "number",
+            "description": "Current page (1-based).",
+            "example": 1
+          },
+          "pageSize": {
+            "type": "number",
+            "description": "Page size.",
+            "example": 20
+          }
+        },
+        "required": [
+          "data",
+          "total",
+          "page",
+          "pageSize"
+        ]
+      },
+      "SupplierStatus": {
+        "type": "string",
+        "enum": [
+          "ACTIVE",
+          "INACTIVE"
+        ],
+        "description": "Supplier status."
+      },
+      "SupplierDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Supplier id (UUID)."
+          },
+          "name": {
+            "type": "string",
+            "description": "Supplier name.",
+            "example": "Acme Beverages Ltd"
+          },
+          "contactName": {
+            "type": "string",
+            "nullable": true
+          },
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "phone": {
+            "type": "string",
+            "nullable": true
+          },
+          "address": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "description": "Supplier status.",
+            "example": "ACTIVE",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SupplierStatus"
+              }
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string",
+            "description": "Creation timestamp."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "status",
+          "createdAt"
+        ]
+      },
+      "SupplierPerformanceDto": {
+        "type": "object",
+        "properties": {
+          "supplierId": {
+            "type": "string",
+            "description": "Supplier id (UUID)."
+          },
+          "totalOrders": {
+            "type": "number",
+            "description": "Total purchase orders raised (excluding cancelled).",
+            "example": 12
+          },
+          "completedOrders": {
+            "type": "number",
+            "description": "Purchase orders fully received (Completed).",
+            "example": 9
+          },
+          "unitsOrdered": {
+            "type": "number",
+            "description": "Total units ordered across all lines.",
+            "example": 4200
+          },
+          "unitsReceived": {
+            "type": "number",
+            "description": "Total sound units received.",
+            "example": 4050
+          },
+          "unitsDamaged": {
+            "type": "number",
+            "description": "Total damaged units received.",
+            "example": 60
+          },
+          "quantityAccuracy": {
+            "type": "number",
+            "nullable": true,
+            "description": "Sound units received ÷ units ordered, as a 0–1 ratio (null if nothing ordered).",
+            "example": 0.96
+          },
+          "damageRate": {
+            "type": "number",
+            "nullable": true,
+            "description": "Damaged ÷ (sound + damaged) received, 0–1 (null if nothing received).",
+            "example": 0.015
+          },
+          "onTimeRate": {
+            "type": "number",
+            "nullable": true,
+            "description": "Completed orders received on/before expectedDate ÷ completed orders with an expectedDate, 0–1 (null if none).",
+            "example": 0.89
+          }
+        },
+        "required": [
+          "supplierId",
+          "totalOrders",
+          "completedOrders",
+          "unitsOrdered",
+          "unitsReceived",
+          "unitsDamaged",
+          "quantityAccuracy",
+          "damageRate",
+          "onTimeRate"
+        ]
+      },
+      "CreateSupplierDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "Supplier name.",
+            "example": "Acme Beverages Ltd"
+          },
+          "contactName": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "Primary contact person.",
+            "example": "Jane Doe"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Contact email.",
+            "example": "orders@acme.example"
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 50,
+            "description": "Contact phone.",
+            "example": "+1 555 0100"
+          },
+          "address": {
+            "type": "string",
+            "maxLength": 500,
+            "description": "Address.",
+            "example": "12 Industrial Way"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "UpdateSupplierDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "Supplier name.",
+            "example": "Acme Beverages Ltd"
+          },
+          "contactName": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "Primary contact person.",
+            "example": "Jane Doe"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "Contact email.",
+            "example": "orders@acme.example"
+          },
+          "phone": {
+            "type": "string",
+            "maxLength": 50,
+            "description": "Contact phone.",
+            "example": "+1 555 0100"
+          },
+          "address": {
+            "type": "string",
+            "maxLength": 500,
+            "description": "Address.",
+            "example": "12 Industrial Way"
+          },
+          "status": {
+            "description": "Supplier status (set INACTIVE to soft-delete/deactivate).",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SupplierStatus"
+              }
+            ]
+          }
+        }
+      },
+      "PurchaseOrderStatus": {
+        "type": "string",
+        "enum": [
+          "DRAFT",
+          "SENT",
+          "APPROVED",
+          "PARTIALLY_RECEIVED",
+          "COMPLETED",
+          "CANCELLED"
+        ]
+      },
+      "PurchaseOrderLineDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "productId": {
+            "type": "string"
+          },
+          "productName": {
+            "type": "string",
+            "example": "Cola 330ml Can"
+          },
+          "sku": {
+            "type": "string",
+            "example": "COLA-330"
+          },
+          "quantity": {
+            "type": "number",
+            "example": 100
+          },
+          "unitCost": {
+            "type": "string",
+            "description": "Unit cost as a decimal string.",
+            "example": "0.45"
+          },
+          "receivedQty": {
+            "type": "number",
+            "description": "Cumulative sound units received.",
+            "example": 50
+          },
+          "damagedQty": {
+            "type": "number",
+            "description": "Cumulative damaged units received.",
+            "example": 2
+          },
+          "outstandingQty": {
+            "type": "number",
+            "description": "Ordered minus received (sound). Never below zero.",
+            "example": 50
+          }
+        },
+        "required": [
+          "id",
+          "productId",
+          "productName",
+          "sku",
+          "quantity",
+          "unitCost",
+          "receivedQty",
+          "damagedQty",
+          "outstandingQty"
+        ]
+      },
+      "PurchaseOrderDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "description": "Human-readable PO code.",
+            "example": "PO-00007"
+          },
+          "supplierId": {
+            "type": "string"
+          },
+          "supplierName": {
+            "type": "string",
+            "example": "Acme Beverages Ltd"
+          },
+          "warehouseId": {
+            "type": "string"
+          },
+          "warehouseName": {
+            "type": "string",
+            "example": "Central Warehouse"
+          },
+          "status": {
+            "example": "DRAFT",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PurchaseOrderStatus"
+              }
+            ]
+          },
+          "expectedDate": {
+            "type": "string",
+            "nullable": true,
+            "description": "Expected delivery date (ISO)."
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PurchaseOrderLineDto"
+            }
+          },
+          "totalCost": {
+            "type": "string",
+            "description": "Total ordered value = Σ(quantity × unitCost), decimal string.",
+            "example": "45.00"
+          },
+          "createdById": {
+            "type": "string"
+          },
+          "createdByName": {
+            "type": "string",
+            "nullable": true
+          },
+          "approvedByName": {
+            "type": "string",
+            "nullable": true
+          },
+          "sentAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "approvedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "completedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "supplierId",
+          "supplierName",
+          "warehouseId",
+          "warehouseName",
+          "status",
+          "lines",
+          "totalCost",
+          "createdById",
+          "createdAt"
+        ]
+      },
+      "PurchaseOrderLineInputDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Product id (UUID)."
+          },
+          "quantity": {
+            "type": "number",
+            "minimum": 1,
+            "description": "Quantity ordered.",
+            "example": 100
+          },
+          "unitCost": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Unit cost.",
+            "example": 0.45
+          }
+        },
+        "required": [
+          "productId",
+          "quantity",
+          "unitCost"
+        ]
+      },
+      "CreatePurchaseOrderDto": {
+        "type": "object",
+        "properties": {
+          "supplierId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Supplier id (UUID)."
+          },
+          "warehouseId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Destination warehouse id (UUID) — must be in your scope."
+          },
+          "expectedDate": {
+            "type": "string",
+            "description": "Expected delivery date (ISO).",
+            "example": "2026-07-01"
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 1000,
+            "description": "Free-text notes."
+          },
+          "lines": {
+            "minItems": 1,
+            "description": "Order lines (at least one).",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PurchaseOrderLineInputDto"
+            }
+          }
+        },
+        "required": [
+          "supplierId",
+          "warehouseId",
+          "lines"
+        ]
+      },
+      "UpdatePurchaseOrderDto": {
+        "type": "object",
+        "properties": {
+          "expectedDate": {
+            "type": "string",
+            "description": "Expected delivery date (ISO)."
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 1000,
+            "description": "Free-text notes."
+          },
+          "lines": {
+            "minItems": 1,
+            "description": "Replacement set of order lines (replaces all existing lines).",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PurchaseOrderLineInputDto"
+            }
+          }
+        }
+      },
+      "ReceiveGoodsLineDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Product id (UUID) — must belong to the PO."
+          },
+          "soundQty": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Sound units received (go to Available).",
+            "example": 50
+          },
+          "damagedQty": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Damaged units received (go to Damaged).",
+            "example": 2
+          }
+        },
+        "required": [
+          "productId",
+          "soundQty",
+          "damagedQty"
+        ]
+      },
+      "ReceiveGoodsDto": {
+        "type": "object",
+        "properties": {
+          "deliveryNote": {
+            "type": "string",
+            "maxLength": 500,
+            "description": "Delivery-note reference (file upload deferred)."
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 1000,
+            "description": "Receipt notes."
+          },
+          "lines": {
+            "minItems": 1,
+            "description": "Received lines (at least one).",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReceiveGoodsLineDto"
+            }
+          }
+        },
+        "required": [
+          "lines"
+        ]
+      },
+      "GoodsReceiptLineDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string"
+          },
+          "productName": {
+            "type": "string",
+            "example": "Cola 330ml Can"
+          },
+          "sku": {
+            "type": "string",
+            "example": "COLA-330"
+          },
+          "soundQty": {
+            "type": "number",
+            "example": 50
+          },
+          "damagedQty": {
+            "type": "number",
+            "example": 2
+          }
+        },
+        "required": [
+          "productId",
+          "productName",
+          "sku",
+          "soundQty",
+          "damagedQty"
+        ]
+      },
+      "GoodsReceiptDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "purchaseOrderId": {
+            "type": "string"
+          },
+          "poCode": {
+            "type": "string",
+            "example": "PO-00007"
+          },
+          "warehouseId": {
+            "type": "string"
+          },
+          "receivedById": {
+            "type": "string"
+          },
+          "receivedByName": {
+            "type": "string",
+            "nullable": true
+          },
+          "deliveryNote": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "resultingPoStatus": {
+            "type": "string",
+            "description": "PO status after this receipt was applied.",
+            "example": "PARTIALLY_RECEIVED"
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GoodsReceiptLineDto"
+            }
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "purchaseOrderId",
+          "poCode",
+          "warehouseId",
+          "receivedById",
+          "resultingPoStatus",
+          "lines",
+          "createdAt"
+        ]
+      },
+      "StockTransferStatus": {
+        "type": "string",
+        "enum": [
+          "REQUESTED",
+          "APPROVED",
+          "COMPLETED",
+          "CANCELLED"
+        ]
+      },
+      "TransferLineDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string"
+          },
+          "productName": {
+            "type": "string",
+            "example": "Cola 330ml Can"
+          },
+          "sku": {
+            "type": "string",
+            "example": "COLA-330"
+          },
+          "quantity": {
+            "type": "number",
+            "example": 20
+          }
+        },
+        "required": [
+          "productId",
+          "productName",
+          "sku",
+          "quantity"
+        ]
+      },
+      "TransferDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "example": "TR-00003"
+          },
+          "sourceWarehouseId": {
+            "type": "string"
+          },
+          "sourceWarehouseName": {
+            "type": "string",
+            "example": "Central Warehouse"
+          },
+          "destinationWarehouseId": {
+            "type": "string"
+          },
+          "destinationWarehouseName": {
+            "type": "string",
+            "example": "North Depot"
+          },
+          "status": {
+            "example": "REQUESTED",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StockTransferStatus"
+              }
+            ]
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransferLineDto"
+            }
+          },
+          "requestedByName": {
+            "type": "string",
+            "nullable": true
+          },
+          "approvedByName": {
+            "type": "string",
+            "nullable": true
+          },
+          "receivedByName": {
+            "type": "string",
+            "nullable": true
+          },
+          "approvedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "receivedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "sourceWarehouseId",
+          "sourceWarehouseName",
+          "destinationWarehouseId",
+          "destinationWarehouseName",
+          "status",
+          "lines",
+          "createdAt"
+        ]
+      },
+      "TransferLineInputDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Product id (UUID)."
+          },
+          "quantity": {
+            "type": "number",
+            "minimum": 1,
+            "description": "Units to move.",
+            "example": 20
+          }
+        },
+        "required": [
+          "productId",
+          "quantity"
+        ]
+      },
+      "CreateTransferDto": {
+        "type": "object",
+        "properties": {
+          "sourceWarehouseId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Source warehouse id (UUID) — must be in your scope."
+          },
+          "destinationWarehouseId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Destination warehouse id (UUID)."
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 1000,
+            "description": "Free-text notes."
+          },
+          "lines": {
+            "minItems": 1,
+            "description": "Lines (at least one).",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TransferLineInputDto"
+            }
+          }
+        },
+        "required": [
+          "sourceWarehouseId",
+          "destinationWarehouseId",
+          "lines"
+        ]
+      },
+      "StockCountStatus": {
+        "type": "string",
+        "enum": [
+          "OPEN",
+          "RECONCILED",
+          "CANCELLED"
+        ]
+      },
+      "StockCountLineDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string"
+          },
+          "productName": {
+            "type": "string",
+            "example": "Cola 330ml Can"
+          },
+          "sku": {
+            "type": "string",
+            "example": "COLA-330"
+          },
+          "recordedQty": {
+            "type": "number",
+            "description": "System available at session creation.",
+            "example": 120
+          },
+          "countedQty": {
+            "type": "number",
+            "nullable": true,
+            "description": "Physically counted (null until entered)."
+          },
+          "variance": {
+            "type": "number",
+            "nullable": true,
+            "description": "counted − recorded (null until counted). Positive = surplus, negative = shrinkage."
+          }
+        },
+        "required": [
+          "productId",
+          "productName",
+          "sku",
+          "recordedQty"
+        ]
+      },
+      "StockCountDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string",
+            "example": "SC-00002"
+          },
+          "warehouseId": {
+            "type": "string"
+          },
+          "warehouseName": {
+            "type": "string",
+            "example": "Central Warehouse"
+          },
+          "status": {
+            "example": "OPEN",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/StockCountStatus"
+              }
+            ]
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StockCountLineDto"
+            }
+          },
+          "createdByName": {
+            "type": "string",
+            "nullable": true
+          },
+          "reconciledByName": {
+            "type": "string",
+            "nullable": true
+          },
+          "reconciledAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "warehouseId",
+          "warehouseName",
+          "status",
+          "lines",
+          "createdAt"
+        ]
+      },
+      "CreateStockCountDto": {
+        "type": "object",
+        "properties": {
+          "warehouseId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Warehouse id (UUID) to count — must be in your scope."
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 1000,
+            "description": "Notes (e.g. section/aisle counted)."
+          }
+        },
+        "required": [
+          "warehouseId"
+        ]
+      },
+      "CountEntryDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Product id (UUID) — must be a line on this count."
+          },
+          "countedQty": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Physically counted quantity.",
+            "example": 118
+          }
+        },
+        "required": [
+          "productId",
+          "countedQty"
+        ]
+      },
+      "EnterCountsDto": {
+        "type": "object",
+        "properties": {
+          "entries": {
+            "minItems": 1,
+            "description": "Counted lines (at least one).",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CountEntryDto"
+            }
+          }
+        },
+        "required": [
+          "entries"
+        ]
+      },
+      "DashboardMovementDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "productName": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "warehouseName": {
+            "type": "string"
+          },
+          "afterQty": {
+            "type": "number"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "productName",
+          "sku",
+          "warehouseName",
+          "afterQty",
+          "createdAt"
+        ]
+      },
+      "DashboardTopProductDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "units": {
+            "type": "number",
+            "description": "Available units across the caller scope."
+          },
+          "value": {
+            "type": "string",
+            "description": "Stock value (units × cost price), decimal string."
+          }
+        },
+        "required": [
+          "productId",
+          "name",
+          "sku",
+          "units",
+          "value"
+        ]
+      },
+      "DashboardDto": {
+        "type": "object",
+        "properties": {
+          "totalProducts": {
+            "type": "number",
+            "description": "Active products in the catalog (global)."
+          },
+          "totalStockUnits": {
+            "type": "number",
+            "description": "Total on-hand units across the caller scope (all buckets)."
+          },
+          "stockValue": {
+            "type": "string",
+            "description": "Stock value = Σ(available × cost price), decimal string."
+          },
+          "lowStockCount": {
+            "type": "number",
+            "description": "Inventory items at/below reorder level."
+          },
+          "pendingPurchaseOrders": {
+            "type": "number",
+            "description": "Purchase orders awaiting action (Sent/Approved/Partially Received)."
+          },
+          "pendingTransfers": {
+            "type": "number",
+            "description": "Transfers awaiting action (Requested/Approved)."
+          },
+          "recentMovements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardMovementDto"
+            }
+          },
+          "topProducts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardTopProductDto"
+            }
+          }
+        },
+        "required": [
+          "totalProducts",
+          "totalStockUnits",
+          "stockValue",
+          "lowStockCount",
+          "pendingPurchaseOrders",
+          "pendingTransfers",
+          "recentMovements",
+          "topProducts"
+        ]
+      },
+      "ReportColumnDto": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "example": "sku"
+          },
+          "label": {
+            "type": "string",
+            "example": "SKU"
+          },
+          "numeric": {
+            "type": "boolean",
+            "description": "Render right-aligned / numeric.",
+            "example": false
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "numeric"
+        ]
+      },
+      "ReportDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "example": "inventory"
+          },
+          "generatedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "columns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ReportColumnDto"
+            }
+          },
+          "rows": {
+            "type": "array",
+            "description": "Row objects keyed by column key (string | number values).",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          },
+          "summary": {
+            "type": "object",
+            "description": "Summary totals keyed by label.",
+            "additionalProperties": true
+          }
+        },
+        "required": [
+          "type",
+          "generatedAt",
+          "columns",
+          "rows",
+          "summary"
+        ]
+      },
+      "ReorderSuggestionDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string"
+          },
+          "productName": {
+            "type": "string",
+            "example": "Cola 330ml Can"
+          },
+          "sku": {
+            "type": "string",
+            "example": "COLA-330"
+          },
+          "warehouseId": {
+            "type": "string"
+          },
+          "warehouseName": {
+            "type": "string",
+            "example": "Central Warehouse"
+          },
+          "available": {
+            "type": "number",
+            "example": 40
+          },
+          "reorderLevel": {
+            "type": "number",
+            "example": 50
+          },
+          "suggestedQty": {
+            "type": "number",
+            "description": "Suggested order quantity (advisory).",
+            "example": 60
+          },
+          "dailyConsumption": {
+            "type": "number",
+            "description": "Avg daily consumption over the lookback window.",
+            "example": 3.2
+          },
+          "daysToStockout": {
+            "type": "number",
+            "nullable": true,
+            "description": "Projected days until available hits zero (null if no consumption)."
+          },
+          "rationale": {
+            "type": "string",
+            "description": "Plain-language rationale (reproducible, not LLM)."
+          }
+        },
+        "required": [
+          "productId",
+          "productName",
+          "sku",
+          "warehouseId",
+          "warehouseName",
+          "available",
+          "reorderLevel",
+          "suggestedQty",
+          "dailyConsumption",
+          "rationale"
+        ]
+      },
+      "ForecastRequestDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Limit to one product."
+          },
+          "warehouseId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Limit to one warehouse (must be in scope)."
+          },
+          "days": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 90,
+            "description": "Forecast horizon in days.",
+            "example": 7
+          }
+        }
+      },
+      "ForecastItemDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string"
+          },
+          "productName": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "warehouseId": {
+            "type": "string"
+          },
+          "warehouseName": {
+            "type": "string"
+          },
+          "available": {
+            "type": "number",
+            "example": 40
+          },
+          "avgDailyConsumption": {
+            "type": "number",
+            "description": "Avg daily consumption (moving average).",
+            "example": 3.2
+          },
+          "forecastDemand": {
+            "type": "number",
+            "description": "Projected demand over the horizon.",
+            "example": 22
+          },
+          "projectedStockoutDate": {
+            "type": "string",
+            "nullable": true,
+            "description": "Projected stock-out date (null if no consumption)."
+          },
+          "rationale": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "productId",
+          "productName",
+          "sku",
+          "warehouseId",
+          "warehouseName",
+          "available",
+          "avgDailyConsumption",
+          "forecastDemand",
+          "rationale"
+        ]
+      },
+      "ForecastResultDto": {
+        "type": "object",
+        "properties": {
+          "days": {
+            "type": "number",
+            "example": 7
+          },
+          "lookbackDays": {
+            "type": "number",
+            "description": "Lookback window used for the moving average (days).",
+            "example": 30
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ForecastItemDto"
+            }
+          },
+          "generatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "days",
+          "lookbackDays",
+          "items",
+          "generatedAt"
+        ]
+      },
+      "ChatRequestDto": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string",
+            "maxLength": 1000,
+            "description": "Natural-language question over scoped inventory."
+          }
+        },
+        "required": [
+          "question"
+        ]
+      },
+      "ChatResponseDto": {
+        "type": "object",
+        "properties": {
+          "configured": {
+            "type": "boolean",
+            "description": "Whether an LLM provider is configured.",
+            "example": false
+          },
+          "answer": {
+            "type": "string",
+            "description": "Answer (or a not-configured notice)."
+          },
+          "sources": {
+            "description": "Retrieved source records cited by the answer.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "configured",
+          "answer",
+          "sources"
+        ]
+      },
+      "SummarizeRequestDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "inventory",
+              "purchase",
+              "warehouse"
+            ],
+            "description": "Report type to summarize."
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "ReportSummaryDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "example": "inventory"
+          },
+          "llmEnhanced": {
+            "type": "boolean",
+            "description": "LLM-enhanced when a provider is configured; otherwise a deterministic template over the report figures.",
+            "example": false
+          },
+          "summary": {
+            "type": "string",
+            "description": "Plain-language summary, accurate to the figures."
+          },
+          "figures": {
+            "type": "object",
+            "description": "The figures the summary is derived from.",
+            "additionalProperties": true
+          },
+          "generatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "llmEnhanced",
+          "summary",
+          "generatedAt"
+        ]
+      },
+      "GeneratePoRequestDto": {
+        "type": "object",
+        "properties": {
+          "warehouseId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Restrict to one warehouse (must be in scope)."
+          }
+        }
+      },
+      "SkippedReorderDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string"
+          },
+          "productName": {
+            "type": "string"
+          },
+          "warehouseId": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string",
+            "example": "No prior supplier on record — assign a supplier and create the PO manually."
+          }
+        },
+        "required": [
+          "productId",
+          "productName",
+          "warehouseId",
+          "reason"
+        ]
+      },
+      "GeneratePoResultDto": {
+        "type": "object",
+        "properties": {
+          "created": {
+            "description": "Draft POs created for review (grouped by supplier × warehouse). Nothing is sent automatically.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PurchaseOrderDto"
+            }
+          },
+          "skipped": {
+            "description": "Reorder lines that could not be auto-assigned a supplier.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SkippedReorderDto"
+            }
+          }
+        },
+        "required": [
+          "created",
+          "skipped"
+        ]
       }
     }
   }
