@@ -14,6 +14,7 @@ import {
   Skeleton,
   Button,
   SimpleSelect,
+  SimpleCombobox,
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@iws/ui';
 
@@ -81,14 +82,19 @@ export default function MovementHistoryPage() {
             ...Object.values(MovementType).map((t) => ({ value: t, label: t })),
           ]}
         />
-        <SimpleSelect
+        <SimpleCombobox
           aria-label="Filter by product"
           className="w-48"
+          searchPlaceholder="Search products…"
           value={productId}
           onValueChange={(v) => reset(() => setProductId(v))}
           options={[
             { value: '', label: 'All products' },
-            ...(products ?? []).map((p) => ({ value: p.id, label: p.name })),
+            ...(products ?? []).map((p) => ({
+              value: p.id,
+              label: p.name,
+              keywords: p.sku,
+            })),
           ]}
         />
         <label className="flex items-center gap-1.5 text-sm text-muted-foreground">

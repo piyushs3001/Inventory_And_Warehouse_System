@@ -11,7 +11,7 @@ import type { CategoryDto } from '@iws/api-client';
 import { Button } from '@iws/ui';
 import { Input } from '@iws/ui';
 import { Label } from '@iws/ui';
-import { SimpleSelect } from '@iws/ui';
+import { SimpleCombobox } from '@iws/ui';
 
 function errorMessage(err: unknown): string {
   const message = (err as { response?: { data?: { message?: string } } })
@@ -73,11 +73,12 @@ export function CategoryForm({
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="cat-parent">Parent category</Label>
-        <SimpleSelect
+        <SimpleCombobox
           aria-label="Parent category"
           className="w-full"
           value={parentId}
           onValueChange={setParentId}
+          searchPlaceholder="Search categories…"
           options={[
             { value: '', label: 'None (root)' },
             ...parentOptions.map((c) => ({ value: c.id, label: c.name })),

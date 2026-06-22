@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { cn } from '../../utils';
 import {
   Table,
@@ -12,8 +12,31 @@ import {
 } from './table';
 import { Button } from './button';
 import { Input } from './input';
+import { SimpleSelect } from './select';
 import { Skeleton } from './skeleton';
 import { EmptyState } from './empty-state';
+
+/** Rows-per-page choices for the footer selector. */
+const PAGE_SIZE_OPTIONS = [10, 25, 50, 100] as const;
+
+/**
+ * Builds the page-number sequence with truncation: always first & last, a window
+ * around the current page, and `'…'` ellipsis markers for the gaps. Returns a
+ * mix of 0-based page indices and `'…'` strings.
+ */
+function pageItems(pageCount: number, current: number): (number | '…')[] {
+  if (pageCount <= 7) {
+    return Array.from({ length: pageCount }, (_, i) => i);
+  }
+  const items: (number | '…')[] = [0];
+  const start = Math.max(1, current - 1);
+  const end = Math.min(pageCount - 2, current + 1);
+  if (start > 1) items.push('…');
+  for (let i = start; i <= end; i++) items.push(i);
+  if (end < pageCount - 2) items.push('…');
+  items.push(pageCount - 1);
+  return items;
+}
 
 export type DataTableColumn<T> = {
   /** Stable key for the column. */
@@ -59,6 +82,7 @@ export function DataTable<T>({
 }) {
   const [query, setQuery] = useState('');
   const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(pageSize);
   const [sort, setSort] = useState<{ key: string; dir: 'asc' | 'desc' } | null>(
     null,
   );
@@ -81,9 +105,17 @@ export function DataTable<T>({
     return result;
   }, [rows, query, sort, columns, searchFilter]);
 
-  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const pageCount = Math.max(1, Math.ceil(filtered.length / rowsPerPage));
   const current = Math.min(page, pageCount - 1);
-  const pageRows = filtered.slice(current * pageSize, current * pageSize + pageSize);
+  const pageRows = filtered.slice(
+    current * rowsPerPage,
+    current * rowsPerPage + rowsPerPage,
+  );
+
+  // Keep the page index in range when rows-per-page or the filtered count shrinks.
+  useEffect(() => {
+    if (page > pageCount - 1) setPage(pageCount - 1);
+  }, [page, pageCount]);
 
   const toggleSort = (key: string): void => {
     setSort((s) =>
@@ -182,29 +214,66 @@ export function DataTable<T>({
         </div>
       )}
 
-      {filtered.length > pageSize && (
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
+      {(pageCount > 1 || filtered.length > PAGE_SIZE_OPTIONS[0]) && (
+        <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
           <span>{filtered.length} total</span>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={current === 0}
-              onClick={() => setPage(current - 1)}
-            >
-              Prev
-            </Button>
-            <span>
-              Page {current + 1} of {pageCount}
-            </span>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={current >= pageCount - 1}
-              onClick={() => setPage(current + 1)}
-            >
-              Next
-            </Button>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+            <div className="flex items-center gap-2">
+              <span className="whitespace-nowrap">Rows per page</span>
+              <SimpleSelect
+                aria-label="Rows per page"
+                size="sm"
+                className="w-[4.5rem]"
+                value={String(rowsPerPage)}
+                onValueChange={(v) => {
+                  setRowsPerPage(Number(v));
+                  setPage(0);
+                }}
+                options={PAGE_SIZE_OPTIONS.map((n) => ({
+                  value: String(n),
+                  label: String(n),
+                }))}
+              />
+            </div>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={current === 0}
+                onClick={() => setPage(current - 1)}
+              >
+                Prev
+              </Button>
+              {pageItems(pageCount, current).map((item, i) =>
+                item === '…' ? (
+                  <span
+                    key={`gap-${i}`}
+                    className="px-1.5 select-none"
+                    aria-hidden="true"
+                  >
+                    …
+                  </span>
+                ) : (
+                  <Button
+                    key={item}
+                    variant={item === current ? 'default' : 'ghost'}
+                    size="sm"
+                    aria-current={item === current ? 'page' : undefined}
+                    onClick={() => setPage(item)}
+                  >
+                    {item + 1}
+                  </Button>
+                ),
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={current >= pageCount - 1}
+                onClick={() => setPage(current + 1)}
+              >
+                Next
+              </Button>
+            </div>
           </div>
         </div>
       )}

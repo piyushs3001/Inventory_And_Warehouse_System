@@ -15,6 +15,7 @@ import {
   DataTable,
   type DataTableColumn,
   SimpleSelect,
+  SimpleCombobox,
 } from '@iws/ui';
 
 const PAGE_SIZE = 100;
@@ -158,24 +159,30 @@ export default function MovementsPage() {
                 ...Object.values(MovementType).map((t) => ({ value: t, label: t })),
               ]}
             />
-            <SimpleSelect
+            <SimpleCombobox
               aria-label="Filter by warehouse"
               className="w-44"
               value={warehouseId}
               onValueChange={setWarehouseId}
+              searchPlaceholder="Search warehouses…"
               options={[
                 { value: '', label: 'All warehouses' },
                 ...(warehouses ?? []).map((w) => ({ value: w.id, label: w.name })),
               ]}
             />
-            <SimpleSelect
+            <SimpleCombobox
               aria-label="Filter by product"
               className="w-44"
               value={productId}
               onValueChange={setProductId}
+              searchPlaceholder="Search products…"
               options={[
                 { value: '', label: 'All products' },
-                ...(products ?? []).map((p) => ({ value: p.id, label: p.name })),
+                ...(products ?? []).map((p) => ({
+                  value: p.id,
+                  label: p.name,
+                  keywords: p.sku,
+                })),
               ]}
             />
             <label className="flex items-center gap-1.5 text-sm text-muted-foreground">

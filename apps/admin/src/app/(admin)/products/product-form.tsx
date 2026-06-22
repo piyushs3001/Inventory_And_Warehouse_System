@@ -10,7 +10,7 @@ import type { ProductDto } from '@iws/api-client';
 import { Button } from '@iws/ui';
 import { Input } from '@iws/ui';
 import { Label } from '@iws/ui';
-import { SimpleSelect } from '@iws/ui';
+import { SimpleCombobox } from '@iws/ui';
 
 function errorMessage(err: unknown): string {
   const message = (err as { response?: { data?: { message?: string } } })
@@ -85,11 +85,12 @@ export function ProductForm({
       </div>
       <div className="flex flex-col gap-2">
         <Label htmlFor="prod-category">Category</Label>
-        <SimpleSelect
+        <SimpleCombobox
           aria-label="Category"
           className="w-full"
           value={categoryId}
           onValueChange={setCategoryId}
+          searchPlaceholder="Search categories…"
           options={[
             { value: '', label: 'None' },
             ...(categories ?? []).map((c) => ({ value: c.id, label: c.name })),

@@ -16,7 +16,7 @@ import {
   DataTable,
   type DataTableColumn,
   EntityAvatar,
-  SimpleSelect,
+  SimpleCombobox,
   Checkbox,
   Label,
 } from '@iws/ui';
@@ -161,9 +161,10 @@ export default function ViewInventoryPage() {
         }
         toolbar={
           <>
-            <SimpleSelect
+            <SimpleCombobox
               aria-label="Filter by warehouse"
               className="w-48"
+              searchPlaceholder="Search warehouses…"
               value={warehouseId}
               onValueChange={setWarehouseId}
               options={[

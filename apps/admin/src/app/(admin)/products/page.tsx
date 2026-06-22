@@ -19,7 +19,7 @@ import {
   EmptyState,
   EntityAvatar,
   DataTable,
-  SimpleSelect,
+  SimpleCombobox,
   Checkbox,
   Label,
   type DataTableColumn,
@@ -143,11 +143,12 @@ export default function ProductsPage() {
         }
         toolbar={
           <>
-            <SimpleSelect
+            <SimpleCombobox
               aria-label="Filter by category"
               className="w-48"
               value={categoryId}
               onValueChange={setCategoryId}
+              searchPlaceholder="Search categories…"
               options={[
                 { value: '', label: 'All categories' },
                 ...(categories ?? []).map((c) => ({ value: c.id, label: c.name })),

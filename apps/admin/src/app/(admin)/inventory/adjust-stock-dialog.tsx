@@ -11,6 +11,7 @@ import {
   Input,
   Label,
   SimpleSelect,
+  SimpleCombobox,
   Dialog,
   DialogContent,
   DialogHeader,
@@ -102,15 +103,20 @@ export function AdjustStockDialog({
             {locked ? (
               <Input id="adj-product" value={context!.productName} readOnly disabled />
             ) : (
-              <SimpleSelect
+              <SimpleCombobox
                 id="adj-product"
                 className="w-full"
                 value={productId}
                 onValueChange={setProductId}
                 placeholder="Select a product…"
+                searchPlaceholder="Search products…"
                 options={[
                   { value: '', label: 'Select a product…' },
-                  ...products.map((p) => ({ value: p.id, label: `${p.name} (${p.sku})` })),
+                  ...products.map((p) => ({
+                    value: p.id,
+                    label: `${p.name} (${p.sku})`,
+                    keywords: p.sku,
+                  })),
                 ]}
               />
             )}
@@ -120,12 +126,13 @@ export function AdjustStockDialog({
             {locked ? (
               <Input id="adj-warehouse" value={context!.warehouseName} readOnly disabled />
             ) : (
-              <SimpleSelect
+              <SimpleCombobox
                 id="adj-warehouse"
                 className="w-full"
                 value={warehouseId}
                 onValueChange={setWarehouseId}
                 placeholder="Select a warehouse…"
+                searchPlaceholder="Search warehouses…"
                 options={[
                   { value: '', label: 'Select a warehouse…' },
                   ...warehouses.map((w) => ({ value: w.id, label: w.name })),

@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from 'react';
 import { useTransfersControllerCreate } from '@iws/api-client';
 import type { ProductDto, WarehouseDto } from '@iws/api-client';
-import { Button, Input, Label, SimpleSelect } from '@iws/ui';
+import { Button, Input, Label, SimpleCombobox } from '@iws/ui';
 
 function errorMessage(err: unknown): string {
   const message = (err as { response?: { data?: { message?: string } } })
@@ -81,25 +81,27 @@ export function RequestTransferForm({
       <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-2">
           <Label htmlFor="tr-source">From (your warehouse)</Label>
-          <SimpleSelect
+          <SimpleCombobox
             id="tr-source"
             aria-label="From (your warehouse)"
             className="w-full"
             value={sourceWarehouseId}
             onValueChange={setSourceWarehouseId}
             placeholder="Select…"
+            searchPlaceholder="Search warehouses…"
             options={warehouses.map((w) => ({ value: w.id, label: w.name }))}
           />
         </div>
         <div className="flex flex-col gap-2">
           <Label htmlFor="tr-dest">To (destination)</Label>
-          <SimpleSelect
+          <SimpleCombobox
             id="tr-dest"
             aria-label="To (destination)"
             className="w-full"
             value={destinationWarehouseId}
             onValueChange={setDestinationWarehouseId}
             placeholder="Select…"
+            searchPlaceholder="Search warehouses…"
             options={warehouses
               .filter((w) => w.id !== sourceWarehouseId)
               .map((w) => ({ value: w.id, label: w.name }))}
@@ -111,13 +113,18 @@ export function RequestTransferForm({
         <Label>Lines</Label>
         {lines.map((line, i) => (
           <div key={i} className="grid grid-cols-[1fr_6rem_2rem] items-center gap-2">
-            <SimpleSelect
+            <SimpleCombobox
               aria-label={`Line ${i + 1} product`}
               className="w-full"
               value={line.productId}
               onValueChange={(v) => setLine(i, { productId: v })}
               placeholder="Select product…"
-              options={products.map((p) => ({ value: p.id, label: `${p.name} (${p.sku})` }))}
+              searchPlaceholder="Search products…"
+              options={products.map((p) => ({
+                value: p.id,
+                label: `${p.name} (${p.sku})`,
+                keywords: p.sku,
+              }))}
             />
             <Input aria-label={`Line ${i + 1} quantity`} type="number" min={1} placeholder="Qty"
               value={line.quantity} onChange={(e) => setLine(i, { quantity: e.target.value })} />

@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from 'react';
 import { useStockCountsControllerCreate, useWarehousesControllerList } from '@iws/api-client';
-import { Button, Input, Label, SimpleSelect } from '@iws/ui';
+import { Button, Input, Label, SimpleCombobox } from '@iws/ui';
 
 function errorMessage(err: unknown): string {
   const message = (err as { response?: { data?: { message?: string } } })
@@ -36,13 +36,14 @@ export function CountForm({ onDone }: { onDone: (id: string) => void }) {
       </p>
       <div className="flex flex-col gap-2">
         <Label htmlFor="ct-warehouse">Warehouse</Label>
-        <SimpleSelect
+        <SimpleCombobox
           id="ct-warehouse"
           aria-label="Warehouse"
           className="w-full"
           value={warehouseId}
           onValueChange={setWarehouseId}
           placeholder="Select a warehouse…"
+          searchPlaceholder="Search warehouses…"
           options={options.map((w) => ({ value: w.id, label: w.name }))}
         />
       </div>
