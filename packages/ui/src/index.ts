@@ -20,6 +20,7 @@ export * from './components/ui/entity-avatar';
 export * from './components/ui/error-state';
 export * from './components/ui/input';
 export * from './components/ui/kpi-card';
+export * from './components/ui/form';
 export * from './components/ui/label';
 export * from './components/ui/page-head';
 export * from './components/ui/progress-bar';
