@@ -31,4 +31,5 @@ export * from './components/ui/stat-card';
 export * from './components/ui/status-badge';
 export * from './components/ui/stepper-timeline';
 export * from './components/ui/switch';
+export * from './components/ui/row-actions';
 export * from './components/ui/table';
