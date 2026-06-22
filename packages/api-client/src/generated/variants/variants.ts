@@ -31,7 +31,8 @@ import type {
   UpdateVariantDto,
   VariantDto,
   VariantsControllerBarcodeParams,
-  VariantsControllerListParams
+  VariantsControllerListParams,
+  VariantsControllerUploadImageBody
 } from '../model';
 
 import { customInstance } from '../../axios';
@@ -546,3 +547,136 @@ export function useVariantsControllerBarcode<TData = Awaited<ReturnType<typeof v
 
 
 
+/**
+ * Accepts a single image file (image/*, ≤ 5 MB). If the variant already has an image it is replaced.
+ * @summary Upload or replace the variant image
+ */
+export const variantsControllerUploadImage = (
+    productId: string,
+    id: string,
+    variantsControllerUploadImageBody: BodyType<VariantsControllerUploadImageBody>,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+      const formData = new FormData();
+if(variantsControllerUploadImageBody.file !== undefined) {
+ formData.append(`file`, variantsControllerUploadImageBody.file);
+ }
+
+      return customInstance<VariantDto>(
+      {url: `/products/${productId}/variants/${id}/image`, method: 'POST',
+      headers: {'Content-Type': 'multipart/form-data', },
+       data: formData, signal
+    },
+      options);
+    }
+
+
+
+export const getVariantsControllerUploadImageMutationOptions = <TError = ErrorType<ErrorResponseDto>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof variantsControllerUploadImage>>, TError,{productId: string;id: string;data: BodyType<VariantsControllerUploadImageBody>}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof variantsControllerUploadImage>>, TError,{productId: string;id: string;data: BodyType<VariantsControllerUploadImageBody>}, TContext> => {
+
+const mutationKey = ['variantsControllerUploadImage'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof variantsControllerUploadImage>>, {productId: string;id: string;data: BodyType<VariantsControllerUploadImageBody>}> = (props) => {
+          const {productId,id,data} = props ?? {};
+
+          return  variantsControllerUploadImage(productId,id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type VariantsControllerUploadImageMutationResult = NonNullable<Awaited<ReturnType<typeof variantsControllerUploadImage>>>
+    export type VariantsControllerUploadImageMutationBody = BodyType<VariantsControllerUploadImageBody>
+    export type VariantsControllerUploadImageMutationError = ErrorType<ErrorResponseDto>
+
+    /**
+ * @summary Upload or replace the variant image
+ */
+export const useVariantsControllerUploadImage = <TError = ErrorType<ErrorResponseDto>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof variantsControllerUploadImage>>, TError,{productId: string;id: string;data: BodyType<VariantsControllerUploadImageBody>}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof variantsControllerUploadImage>>,
+        TError,
+        {productId: string;id: string;data: BodyType<VariantsControllerUploadImageBody>},
+        TContext
+      > => {
+      return useMutation(getVariantsControllerUploadImageMutationOptions(options), queryClient);
+    }
+    /**
+ * Deletes the stored image file and clears imageUrl.
+ * @summary Remove the variant image
+ */
+export const variantsControllerDeleteImage = (
+    productId: string,
+    id: string,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<VariantDto>(
+      {url: `/products/${productId}/variants/${id}/image`, method: 'DELETE', signal
+    },
+      options);
+    }
+
+
+
+export const getVariantsControllerDeleteImageMutationOptions = <TError = ErrorType<ErrorResponseDto>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof variantsControllerDeleteImage>>, TError,{productId: string;id: string}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof variantsControllerDeleteImage>>, TError,{productId: string;id: string}, TContext> => {
+
+const mutationKey = ['variantsControllerDeleteImage'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof variantsControllerDeleteImage>>, {productId: string;id: string}> = (props) => {
+          const {productId,id} = props ?? {};
+
+          return  variantsControllerDeleteImage(productId,id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type VariantsControllerDeleteImageMutationResult = NonNullable<Awaited<ReturnType<typeof variantsControllerDeleteImage>>>
+
+    export type VariantsControllerDeleteImageMutationError = ErrorType<ErrorResponseDto>
+
+    /**
+ * @summary Remove the variant image
+ */
+export const useVariantsControllerDeleteImage = <TError = ErrorType<ErrorResponseDto>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof variantsControllerDeleteImage>>, TError,{productId: string;id: string}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof variantsControllerDeleteImage>>,
+        TError,
+        {productId: string;id: string},
+        TContext
+      > => {
+      return useMutation(getVariantsControllerDeleteImageMutationOptions(options), queryClient);
+    }

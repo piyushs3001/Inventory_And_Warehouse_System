@@ -31,6 +31,7 @@ import type {
   ProductDto,
   ProductsControllerBarcodeParams,
   ProductsControllerListParams,
+  ProductsControllerUploadImageBody,
   UpdateProductDto
 } from '../model';
 
@@ -522,3 +523,134 @@ export function useProductsControllerBarcode<TData = Awaited<ReturnType<typeof p
 
 
 
+/**
+ * Accepts a single image file (image/*, ≤ 5 MB). If the product already has an image it is replaced.
+ * @summary Upload or replace the product image
+ */
+export const productsControllerUploadImage = (
+    id: string,
+    productsControllerUploadImageBody: BodyType<ProductsControllerUploadImageBody>,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+      const formData = new FormData();
+if(productsControllerUploadImageBody.file !== undefined) {
+ formData.append(`file`, productsControllerUploadImageBody.file);
+ }
+
+      return customInstance<ProductDto>(
+      {url: `/products/${id}/image`, method: 'POST',
+      headers: {'Content-Type': 'multipart/form-data', },
+       data: formData, signal
+    },
+      options);
+    }
+
+
+
+export const getProductsControllerUploadImageMutationOptions = <TError = ErrorType<ErrorResponseDto>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof productsControllerUploadImage>>, TError,{id: string;data: BodyType<ProductsControllerUploadImageBody>}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof productsControllerUploadImage>>, TError,{id: string;data: BodyType<ProductsControllerUploadImageBody>}, TContext> => {
+
+const mutationKey = ['productsControllerUploadImage'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof productsControllerUploadImage>>, {id: string;data: BodyType<ProductsControllerUploadImageBody>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  productsControllerUploadImage(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ProductsControllerUploadImageMutationResult = NonNullable<Awaited<ReturnType<typeof productsControllerUploadImage>>>
+    export type ProductsControllerUploadImageMutationBody = BodyType<ProductsControllerUploadImageBody>
+    export type ProductsControllerUploadImageMutationError = ErrorType<ErrorResponseDto>
+
+    /**
+ * @summary Upload or replace the product image
+ */
+export const useProductsControllerUploadImage = <TError = ErrorType<ErrorResponseDto>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof productsControllerUploadImage>>, TError,{id: string;data: BodyType<ProductsControllerUploadImageBody>}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof productsControllerUploadImage>>,
+        TError,
+        {id: string;data: BodyType<ProductsControllerUploadImageBody>},
+        TContext
+      > => {
+      return useMutation(getProductsControllerUploadImageMutationOptions(options), queryClient);
+    }
+    /**
+ * Deletes the stored image file and clears imageUrl.
+ * @summary Remove the product image
+ */
+export const productsControllerDeleteImage = (
+    id: string,
+ options?: SecondParameter<typeof customInstance>,signal?: AbortSignal
+) => {
+
+
+      return customInstance<ProductDto>(
+      {url: `/products/${id}/image`, method: 'DELETE', signal
+    },
+      options);
+    }
+
+
+
+export const getProductsControllerDeleteImageMutationOptions = <TError = ErrorType<ErrorResponseDto>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof productsControllerDeleteImage>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customInstance>}
+): UseMutationOptions<Awaited<ReturnType<typeof productsControllerDeleteImage>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['productsControllerDeleteImage'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof productsControllerDeleteImage>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  productsControllerDeleteImage(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ProductsControllerDeleteImageMutationResult = NonNullable<Awaited<ReturnType<typeof productsControllerDeleteImage>>>
+
+    export type ProductsControllerDeleteImageMutationError = ErrorType<ErrorResponseDto>
+
+    /**
+ * @summary Remove the product image
+ */
+export const useProductsControllerDeleteImage = <TError = ErrorType<ErrorResponseDto>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof productsControllerDeleteImage>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customInstance>}
+ , queryClient?: QueryClient): UseMutationResult<
+        Awaited<ReturnType<typeof productsControllerDeleteImage>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getProductsControllerDeleteImageMutationOptions(options), queryClient);
+    }

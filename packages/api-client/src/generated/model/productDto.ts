@@ -37,6 +37,11 @@ export interface ProductDto {
   reorderLevel: number;
   /** Product status. */
   status: ProductStatus;
+  /**
+     * Public URL of the product image, or null when no image is set.
+     * @nullable
+     */
+  imageUrl?: string | null;
   /** Creation timestamp. */
   createdAt: string;
 }

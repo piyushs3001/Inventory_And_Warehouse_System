@@ -24,6 +24,11 @@ export interface VariantDto {
   attributes: VariantDtoAttributes;
   /** Variant status. */
   status: ProductVariantStatus;
+  /**
+     * Public URL of the variant image, or null when no image is set.
+     * @nullable
+     */
+  imageUrl?: string | null;
   /** Creation timestamp. */
   createdAt: string;
 }
