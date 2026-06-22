@@ -8,6 +8,10 @@ import { AXIOS_INSTANCE } from '@iws/api-client';
 import { WarehouseForm } from './warehouse-form';
 import type { WarehouseDto } from '@iws/api-client';
 
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}));
+
 let mock: MockAdapter;
 beforeEach(() => { mock = new MockAdapter(AXIOS_INSTANCE); });
 

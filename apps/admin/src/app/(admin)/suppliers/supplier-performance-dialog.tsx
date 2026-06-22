@@ -2,8 +2,10 @@
 
 import { useSuppliersControllerPerformance } from '@iws/api-client';
 import {
+  Button,
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   Skeleton,
@@ -48,6 +50,9 @@ export function SupplierPerformanceDialog({
             <Metric label="On-time rate" value={pct(data.onTimeRate)} />
           </dl>
         )}
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Close</Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

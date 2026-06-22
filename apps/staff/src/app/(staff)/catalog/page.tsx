@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import {
   useProductsControllerList,
   useCategoriesControllerList,
@@ -11,7 +10,7 @@ import {
   EmptyState,
   EntityAvatar,
   DataTable,
-  buttonVariants,
+  RowActions,
   type DataTableColumn,
 } from '@iws/ui';
 
@@ -62,16 +61,7 @@ export default function CatalogPage() {
       key: 'actions',
       header: 'Actions',
       align: 'right',
-      cell: (p) => (
-        <div className="flex justify-end">
-          <Link
-            className={buttonVariants({ variant: 'outline', size: 'sm' })}
-            href={`/catalog/${p.id}`}
-          >
-            View
-          </Link>
-        </div>
-      ),
+      cell: (p) => <RowActions viewHref={`/catalog/${p.id}`} />,
     },
   ];
 

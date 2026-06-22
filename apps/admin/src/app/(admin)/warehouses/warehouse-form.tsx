@@ -6,9 +6,8 @@ import {
   useWarehousesControllerUpdate,
 } from '@iws/api-client';
 import type { WarehouseDto } from '@iws/api-client';
-import { Button } from '@iws/ui';
-import { Input } from '@iws/ui';
-import { Label } from '@iws/ui';
+import { Button, FormActions, FormField, FormGrid, Input } from '@iws/ui';
+import { useRouter } from 'next/navigation';
 
 export function WarehouseForm({
   warehouse,
@@ -18,6 +17,7 @@ export function WarehouseForm({
   onDone: () => void;
 }) {
   const isEdit = Boolean(warehouse);
+  const router = useRouter();
   const create = useWarehousesControllerCreate();
   const update = useWarehousesControllerUpdate();
 
@@ -64,51 +64,52 @@ export function WarehouseForm({
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4">
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="wh-name">Name</Label>
+      <FormField label="Name" htmlFor="wh-name" required>
         <Input
           id="wh-name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
         />
-      </div>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="wh-address">Address</Label>
+      </FormField>
+      <FormField label="Address" htmlFor="wh-address">
         <Input
           id="wh-address"
           value={address}
           onChange={(e) => setAddress(e.target.value)}
         />
-      </div>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="wh-contact">Contact person</Label>
-        <Input
-          id="wh-contact"
-          value={contactPerson}
-          onChange={(e) => setContactPerson(e.target.value)}
-        />
-      </div>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="wh-capacity">Capacity</Label>
-        <Input
-          id="wh-capacity"
-          type="number"
-          min={0}
-          value={capacity}
-          onChange={(e) => setCapacity(e.target.value)}
-        />
-      </div>
+      </FormField>
+      <FormGrid cols={2}>
+        <FormField label="Contact person" htmlFor="wh-contact">
+          <Input
+            id="wh-contact"
+            value={contactPerson}
+            onChange={(e) => setContactPerson(e.target.value)}
+          />
+        </FormField>
+        <FormField label="Capacity" htmlFor="wh-capacity">
+          <Input
+            id="wh-capacity"
+            type="number"
+            min={0}
+            value={capacity}
+            onChange={(e) => setCapacity(e.target.value)}
+          />
+        </FormField>
+      </FormGrid>
       {error && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-destructive">
           {error}
         </p>
       )}
-      <div className="flex justify-end gap-2">
+      <FormActions>
+        <Button type="button" variant="outline" onClick={() => router.push('/warehouses')}>
+          Cancel
+        </Button>
         <Button type="submit" disabled={isPending}>
           {isEdit ? 'Save' : 'Create'}
         </Button>
-      </div>
+      </FormActions>
     </form>
   );
 }

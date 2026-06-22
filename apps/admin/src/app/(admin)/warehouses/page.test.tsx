@@ -4,6 +4,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import MockAdapter from 'axios-mock-adapter';
 import { AXIOS_INSTANCE } from '@iws/api-client';
+import { ConfirmProvider } from '@iws/ui';
 import WarehousesPage from './page';
 
 let mock: MockAdapter;
@@ -31,9 +32,11 @@ const INACTIVE_WAREHOUSE = {
 
 const renderPage = () =>
   render(
-    <QueryClientProvider client={new QueryClient()}>
-      <WarehousesPage />
-    </QueryClientProvider>,
+    <ConfirmProvider>
+      <QueryClientProvider client={new QueryClient()}>
+        <WarehousesPage />
+      </QueryClientProvider>
+    </ConfirmProvider>,
   );
 
 describe('WarehousesPage', () => {

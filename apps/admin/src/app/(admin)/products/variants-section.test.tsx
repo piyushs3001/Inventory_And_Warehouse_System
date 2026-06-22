@@ -1,23 +1,25 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import MockAdapter from 'axios-mock-adapter';
 import { AXIOS_INSTANCE } from '@iws/api-client';
+import { ConfirmProvider } from '@iws/ui';
 import { VariantsSection } from './variants-section';
 
 let mock: MockAdapter;
 beforeEach(() => {
   mock = new MockAdapter(AXIOS_INSTANCE);
-  vi.spyOn(window, 'confirm').mockReturnValue(true);
 });
 
 const renderSection = () =>
   render(
-    <QueryClientProvider client={new QueryClient()}>
-      <VariantsSection productId="p1" />
-    </QueryClientProvider>,
+    <ConfirmProvider>
+      <QueryClientProvider client={new QueryClient()}>
+        <VariantsSection productId="p1" />
+      </QueryClientProvider>
+    </ConfirmProvider>,
   );
 
 describe('VariantsSection (admin)', () => {

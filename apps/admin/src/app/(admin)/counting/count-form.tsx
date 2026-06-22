@@ -2,7 +2,8 @@
 
 import { useState, type FormEvent } from 'react';
 import { useStockCountsControllerCreate, useWarehousesControllerList } from '@iws/api-client';
-import { Button, Input, Label, SimpleCombobox } from '@iws/ui';
+import { Button, FormActions, FormField, Input, SimpleCombobox } from '@iws/ui';
+import { useRouter } from 'next/navigation';
 
 function errorMessage(err: unknown): string {
   const message = (err as { response?: { data?: { message?: string } } })
@@ -11,6 +12,7 @@ function errorMessage(err: unknown): string {
 }
 
 export function CountForm({ onDone }: { onDone: (id: string) => void }) {
+  const router = useRouter();
   const { data: warehouses } = useWarehousesControllerList();
   const create = useStockCountsControllerCreate();
   const options = warehouses ?? [];
@@ -34,8 +36,7 @@ export function CountForm({ onDone }: { onDone: (id: string) => void }) {
       <p className="text-sm text-muted-foreground">
         Opens a session snapshotting current system stock for every product in the chosen warehouse.
       </p>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="ct-warehouse">Warehouse</Label>
+      <FormField label="Warehouse" htmlFor="ct-warehouse" required>
         <SimpleCombobox
           id="ct-warehouse"
           aria-label="Warehouse"
@@ -46,15 +47,17 @@ export function CountForm({ onDone }: { onDone: (id: string) => void }) {
           searchPlaceholder="Search warehouses…"
           options={options.map((w) => ({ value: w.id, label: w.name }))}
         />
-      </div>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="ct-notes">Notes</Label>
+      </FormField>
+      <FormField label="Notes" htmlFor="ct-notes">
         <Input id="ct-notes" value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="e.g. Aisle 4 audit" />
-      </div>
-      {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
-      <div className="flex justify-end">
+      </FormField>
+      {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+      <FormActions>
+        <Button type="button" variant="outline" onClick={() => router.push('/counting')}>
+          Cancel
+        </Button>
         <Button type="submit" disabled={create.isPending}>Open session</Button>
-      </div>
+      </FormActions>
     </form>
   );
 }

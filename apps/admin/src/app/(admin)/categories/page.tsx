@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { useQueryClient } from '@tanstack/react-query';
 import {
@@ -9,22 +8,22 @@ import {
   getCategoriesControllerListQueryKey,
 } from '@iws/api-client';
 import type { CategoryDto } from '@iws/api-client';
-import { Button } from '@iws/ui';
-import { buttonVariants } from '@iws/ui';
-import { PageHead } from '@iws/ui';
-import { EmptyState } from '@iws/ui';
-import { EntityAvatar } from '@iws/ui';
-import { DataTable, type DataTableColumn } from '@iws/ui';
-
-function errorMessage(err: unknown): string {
-  const message = (err as { response?: { data?: { message?: string } } })
-    ?.response?.data?.message;
-  return typeof message === 'string' ? message : 'Could not delete category';
-}
+import { toast } from 'sonner';
+import {
+  buttonVariants,
+  PageHead,
+  EmptyState,
+  EntityAvatar,
+  DataTable,
+  RowActions,
+  useConfirm,
+  type DataTableColumn,
+} from '@iws/ui';
 
 export default function CategoriesPage() {
+  const confirm = useConfirm();
+
   const { data: categories, isLoading } = useCategoriesControllerList();
-  const [error, setError] = useState<string | null>(null);
 
   const queryClient = useQueryClient();
   const remove = useCategoriesControllerRemove();
@@ -34,16 +33,22 @@ export default function CategoriesPage() {
   const parentName = (c: CategoryDto): string =>
     c.parentId ? (nameById.get(c.parentId) ?? '—') : '—';
 
-  const onDelete = async (id: string): Promise<void> => {
-    if (!confirm('Delete this category?')) return;
-    setError(null);
+  const onDelete = async (id: string, name: string): Promise<void> => {
+    const ok = await confirm({
+      title: 'Delete category?',
+      description: `"${name}" will be permanently deleted.`,
+      confirmLabel: 'Delete',
+      tone: 'danger',
+    });
+    if (!ok) return;
     try {
       await remove.mutateAsync({ id });
       await queryClient.invalidateQueries({
         queryKey: getCategoriesControllerListQueryKey(),
       });
-    } catch (err) {
-      setError(errorMessage(err));
+      toast.success('Category deleted');
+    } catch {
+      toast.error('Could not delete category');
     }
   };
 
@@ -70,17 +75,11 @@ export default function CategoriesPage() {
       header: 'Actions',
       align: 'right',
       cell: (c) => (
-        <div className="flex justify-end gap-2">
-          <Link
-            className={buttonVariants({ variant: 'outline', size: 'sm' })}
-            href={`/categories/${c.id}/edit`}
-          >
-            Edit
-          </Link>
-          <Button variant="outline" size="sm" onClick={() => onDelete(c.id)}>
-            Delete
-          </Button>
-        </div>
+        <RowActions
+          editHref={`/categories/${c.id}/edit`}
+          onDelete={() => onDelete(c.id, c.name)}
+          labels={{ delete: 'Delete' }}
+        />
       ),
     },
   ];
@@ -95,12 +94,6 @@ export default function CategoriesPage() {
           </Link>
         }
       />
-
-      {error && (
-        <p role="alert" className="text-sm text-red-600">
-          {error}
-        </p>
-      )}
 
       <DataTable
         rows={list}

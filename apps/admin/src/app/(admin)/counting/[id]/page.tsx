@@ -20,11 +20,14 @@ import {
   Skeleton,
   ErrorState,
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  useConfirm,
 } from '@iws/ui';
+import { toast } from 'sonner';
 import { COUNT_STATUS_TONE } from '../count-status';
 
 export default function CountDetailPage() {
   const id = useParams().id as string;
+  const confirm = useConfirm();
   const queryClient = useQueryClient();
   const { data: count, isLoading, isError } = useStockCountsControllerFindOne(id);
   const enter = useStockCountsControllerEnterCounts();
@@ -61,21 +64,33 @@ export default function CountDetailPage() {
       await enter.mutateAsync({ id, data: { entries } });
       setDraft({});
       await refresh();
+      toast.success('Counts saved');
     } catch (err) {
       const m = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-      setError(typeof m === 'string' ? m : 'Could not save counts');
+      const msg = typeof m === 'string' ? m : 'Could not save counts';
+      setError(msg);
+      toast.error(msg);
     }
   };
 
   const doReconcile = async (): Promise<void> => {
     setError(null);
-    if (!confirm('Reconcile this count? This writes Adjustment movements to match physical stock.')) return;
+    const ok = await confirm({
+      title: 'Reconcile this count?',
+      description: 'This writes Adjustment movements to match physical stock. The count will be closed.',
+      confirmLabel: 'Reconcile',
+      tone: 'warn',
+    });
+    if (!ok) return;
     try {
       await reconcile.mutateAsync({ id });
       await refresh();
+      toast.success('Count reconciled');
     } catch (err) {
       const m = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-      setError(typeof m === 'string' ? m : 'Could not reconcile');
+      const msg = typeof m === 'string' ? m : 'Could not reconcile';
+      setError(msg);
+      toast.error(msg);
     }
   };
 

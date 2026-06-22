@@ -14,6 +14,7 @@ import {
   EmptyState,
   DataTable,
   SimpleSelect,
+  RowActions,
   type DataTableColumn,
 } from '@iws/ui';
 import { PO_STATUS_TONE } from './po-status';
@@ -70,11 +71,7 @@ export default function PurchaseOrdersPage() {
       header: 'Actions',
       align: 'right',
       cell: (po) => (
-        <div className="flex justify-end gap-2">
-          <Link href={`/purchase-orders/${po.id}`} className={buttonVariants({ variant: 'outline', size: 'sm' })}>
-            View
-          </Link>
-        </div>
+        <RowActions viewHref={`/purchase-orders/${po.id}`} />
       ),
     },
   ];

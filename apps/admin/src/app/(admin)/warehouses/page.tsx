@@ -11,16 +11,25 @@ import {
 import { useUsersControllerFindAll } from '@iws/api-client';
 import { WarehouseStatus } from '@iws/api-client';
 import type { WarehouseDto } from '@iws/api-client';
-import { Button, buttonVariants } from '@iws/ui';
-import { PageHead } from '@iws/ui';
-import { StatusBadge } from '@iws/ui';
-import { EmptyState } from '@iws/ui';
-import { EntityAvatar } from '@iws/ui';
-import { Checkbox, Label } from '@iws/ui';
-import { DataTable, type DataTableColumn } from '@iws/ui';
+import { toast } from 'sonner';
+import {
+  Button,
+  buttonVariants,
+  PageHead,
+  StatusBadge,
+  EmptyState,
+  EntityAvatar,
+  Label,
+  Switch,
+  DataTable,
+  RowActions,
+  useConfirm,
+  type DataTableColumn,
+} from '@iws/ui';
 import { AssignStaffDialog } from './assign-staff-dialog';
 
 export default function WarehousesPage() {
+  const confirm = useConfirm();
   const [includeArchived, setIncludeArchived] = useState(false);
   const { data: warehouses, isLoading } = useWarehousesControllerList(
     includeArchived ? { includeArchived: true } : undefined,
@@ -39,10 +48,21 @@ export default function WarehousesPage() {
     });
   };
 
-  const onArchive = async (id: string): Promise<void> => {
-    if (!confirm('Archive this warehouse?')) return;
-    await archive.mutateAsync({ id });
-    await invalidateList();
+  const onArchive = async (id: string, name: string): Promise<void> => {
+    const ok = await confirm({
+      title: 'Archive warehouse?',
+      description: `"${name}" will be hidden from the active list. You can re-enable it later.`,
+      confirmLabel: 'Archive',
+      tone: 'danger',
+    });
+    if (!ok) return;
+    try {
+      await archive.mutateAsync({ id });
+      await invalidateList();
+      toast.success('Warehouse archived');
+    } catch {
+      toast.error('Could not archive warehouse');
+    }
   };
 
   const columns: DataTableColumn<WarehouseDto>[] = [
@@ -85,21 +105,17 @@ export default function WarehousesPage() {
       header: 'Actions',
       align: 'right',
       cell: (w) => (
-        <div className="flex justify-end gap-2">
-          <Link
-            className={buttonVariants({ variant: 'outline', size: 'sm' })}
-            href={`/warehouses/${w.id}/edit`}
-          >
-            Edit
-          </Link>
+        <div className="flex justify-end items-center gap-2">
           <Button variant="outline" size="sm" onClick={() => setAssigning(w)}>
             Assign staff
           </Button>
-          {w.status === WarehouseStatus.ACTIVE && (
-            <Button variant="outline" size="sm" onClick={() => onArchive(w.id)}>
-              Archive
-            </Button>
-          )}
+          <RowActions
+            editHref={`/warehouses/${w.id}/edit`}
+            onDelete={
+              w.status === WarehouseStatus.ACTIVE ? () => onArchive(w.id, w.name) : undefined
+            }
+            labels={{ delete: 'Archive' }}
+          />
         </div>
       ),
     },
@@ -125,7 +141,8 @@ export default function WarehousesPage() {
         searchFilter={(w, q) => w.name.toLowerCase().includes(q)}
         toolbar={
           <Label className="flex items-center gap-2 text-sm font-normal text-muted-foreground">
-            <Checkbox
+            <Switch
+              aria-label="Include archived"
               checked={includeArchived}
               onCheckedChange={(v) => setIncludeArchived(v === true)}
             />

@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import { useTransfersControllerCreate } from '@iws/api-client';
 import type { ProductDto, WarehouseDto } from '@iws/api-client';
-import { Button, Input, Label, SimpleCombobox } from '@iws/ui';
+import { Button, FormActions, FormField, FormGrid, Input, SimpleCombobox } from '@iws/ui';
 
 function errorMessage(err: unknown): string {
   const message = (err as { response?: { data?: { message?: string } } })
@@ -29,6 +30,7 @@ export function RequestTransferForm({
   products: ProductDto[];
   onDone: () => void;
 }) {
+  const router = useRouter();
   const create = useTransfersControllerCreate();
   const [sourceWarehouseId, setSourceWarehouseId] = useState(
     warehouses.length === 1 ? warehouses[0].id : '',
@@ -78,9 +80,8 @@ export function RequestTransferForm({
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4">
-      <div className="grid grid-cols-2 gap-3">
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="tr-source">From (your warehouse)</Label>
+      <FormGrid cols={2}>
+        <FormField label="From (your warehouse)" htmlFor="tr-source">
           <SimpleCombobox
             id="tr-source"
             aria-label="From (your warehouse)"
@@ -91,9 +92,8 @@ export function RequestTransferForm({
             searchPlaceholder="Search warehouses…"
             options={warehouses.map((w) => ({ value: w.id, label: w.name }))}
           />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="tr-dest">To (destination)</Label>
+        </FormField>
+        <FormField label="To (destination)" htmlFor="tr-dest">
           <SimpleCombobox
             id="tr-dest"
             aria-label="To (destination)"
@@ -106,11 +106,11 @@ export function RequestTransferForm({
               .filter((w) => w.id !== sourceWarehouseId)
               .map((w) => ({ value: w.id, label: w.name }))}
           />
-        </div>
-      </div>
+        </FormField>
+      </FormGrid>
 
       <div className="flex flex-col gap-2">
-        <Label>Lines</Label>
+        <span className="text-sm font-medium leading-none">Lines</span>
         {lines.map((line, i) => (
           <div key={i} className="grid grid-cols-[1fr_6rem_2rem] items-center gap-2">
             <SimpleCombobox
@@ -134,16 +134,15 @@ export function RequestTransferForm({
         <Button type="button" variant="outline" size="sm" className="self-start" onClick={addLine}>Add line</Button>
       </div>
 
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="tr-notes">Notes</Label>
+      <FormField label="Notes" htmlFor="tr-notes">
         <Input id="tr-notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
-      </div>
+      </FormField>
 
       {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
-      <div className="flex justify-end gap-2">
-        <Button type="button" variant="outline" onClick={onDone}>Cancel</Button>
+      <FormActions>
+        <Button type="button" variant="outline" onClick={() => router.push('/transfers')}>Cancel</Button>
         <Button type="submit" disabled={create.isPending}>Request</Button>
-      </div>
+      </FormActions>
     </form>
   );
 }

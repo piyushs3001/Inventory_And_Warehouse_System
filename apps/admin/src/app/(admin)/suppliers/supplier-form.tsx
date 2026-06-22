@@ -1,12 +1,13 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   useSuppliersControllerCreate,
   useSuppliersControllerUpdate,
 } from '@iws/api-client';
 import type { SupplierDto } from '@iws/api-client';
-import { Button, Input, Label } from '@iws/ui';
+import { Button, FormActions, FormField, FormGrid, Input } from '@iws/ui';
 
 function errorMessage(err: unknown): string {
   const message = (err as { response?: { data?: { message?: string } } })
@@ -22,6 +23,7 @@ export function SupplierForm({
   onDone: () => void;
 }) {
   const isEdit = Boolean(supplier);
+  const router = useRouter();
   const create = useSuppliersControllerCreate();
   const update = useSuppliersControllerUpdate();
 
@@ -58,32 +60,36 @@ export function SupplierForm({
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4">
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="sup-name">Name</Label>
+      <FormField label="Name" htmlFor="sup-name" required>
         <Input id="sup-name" value={name} onChange={(e) => setName(e.target.value)} required />
-      </div>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="sup-contact">Contact person</Label>
+      </FormField>
+      <FormField label="Contact person" htmlFor="sup-contact">
         <Input id="sup-contact" value={contactName} onChange={(e) => setContactName(e.target.value)} />
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="sup-email">Email</Label>
+      </FormField>
+      <FormGrid cols={2}>
+        <FormField label="Email" htmlFor="sup-email">
           <Input id="sup-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="sup-phone">Phone</Label>
+        </FormField>
+        <FormField label="Phone" htmlFor="sup-phone">
           <Input id="sup-phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
-        </div>
-      </div>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="sup-address">Address</Label>
+        </FormField>
+      </FormGrid>
+      <FormField label="Address" htmlFor="sup-address">
         <Input id="sup-address" value={address} onChange={(e) => setAddress(e.target.value)} />
-      </div>
-      {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
-      <div className="flex justify-end gap-2">
-        <Button type="submit" disabled={isPending}>{isEdit ? 'Save' : 'Create'}</Button>
-      </div>
+      </FormField>
+      {error && (
+        <p role="alert" className="text-sm text-destructive">
+          {error}
+        </p>
+      )}
+      <FormActions>
+        <Button type="button" variant="outline" onClick={() => router.push('/suppliers')}>
+          Cancel
+        </Button>
+        <Button type="submit" disabled={isPending}>
+          {isEdit ? 'Save' : 'Create'}
+        </Button>
+      </FormActions>
     </form>
   );
 }

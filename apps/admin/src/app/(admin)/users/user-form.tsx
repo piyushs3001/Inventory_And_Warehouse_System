@@ -9,10 +9,15 @@ import {
 } from '@iws/api-client';
 import type { UserDto } from '@iws/api-client';
 import { Role } from '@iws/api-client';
-import { Button } from '@iws/ui';
-import { Input } from '@iws/ui';
-import { Label } from '@iws/ui';
-import { SimpleSelect } from '@iws/ui';
+import { useRouter } from 'next/navigation';
+import {
+  Button,
+  Input,
+  FormActions,
+  FormField,
+  FormGrid,
+  SimpleSelect,
+} from '@iws/ui';
 
 /**
  * Create/edit user form (no Dialog wrapper — rendered on dedicated routes).
@@ -27,6 +32,7 @@ export function UserForm({
   onDone: () => void;
 }) {
   const isEdit = Boolean(user);
+  const router = useRouter();
   const queryClient = useQueryClient();
   const create = useUsersControllerCreate();
   const update = useUsersControllerUpdate();
@@ -36,6 +42,8 @@ export function UserForm({
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<Role>(user?.role ?? Role.STAFF);
   const [error, setError] = useState<string | null>(null);
+
+  const isPending = create.isPending || update.isPending;
 
   const invalidate = () =>
     queryClient.invalidateQueries({ queryKey: getUsersControllerFindAllQueryKey() });
@@ -58,42 +66,38 @@ export function UserForm({
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4">
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="name">Name</Label>
+      <FormField label="Name" htmlFor="user-name" required>
         <Input
-          id="name"
+          id="user-name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
         />
-      </div>
+      </FormField>
       {!isEdit && (
-        <>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="email">Email</Label>
+        <FormGrid cols={2}>
+          <FormField label="Email" htmlFor="user-email" required>
             <Input
-              id="email"
+              id="user-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
             />
-          </div>
-          <div className="flex flex-col gap-2">
-            <Label htmlFor="password">Password</Label>
+          </FormField>
+          <FormField label="Password" htmlFor="user-password" required>
             <Input
-              id="password"
+              id="user-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               minLength={8}
               required
             />
-          </div>
-        </>
+          </FormField>
+        </FormGrid>
       )}
-      <div className="flex flex-col gap-2">
-        <Label>Role</Label>
+      <FormField label="Role" htmlFor="user-role">
         <SimpleSelect
           aria-label="Role"
           className="w-full"
@@ -102,15 +106,20 @@ export function UserForm({
           options={Object.values(Role).map((r) => ({ value: r, label: r }))}
           placeholder="Select a role"
         />
-      </div>
+      </FormField>
       {error && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-destructive">
           {error}
         </p>
       )}
-      <div className="flex justify-end gap-2">
-        <Button type="submit">{isEdit ? 'Save' : 'Create'}</Button>
-      </div>
+      <FormActions>
+        <Button type="button" variant="outline" onClick={() => router.push('/users')}>
+          Cancel
+        </Button>
+        <Button type="submit" disabled={isPending}>
+          {isEdit ? 'Save' : 'Create'}
+        </Button>
+      </FormActions>
     </form>
   );
 }

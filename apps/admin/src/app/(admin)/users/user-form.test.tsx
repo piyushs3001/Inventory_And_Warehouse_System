@@ -9,6 +9,10 @@ import { UserForm } from './user-form';
 import { Role, UserStatus } from '@iws/api-client';
 import type { UserDto } from '@iws/api-client';
 
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}));
+
 let mock: MockAdapter;
 beforeEach(() => { mock = new MockAdapter(AXIOS_INSTANCE); });
 

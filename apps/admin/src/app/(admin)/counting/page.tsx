@@ -14,6 +14,7 @@ import {
   EmptyState,
   DataTable,
   SimpleSelect,
+  RowActions,
   type DataTableColumn,
 } from '@iws/ui';
 import { COUNT_STATUS_TONE } from './count-status';
@@ -49,9 +50,10 @@ const columns: DataTableColumn<StockCountDto>[] = [
     header: 'Actions',
     align: 'right',
     cell: (c) => (
-      <div className="flex justify-end gap-2">
-        <Link href={`/counting/${c.id}`} className={buttonVariants({ variant: 'outline', size: 'sm' })}>Open</Link>
-      </div>
+      <RowActions
+        viewHref={`/counting/${c.id}`}
+        labels={{ view: 'Open' }}
+      />
     ),
   },
 ];

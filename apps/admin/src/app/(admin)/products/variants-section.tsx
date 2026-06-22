@@ -10,9 +10,8 @@ import {
   getVariantsControllerListQueryKey,
 } from '@iws/api-client';
 import type { VariantDto } from '@iws/api-client';
-import { Button } from '@iws/ui';
-import { Input } from '@iws/ui';
-import { Label } from '@iws/ui';
+import { toast } from 'sonner';
+import { Button, Input, Label, useConfirm } from '@iws/ui';
 import { VariantBarcode } from './barcode-controls';
 
 function errorMessage(err: unknown): string {
@@ -42,6 +41,7 @@ function toAttrObject(rows: AttrRow[]): Record<string, string> {
 }
 
 export function VariantsSection({ productId }: { productId: string }) {
+  const confirm = useConfirm();
   const queryClient = useQueryClient();
   const { data: variants, isLoading } = useVariantsControllerList(
     productId,
@@ -61,10 +61,21 @@ export function VariantsSection({ productId }: { productId: string }) {
     });
   };
 
-  const onArchive = async (id: string): Promise<void> => {
-    if (!confirm('Archive this variant?')) return;
-    await archive.mutateAsync({ productId, id });
-    await invalidate();
+  const onArchive = async (id: string, sku: string): Promise<void> => {
+    const ok = await confirm({
+      title: 'Archive variant?',
+      description: `Variant "${sku}" will be hidden from the active catalog. You can re-enable it later.`,
+      confirmLabel: 'Archive',
+      tone: 'danger',
+    });
+    if (!ok) return;
+    try {
+      await archive.mutateAsync({ productId, id });
+      await invalidate();
+      toast.success('Variant archived');
+    } catch {
+      toast.error('Could not archive variant');
+    }
   };
 
   const list = variants ?? [];
@@ -140,7 +151,7 @@ export function VariantsSection({ productId }: { productId: string }) {
                     type="button"
                     variant="outline"
                     size="sm"
-                    onClick={() => onArchive(v.id)}
+                    onClick={() => onArchive(v.id, v.sku)}
                   >
                     Archive
                   </Button>

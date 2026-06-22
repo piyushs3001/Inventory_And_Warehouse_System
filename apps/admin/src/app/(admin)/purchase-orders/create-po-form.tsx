@@ -9,7 +9,8 @@ import {
   useWarehousesControllerList,
   useProductsControllerList,
 } from '@iws/api-client';
-import { Button, Input, Label, SimpleCombobox } from '@iws/ui';
+import { Button, Input, Label, FormActions, FormField, FormGrid, SimpleCombobox } from '@iws/ui';
+import { useRouter } from 'next/navigation';
 
 function errorMessage(err: unknown): string {
   const message = (err as { response?: { data?: { message?: string } } })
@@ -26,6 +27,7 @@ interface LineRow {
 const emptyLine: LineRow = { productId: '', quantity: '', unitCost: '' };
 
 export function CreatePoForm({ onDone }: { onDone: () => void }) {
+  const router = useRouter();
   const queryClient = useQueryClient();
   const create = usePurchaseOrdersControllerCreate();
   const { data: suppliers } = useSuppliersControllerList();
@@ -87,9 +89,8 @@ export function CreatePoForm({ onDone }: { onDone: () => void }) {
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4">
-      <div className="grid grid-cols-2 gap-3">
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="po-supplier">Supplier</Label>
+      <FormGrid cols={2}>
+        <FormField label="Supplier" htmlFor="po-supplier">
           <SimpleCombobox
             id="po-supplier"
             aria-label="Supplier"
@@ -100,9 +101,8 @@ export function CreatePoForm({ onDone }: { onDone: () => void }) {
             searchPlaceholder="Search suppliers…"
             options={(suppliers ?? []).map((s) => ({ value: s.id, label: s.name }))}
           />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="po-warehouse">Destination warehouse</Label>
+        </FormField>
+        <FormField label="Destination warehouse" htmlFor="po-warehouse">
           <SimpleCombobox
             id="po-warehouse"
             aria-label="Destination warehouse"
@@ -113,12 +113,11 @@ export function CreatePoForm({ onDone }: { onDone: () => void }) {
             searchPlaceholder="Search warehouses…"
             options={(warehouses ?? []).map((w) => ({ value: w.id, label: w.name }))}
           />
-        </div>
-      </div>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="po-expected">Expected date</Label>
+        </FormField>
+      </FormGrid>
+      <FormField label="Expected date" htmlFor="po-expected">
         <Input id="po-expected" type="date" value={expectedDate} onChange={(e) => setExpectedDate(e.target.value)} className="max-w-xs" />
-      </div>
+      </FormField>
 
       <div className="flex flex-col gap-2">
         <Label>Order lines</Label>
@@ -149,16 +148,17 @@ export function CreatePoForm({ onDone }: { onDone: () => void }) {
         <Button type="button" variant="outline" size="sm" className="self-start" onClick={addLine}>Add line</Button>
       </div>
 
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="po-notes">Notes</Label>
+      <FormField label="Notes" htmlFor="po-notes">
         <Input id="po-notes" value={notes} onChange={(e) => setNotes(e.target.value)} />
-      </div>
+      </FormField>
 
-      {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
-      <div className="flex justify-end gap-2">
-        <Button type="button" variant="outline" onClick={onDone}>Cancel</Button>
+      {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+      <FormActions>
+        <Button type="button" variant="outline" onClick={() => router.push('/purchase-orders')}>
+          Cancel
+        </Button>
         <Button type="submit" disabled={create.isPending}>Create draft</Button>
-      </div>
+      </FormActions>
     </form>
   );
 }

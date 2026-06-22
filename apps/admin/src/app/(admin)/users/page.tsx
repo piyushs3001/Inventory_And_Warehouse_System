@@ -11,14 +11,19 @@ import {
 } from '@iws/api-client';
 import { UserStatus } from '@iws/api-client';
 import type { UserDto } from '@iws/api-client';
+import { toast } from 'sonner';
 import type { StatusTone, DataTableColumn } from '@iws/ui';
-import { Button } from '@iws/ui';
-import { buttonVariants } from '@iws/ui';
-import { PageHead } from '@iws/ui';
-import { StatusBadge } from '@iws/ui';
-import { EmptyState } from '@iws/ui';
-import { DataTable } from '@iws/ui';
-import { EntityAvatar } from '@iws/ui';
+import {
+  buttonVariants,
+  Button,
+  PageHead,
+  StatusBadge,
+  EmptyState,
+  DataTable,
+  EntityAvatar,
+  RowActions,
+  useConfirm,
+} from '@iws/ui';
 import { AssignWarehousesDialog } from './assign-warehouses-dialog';
 
 const STATUS_TONE: Record<UserStatus, StatusTone> = {
@@ -34,21 +39,42 @@ const STATUS_LABEL: Record<UserStatus, string> = {
 };
 
 export default function UsersPage() {
+  const confirm = useConfirm();
   const { data: users, isLoading } = useUsersControllerFindAll();
   const [assigning, setAssigning] = useState<UserDto | null>(null);
 
   const queryClient = useQueryClient();
   const deactivate = useUsersControllerDeactivate();
   const activate = useUsersControllerActivate();
+
   const invalidateList = (): Promise<void> =>
     queryClient.invalidateQueries({ queryKey: getUsersControllerFindAllQueryKey() });
-  const onDeactivate = async (id: string): Promise<void> => {
-    await deactivate.mutateAsync({ id });
-    await invalidateList();
+
+  const onDeactivate = async (id: string, name: string): Promise<void> => {
+    const ok = await confirm({
+      title: 'Deactivate user?',
+      description: `"${name}" will lose access immediately.`,
+      confirmLabel: 'Deactivate',
+      tone: 'danger',
+    });
+    if (!ok) return;
+    try {
+      await deactivate.mutateAsync({ id });
+      await invalidateList();
+      toast.success('User deactivated');
+    } catch {
+      toast.error('Could not deactivate user');
+    }
   };
+
   const onActivate = async (id: string): Promise<void> => {
-    await activate.mutateAsync({ id });
-    await invalidateList();
+    try {
+      await activate.mutateAsync({ id });
+      await invalidateList();
+      toast.success('User activated');
+    } catch {
+      toast.error('Could not activate user');
+    }
   };
 
   const columns: DataTableColumn<UserDto>[] = [
@@ -93,16 +119,7 @@ export default function UsersPage() {
       header: 'Actions',
       align: 'right',
       cell: (u) => (
-        <div className="flex justify-end gap-2">
-          <Link
-            className={buttonVariants({ variant: 'outline', size: 'sm' })}
-            href={`/users/${u.id}/edit`}
-          >
-            Edit
-          </Link>
-          <Button variant="outline" size="sm" onClick={() => setAssigning(u)}>
-            Assign warehouses
-          </Button>
+        <div className="flex items-center justify-end gap-2">
           {u.status === UserStatus.PENDING_APPROVAL && (
             <Button size="sm" onClick={() => onActivate(u.id)}>Approve</Button>
           )}
@@ -111,11 +128,18 @@ export default function UsersPage() {
               Reactivate
             </Button>
           )}
-          {u.status === UserStatus.ACTIVE && (
-            <Button variant="outline" size="sm" onClick={() => onDeactivate(u.id)}>
-              Deactivate
-            </Button>
-          )}
+          <Button variant="outline" size="sm" onClick={() => setAssigning(u)}>
+            Assign warehouses
+          </Button>
+          <RowActions
+            editHref={`/users/${u.id}/edit`}
+            onDelete={
+              u.status === UserStatus.ACTIVE
+                ? () => onDeactivate(u.id, u.name)
+                : undefined
+            }
+            labels={{ delete: 'Deactivate' }}
+          />
         </div>
       ),
     },

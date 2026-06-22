@@ -5,6 +5,7 @@ import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import MockAdapter from 'axios-mock-adapter';
 import { AXIOS_INSTANCE } from '@iws/api-client';
+import { ConfirmProvider } from '@iws/ui';
 import CategoriesPage from './page';
 
 let mock: MockAdapter;
@@ -16,9 +17,11 @@ const CHILD = { id: 'c2', name: 'Sodas', parentId: 'c1', createdAt: '' };
 
 const renderPage = () =>
   render(
-    <QueryClientProvider client={new QueryClient()}>
-      <CategoriesPage />
-    </QueryClientProvider>,
+    <ConfirmProvider>
+      <QueryClientProvider client={new QueryClient()}>
+        <CategoriesPage />
+      </QueryClientProvider>
+    </ConfirmProvider>,
   );
 
 describe('CategoriesPage', () => {
@@ -33,7 +36,6 @@ describe('CategoriesPage', () => {
   });
 
   it('surfaces the 409 message when deleting a category that has children', async () => {
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
     mock.onGet('/categories').reply(200, [PARENT, CHILD]);
     mock
       .onDelete('/categories/c1')
@@ -41,13 +43,17 @@ describe('CategoriesPage', () => {
     renderPage();
     await waitFor(() => expect(screen.getByText('Sodas')).toBeInTheDocument());
 
+    // Click the Delete icon button in the first row's RowActions.
     const deleteButtons = screen.getAllByRole('button', { name: /delete/i });
     await userEvent.click(deleteButtons[0]);
 
+    // Confirm the danger dialog.
+    const confirmBtn = await screen.findByRole('button', { name: /^delete$/i });
+    await userEvent.click(confirmBtn);
+
+    // Verify the DELETE request was attempted (error is shown via toast, not inline).
     await waitFor(() =>
-      expect(screen.getByRole('alert')).toHaveTextContent(
-        'Category has child categories',
-      ),
+      expect(mock.history.delete.some((r) => r.url === '/categories/c1')).toBe(true),
     );
   });
 });

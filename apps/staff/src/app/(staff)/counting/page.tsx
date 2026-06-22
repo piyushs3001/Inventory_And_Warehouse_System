@@ -1,14 +1,13 @@
 'use client';
 
-import Link from 'next/link';
 import { useStockCountsControllerList } from '@iws/api-client';
 import type { StockCountDto } from '@iws/api-client';
 import {
-  buttonVariants,
   PageHead,
   StatusBadge,
   EmptyState,
   Skeleton,
+  RowActions,
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@iws/ui';
 import { COUNT_STATUS_TONE } from './count-status';
@@ -50,7 +49,7 @@ export default function StaffCountingPage() {
                   <TableCell><StatusBadge tone={COUNT_STATUS_TONE[c.status]}>{c.status}</StatusBadge></TableCell>
                   <TableCell className="text-right tabular-nums">{c.lines.length}</TableCell>
                   <TableCell className="text-right">
-                    <Link href={`/counting/${c.id}`} className={buttonVariants({ variant: 'outline', size: 'sm' })}>Open</Link>
+                    <RowActions viewHref={`/counting/${c.id}`} />
                   </TableCell>
                 </TableRow>
               ))}

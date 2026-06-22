@@ -10,8 +10,8 @@ import {
   SupplierStatus,
 } from '@iws/api-client';
 import type { SupplierDto } from '@iws/api-client';
+import { toast } from 'sonner';
 import {
-  Button,
   buttonVariants,
   PageHead,
   StatusBadge,
@@ -20,11 +20,14 @@ import {
   DataTable,
   Checkbox,
   Label,
+  RowActions,
+  useConfirm,
   type DataTableColumn,
 } from '@iws/ui';
 import { SupplierPerformanceDialog } from './supplier-performance-dialog';
 
 export default function SuppliersPage() {
+  const confirm = useConfirm();
   const [includeInactive, setIncludeInactive] = useState(false);
   const params = {
     ...(includeInactive ? { includeInactive: true } : {}),
@@ -42,10 +45,21 @@ export default function SuppliersPage() {
     });
   };
 
-  const onDeactivate = async (id: string): Promise<void> => {
-    if (!confirm('Deactivate this supplier? Purchase history is preserved.')) return;
-    await deactivate.mutateAsync({ id });
-    await invalidate();
+  const onDeactivate = async (id: string, name: string): Promise<void> => {
+    const ok = await confirm({
+      title: 'Deactivate supplier?',
+      description: `"${name}" will be deactivated. Purchase history is preserved.`,
+      confirmLabel: 'Deactivate',
+      tone: 'danger',
+    });
+    if (!ok) return;
+    try {
+      await deactivate.mutateAsync({ id });
+      await invalidate();
+      toast.success('Supplier deactivated');
+    } catch {
+      toast.error('Could not deactivate supplier');
+    }
   };
 
   const columns: DataTableColumn<SupplierDto>[] = [
@@ -92,13 +106,12 @@ export default function SuppliersPage() {
       header: 'Actions',
       align: 'right',
       cell: (s) => (
-        <div className="flex justify-end gap-2">
-          <Button variant="outline" size="sm" onClick={() => setPerf(s)}>Performance</Button>
-          <Link className={buttonVariants({ variant: 'outline', size: 'sm' })} href={`/suppliers/${s.id}/edit`}>Edit</Link>
-          {s.status === SupplierStatus.ACTIVE && (
-            <Button variant="outline" size="sm" onClick={() => onDeactivate(s.id)}>Deactivate</Button>
-          )}
-        </div>
+        <RowActions
+          onView={() => setPerf(s)}
+          editHref={`/suppliers/${s.id}/edit`}
+          onDelete={s.status === SupplierStatus.ACTIVE ? () => onDeactivate(s.id, s.name) : undefined}
+          labels={{ view: 'Performance', delete: 'Deactivate' }}
+        />
       ),
     },
   ];

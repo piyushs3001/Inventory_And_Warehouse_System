@@ -12,6 +12,7 @@ import {
   StockTransferStatus,
 } from '@iws/api-client';
 import type { TransferDto } from '@iws/api-client';
+import { toast } from 'sonner';
 import {
   Button,
   buttonVariants,
@@ -20,13 +21,15 @@ import {
   EmptyState,
   DataTable,
   SimpleSelect,
+  RowActions,
+  useConfirm,
   type DataTableColumn,
 } from '@iws/ui';
 import { TRANSFER_STATUS_TONE } from './transfer-status';
 
 export default function TransfersPage() {
+  const confirm = useConfirm();
   const [status, setStatus] = useState('');
-  const [error, setError] = useState<string | null>(null);
 
   const params = status ? { status: status as StockTransferStatus } : {};
   const { data: transfers, isLoading } = useTransfersControllerList(params);
@@ -42,15 +45,26 @@ export default function TransfersPage() {
     await queryClient.invalidateQueries({ queryKey: getTransfersControllerListQueryKey(params) });
   };
 
-  const act = async (fn: () => Promise<unknown>): Promise<void> => {
-    setError(null);
+  const act = async (fn: () => Promise<unknown>, successMsg: string): Promise<void> => {
     try {
       await fn();
       await invalidate();
+      toast.success(successMsg);
     } catch (err) {
       const m = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
-      setError(typeof m === 'string' ? m : 'Action failed');
+      toast.error(typeof m === 'string' ? m : 'Action failed');
     }
+  };
+
+  const onCancel = async (t: TransferDto): Promise<void> => {
+    const ok = await confirm({
+      title: 'Cancel transfer?',
+      description: `Transfer ${t.code} will be cancelled and cannot be approved or received.`,
+      confirmLabel: 'Cancel transfer',
+      tone: 'danger',
+    });
+    if (!ok) return;
+    await act(() => cancel.mutateAsync({ id: t.id }), 'Transfer cancelled');
   };
 
   const columns: DataTableColumn<TransferDto>[] = [
@@ -92,16 +106,22 @@ export default function TransfersPage() {
       header: 'Actions',
       align: 'right',
       cell: (t) => (
-        <div className="flex justify-end gap-2">
+        <div className="flex items-center justify-end gap-2">
           {t.status === StockTransferStatus.REQUESTED && (
-            <Button size="sm" disabled={pending} onClick={() => act(() => approve.mutateAsync({ id: t.id }))}>Approve</Button>
+            <Button size="sm" disabled={pending} onClick={() => act(() => approve.mutateAsync({ id: t.id }), 'Transfer approved')}>Approve</Button>
           )}
           {t.status === StockTransferStatus.APPROVED && (
-            <Button size="sm" disabled={pending} onClick={() => act(() => receive.mutateAsync({ id: t.id }))}>Receive</Button>
+            <Button size="sm" disabled={pending} onClick={() => act(() => receive.mutateAsync({ id: t.id }), 'Transfer received')}>Receive</Button>
           )}
-          {(t.status === StockTransferStatus.REQUESTED || t.status === StockTransferStatus.APPROVED) && (
-            <Button size="sm" variant="outline" disabled={pending} onClick={() => act(() => cancel.mutateAsync({ id: t.id }))}>Cancel</Button>
-          )}
+          <RowActions
+            onDelete={
+              t.status === StockTransferStatus.REQUESTED || t.status === StockTransferStatus.APPROVED
+                ? () => onCancel(t)
+                : undefined
+            }
+            labels={{ delete: 'Cancel' }}
+            deleteDisabled={pending}
+          />
         </div>
       ),
     },
@@ -113,8 +133,6 @@ export default function TransfersPage() {
         title="Stock Transfers"
         actions={<Link className={buttonVariants()} href="/transfers/new">New transfer</Link>}
       />
-
-      {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
 
       <DataTable
         rows={list}

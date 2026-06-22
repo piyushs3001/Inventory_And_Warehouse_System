@@ -5,6 +5,7 @@ import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import MockAdapter from 'axios-mock-adapter';
 import { AXIOS_INSTANCE } from '@iws/api-client';
+import { ConfirmProvider } from '@iws/ui';
 import UsersPage from './page';
 
 let mock: MockAdapter;
@@ -12,9 +13,11 @@ beforeEach(() => { mock = new MockAdapter(AXIOS_INSTANCE); });
 
 const renderPage = () =>
   render(
-    <QueryClientProvider client={new QueryClient()}>
-      <UsersPage />
-    </QueryClientProvider>,
+    <ConfirmProvider>
+      <QueryClientProvider client={new QueryClient()}>
+        <UsersPage />
+      </QueryClientProvider>
+    </ConfirmProvider>,
   );
 
 describe('UsersPage', () => {

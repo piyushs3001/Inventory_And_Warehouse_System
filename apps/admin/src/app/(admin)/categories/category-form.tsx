@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   useCategoriesControllerCreate,
@@ -8,10 +9,7 @@ import {
   getCategoriesControllerListQueryKey,
 } from '@iws/api-client';
 import type { CategoryDto } from '@iws/api-client';
-import { Button } from '@iws/ui';
-import { Input } from '@iws/ui';
-import { Label } from '@iws/ui';
-import { SimpleCombobox } from '@iws/ui';
+import { Button, FormActions, FormField, Input, SimpleCombobox } from '@iws/ui';
 
 function errorMessage(err: unknown): string {
   const message = (err as { response?: { data?: { message?: string } } })
@@ -29,6 +27,7 @@ export function CategoryForm({
   onDone: () => void;
 }) {
   const isEdit = Boolean(category);
+  const router = useRouter();
   const queryClient = useQueryClient();
   const create = useCategoriesControllerCreate();
   const update = useCategoriesControllerUpdate();
@@ -62,17 +61,15 @@ export function CategoryForm({
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4">
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="cat-name">Name</Label>
+      <FormField label="Name" htmlFor="cat-name" required>
         <Input
           id="cat-name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
         />
-      </div>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="cat-parent">Parent category</Label>
+      </FormField>
+      <FormField label="Parent category" htmlFor="cat-parent">
         <SimpleCombobox
           aria-label="Parent category"
           className="w-full"
@@ -84,20 +81,20 @@ export function CategoryForm({
             ...parentOptions.map((c) => ({ value: c.id, label: c.name })),
           ]}
         />
-      </div>
+      </FormField>
       {error && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-destructive">
           {error}
         </p>
       )}
-      <div className="flex justify-end gap-2">
-        <Button type="button" variant="outline" onClick={onDone}>
+      <FormActions>
+        <Button type="button" variant="outline" onClick={() => router.push('/categories')}>
           Cancel
         </Button>
         <Button type="submit" disabled={isPending}>
           {isEdit ? 'Save' : 'Create'}
         </Button>
-      </div>
+      </FormActions>
     </form>
   );
 }
