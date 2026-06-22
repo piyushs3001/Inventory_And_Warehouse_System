@@ -16,6 +16,10 @@ export interface EnvVars {
   // (reorder, forecast, PO generator, report summary) work without them.
   OPENAI_API_KEY?: string;
   GEMINI_API_KEY?: string;
+  // Storage
+  STORAGE_DRIVER?: 'local';
+  STORAGE_LOCAL_DIR?: string;
+  PUBLIC_FILES_BASE_URL?: string;
 }
 
 export const envSchema = Joi.object<EnvVars, true>({
@@ -35,6 +39,10 @@ export const envSchema = Joi.object<EnvVars, true>({
   S3_BUCKET: Joi.string().required(),
   OPENAI_API_KEY: Joi.string().optional(),
   GEMINI_API_KEY: Joi.string().optional(),
+  // Storage — all optional; defaults live in LocalStorageService
+  STORAGE_DRIVER: Joi.string().valid('local').default('local'),
+  STORAGE_LOCAL_DIR: Joi.string().optional(),
+  PUBLIC_FILES_BASE_URL: Joi.string().optional(),
 });
 
 export function validateEnv(config: Record<string, unknown>): EnvVars {

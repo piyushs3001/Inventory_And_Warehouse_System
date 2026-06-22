@@ -1,4 +1,8 @@
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import * as express from 'express';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 export interface AppSetupOptions {
   /** Allowed browser origin(s) for CORS. A single origin or a list. */
@@ -28,4 +32,15 @@ export function configureApp(
     }),
   );
   app.enableCors({ origin: opts.corsOrigin, credentials: true });
+
+  // Serve uploaded product/variant images at GET /uploads/<key>.
+  // The directory is created here so the API starts cleanly even before the
+  // first image is uploaded. Files are public and read-only — no auth guard.
+  const config = app.get(ConfigService);
+  const uploadsDir =
+    config.get<string>('STORAGE_LOCAL_DIR') ??
+    path.resolve(process.cwd(), '../../var/uploads');
+
+  fs.mkdirSync(uploadsDir, { recursive: true });
+  app.use('/uploads', express.static(uploadsDir));
 }

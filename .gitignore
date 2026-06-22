@@ -58,6 +58,7 @@ pnpm-debug.log*
 /storage/
 /uploads/
 /minio-data/
+/var/
 
 # ---- IDE / Editor ----
 .vscode/*
