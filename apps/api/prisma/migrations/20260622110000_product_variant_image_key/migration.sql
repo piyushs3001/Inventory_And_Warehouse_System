@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "products" ADD COLUMN     "image_key" TEXT;
+
+-- AlterTable
+ALTER TABLE "product_variants" ADD COLUMN     "image_key" TEXT;

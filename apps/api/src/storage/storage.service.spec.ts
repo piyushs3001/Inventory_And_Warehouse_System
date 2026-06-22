@@ -58,7 +58,11 @@ describe('LocalStorageService', () => {
     it('uses the mime-type extension for a png', async () => {
       const service = makeService(tmpDir);
       const { key } = await service.save(
-        { buffer: Buffer.from('x'), originalName: 'noext', mimeType: 'image/png' },
+        {
+          buffer: Buffer.from('x'),
+          originalName: 'noext',
+          mimeType: 'image/png',
+        },
         'variants',
       );
       expect(key).toMatch(/^variants\/[a-f0-9-]+\.png$/);
@@ -67,7 +71,11 @@ describe('LocalStorageService', () => {
     it('creates nested prefix directories automatically', async () => {
       const service = makeService(tmpDir);
       const { key } = await service.save(
-        { buffer: Buffer.from('x'), originalName: 'a.webp', mimeType: 'image/webp' },
+        {
+          buffer: Buffer.from('x'),
+          originalName: 'a.webp',
+          mimeType: 'image/webp',
+        },
         'products/123',
       );
       expect(key).toMatch(/^products\/123\/[a-f0-9-]+\.webp$/);
@@ -78,7 +86,11 @@ describe('LocalStorageService', () => {
       const service = makeService(tmpDir);
       await expect(
         service.save(
-          { buffer: Buffer.from('x'), originalName: 'file.pdf', mimeType: 'application/pdf' },
+          {
+            buffer: Buffer.from('x'),
+            originalName: 'file.pdf',
+            mimeType: 'application/pdf',
+          },
           'products',
         ),
       ).rejects.toBeInstanceOf(BadRequestException);
@@ -88,7 +100,11 @@ describe('LocalStorageService', () => {
       const service = makeService(tmpDir);
       await expect(
         service.save(
-          { buffer: Buffer.from('x'), originalName: 'noext', mimeType: 'image/unknown-format' },
+          {
+            buffer: Buffer.from('x'),
+            originalName: 'noext',
+            mimeType: 'image/unknown-format',
+          },
           'products',
         ),
       ).rejects.toBeInstanceOf(BadRequestException);
@@ -103,7 +119,11 @@ describe('LocalStorageService', () => {
     it('removes an existing file', async () => {
       const service = makeService(tmpDir);
       const { key } = await service.save(
-        { buffer: Buffer.from('data'), originalName: 'img.png', mimeType: 'image/png' },
+        {
+          buffer: Buffer.from('data'),
+          originalName: 'img.png',
+          mimeType: 'image/png',
+        },
         'products',
       );
       const fullPath = path.join(tmpDir, key);
@@ -115,7 +135,9 @@ describe('LocalStorageService', () => {
 
     it('is a no-op (does not throw) when the file does not exist', async () => {
       const service = makeService(tmpDir);
-      await expect(service.delete('products/nonexistent.jpg')).resolves.toBeUndefined();
+      await expect(
+        service.delete('products/nonexistent.jpg'),
+      ).resolves.toBeUndefined();
     });
   });
 

@@ -44,7 +44,10 @@ export class LocalStorageService extends StorageService {
     if (fromMime) return fromMime;
 
     // Fall back to the extension from the original filename.
-    const fromName = path.extname(originalName).replace(/^\./, '').toLowerCase();
+    const fromName = path
+      .extname(originalName)
+      .replace(/^\./, '')
+      .toLowerCase();
     if (fromName) return fromName;
 
     throw new BadRequestException(
@@ -60,9 +63,7 @@ export class LocalStorageService extends StorageService {
   }
 
   private get baseUrl(): string {
-    return (
-      this.config.get<string>('PUBLIC_FILES_BASE_URL') ?? DEFAULT_BASE_URL
-    );
+    return this.config.get<string>('PUBLIC_FILES_BASE_URL') ?? DEFAULT_BASE_URL;
   }
 
   override async save(

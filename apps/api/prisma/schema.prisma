@@ -154,6 +154,7 @@ model Product {
   categoryId   String?       @map("category_id")
   category     Category?     @relation(fields: [categoryId], references: [id])
   unit         String?
+  imageKey     String?       @map("image_key")
   costPrice    Decimal       @default(0) @db.Decimal(12, 2) @map("cost_price")
   sellingPrice Decimal       @default(0) @db.Decimal(12, 2) @map("selling_price")
   reorderLevel Int           @default(0) @map("reorder_level")
@@ -180,6 +181,7 @@ model ProductVariant {
   product    Product              @relation(fields: [productId], references: [id])
   sku        String               @unique
   barcode    String?
+  imageKey   String?              @map("image_key")
   attributes Json                 @default("{}")
   status     ProductVariantStatus @default(ACTIVE)
   createdAt  DateTime             @default(now()) @map("created_at")
