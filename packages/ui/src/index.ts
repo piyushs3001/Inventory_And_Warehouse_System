@@ -12,6 +12,7 @@ export * from './components/ui/card';
 export * from './components/ui/checkbox';
 export * from './components/ui/combobox';
 export * from './components/ui/coming-soon';
+export * from './components/ui/confirm-dialog';
 export * from './components/ui/data-table';
 export * from './components/ui/dialog';
 export * from './components/ui/empty-state';
