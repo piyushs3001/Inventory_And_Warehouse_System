@@ -63,6 +63,15 @@ export class ProductDto {
   })
   status!: ProductStatus;
 
+  @ApiPropertyOptional({
+    description:
+      'Public URL of the product image, or null when no image is set.',
+    nullable: true,
+    type: String,
+    example: 'http://localhost:5002/uploads/products/abc123.jpg',
+  })
+  imageUrl!: string | null;
+
   @ApiProperty({
     description: 'Creation timestamp.',
     example: '2026-06-19T10:00:00.000Z',

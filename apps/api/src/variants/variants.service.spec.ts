@@ -9,6 +9,7 @@ const VARIANT = {
   barcode: null,
   attributes: { size: 'L', color: 'Red' },
   status: ProductVariantStatus.ACTIVE,
+  imageKey: null,
   createdAt: new Date('2024-01-01'),
 };
 
@@ -58,10 +59,16 @@ function makeService(
   const barcodes = {
     render: jest.fn().mockResolvedValue('data:image/png;base64,AAA'),
   };
+  const storage = {
+    save: jest.fn().mockResolvedValue({ key: 'product-variants/test.jpg' }),
+    delete: jest.fn().mockResolvedValue(undefined),
+    getUrl: jest.fn().mockReturnValue(null),
+  };
   const service = new VariantsService(
     prisma as never,
     activity as never,
     barcodes,
+    storage,
   );
   return {
     service,

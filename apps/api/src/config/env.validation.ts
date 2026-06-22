@@ -7,10 +7,11 @@ export interface EnvVars {
   DATABASE_URL: string;
   JWT_ACCESS_SECRET: string;
   JWT_REFRESH_SECRET: string;
-  S3_ENDPOINT: string;
-  S3_ACCESS_KEY: string;
-  S3_SECRET_KEY: string;
-  S3_BUCKET: string;
+  // Required only when STORAGE_DRIVER is not 'local'.
+  S3_ENDPOINT?: string;
+  S3_ACCESS_KEY?: string;
+  S3_SECRET_KEY?: string;
+  S3_BUCKET?: string;
   // Optional LLM provider keys — when absent, the AI Chat Assistant reports
   // "not configured" rather than fabricating answers. Statistical AI features
   // (reorder, forecast, PO generator, report summary) work without them.
@@ -22,7 +23,10 @@ export interface EnvVars {
   PUBLIC_FILES_BASE_URL?: string;
 }
 
-export const envSchema = Joi.object<EnvVars, true>({
+// Using a looser object type so that `Joi.when()` alternatives (which return
+// `AlternativesSchema`, not `StringSchema`) don't break strict type checking
+// while still validating against the `EnvVars` interface at runtime.
+export const envSchema = Joi.object<EnvVars>({
   NODE_ENV: Joi.string()
     .valid('development', 'test', 'production')
     .default('development'),
@@ -33,10 +37,29 @@ export const envSchema = Joi.object<EnvVars, true>({
   DATABASE_URL: Joi.string().required(),
   JWT_ACCESS_SECRET: Joi.string().required(),
   JWT_REFRESH_SECRET: Joi.string().required(),
-  S3_ENDPOINT: Joi.string().required(),
-  S3_ACCESS_KEY: Joi.string().required(),
-  S3_SECRET_KEY: Joi.string().required(),
-  S3_BUCKET: Joi.string().required(),
+  // S3/MinIO credentials are only required when STORAGE_DRIVER is not 'local'.
+  // With the default local driver they are unused; keep them optional so the
+  // app boots cleanly without cloud credentials in dev.
+  S3_ENDPOINT: Joi.when('STORAGE_DRIVER', {
+    is: Joi.valid('local').required(),
+    then: Joi.string().optional(),
+    otherwise: Joi.string().required(),
+  }),
+  S3_ACCESS_KEY: Joi.when('STORAGE_DRIVER', {
+    is: Joi.valid('local').required(),
+    then: Joi.string().optional(),
+    otherwise: Joi.string().required(),
+  }),
+  S3_SECRET_KEY: Joi.when('STORAGE_DRIVER', {
+    is: Joi.valid('local').required(),
+    then: Joi.string().optional(),
+    otherwise: Joi.string().required(),
+  }),
+  S3_BUCKET: Joi.when('STORAGE_DRIVER', {
+    is: Joi.valid('local').required(),
+    then: Joi.string().optional(),
+    otherwise: Joi.string().required(),
+  }),
   OPENAI_API_KEY: Joi.string().optional(),
   GEMINI_API_KEY: Joi.string().optional(),
   // Storage — all optional; defaults live in LocalStorageService

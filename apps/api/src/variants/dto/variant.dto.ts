@@ -37,6 +37,15 @@ export class VariantDto {
   })
   status!: ProductVariantStatus;
 
+  @ApiPropertyOptional({
+    description:
+      'Public URL of the variant image, or null when no image is set.',
+    nullable: true,
+    type: String,
+    example: 'http://localhost:5002/uploads/product-variants/abc123.jpg',
+  })
+  imageUrl!: string | null;
+
   @ApiProperty({
     description: 'Creation timestamp.',
     example: '2026-06-20T10:00:00.000Z',

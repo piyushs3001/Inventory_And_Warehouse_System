@@ -6,6 +6,7 @@ import {
 import { Prisma, ProductVariantStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { ActivityService } from '../activity/activity.service';
+import { StorageService } from '../storage/storage.service';
 import { CreateVariantDto } from './dto/create-variant.dto';
 import { UpdateVariantDto } from './dto/update-variant.dto';
 import { VariantDto } from './dto/variant.dto';
@@ -19,6 +20,7 @@ const variantSelect = {
   barcode: true,
   attributes: true,
   status: true,
+  imageKey: true,
   createdAt: true,
 } satisfies Prisma.ProductVariantSelect;
 
@@ -29,6 +31,7 @@ type VariantRow = {
   barcode: string | null;
   attributes: Prisma.JsonValue;
   status: ProductVariantStatus;
+  imageKey: string | null;
   createdAt: Date;
 };
 
@@ -42,6 +45,7 @@ export class VariantsService {
     private readonly prisma: PrismaService,
     private readonly activity: ActivityService,
     private readonly barcodes: BarcodeService,
+    private readonly storage: StorageService,
   ) {}
 
   async barcode(
@@ -63,6 +67,7 @@ export class VariantsService {
     return {
       ...v,
       attributes: (v.attributes ?? {}) as Record<string, string>,
+      imageUrl: this.storage.getUrl(v.imageKey),
     };
   }
 
@@ -172,6 +177,73 @@ export class VariantsService {
       summary: `Archived variant ${archived.sku}`,
     });
     return this.toDto(archived);
+  }
+
+  async uploadImage(
+    userId: string,
+    productId: string,
+    id: string,
+    file: Express.Multer.File,
+  ): Promise<VariantDto> {
+    const variant = await this.findVariant(productId, id);
+
+    // Replace old image atomically: save new first, then delete the old one.
+    const { key } = await this.storage.save(
+      {
+        buffer: file.buffer,
+        originalName: file.originalname,
+        mimeType: file.mimetype,
+      },
+      'product-variants',
+    );
+
+    if (variant.imageKey) {
+      await this.storage.delete(variant.imageKey);
+    }
+
+    const updated = await this.prisma.productVariant.update({
+      where: { id },
+      data: { imageKey: key },
+      select: variantSelect,
+    });
+
+    await this.activity.record({
+      userId,
+      action: 'VARIANT_UPDATE',
+      entityType: 'ProductVariant',
+      entityId: id,
+      summary: `Uploaded image for variant ${updated.sku}`,
+    });
+
+    return this.toDto(updated);
+  }
+
+  async deleteImage(
+    userId: string,
+    productId: string,
+    id: string,
+  ): Promise<VariantDto> {
+    const variant = await this.findVariant(productId, id);
+
+    if (variant.imageKey) {
+      await this.storage.delete(variant.imageKey);
+    }
+
+    const updated = await this.prisma.productVariant.update({
+      where: { id },
+      data: { imageKey: null },
+      select: variantSelect,
+    });
+
+    await this.activity.record({
+      userId,
+      action: 'VARIANT_UPDATE',
+      entityType: 'ProductVariant',
+      entityId: id,
+      summary: `Removed image for variant ${updated.sku}`,
+    });
+
+    return this.toDto(updated);
   }
 
   private async ensureProductExists(productId: string): Promise<void> {

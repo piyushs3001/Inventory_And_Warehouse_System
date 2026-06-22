@@ -7,6 +7,7 @@ import {
 import { Prisma, ProductStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { ActivityService } from '../activity/activity.service';
+import { StorageService } from '../storage/storage.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductDto } from './dto/product.dto';
@@ -24,6 +25,7 @@ const productSelect = {
   sellingPrice: true,
   reorderLevel: true,
   status: true,
+  imageKey: true,
   createdAt: true,
 } satisfies Prisma.ProductSelect;
 
@@ -38,6 +40,7 @@ type ProductRow = {
   sellingPrice: Prisma.Decimal;
   reorderLevel: number;
   status: ProductStatus;
+  imageKey: string | null;
   createdAt: Date;
 };
 
@@ -53,6 +56,7 @@ export class ProductsService {
     private readonly prisma: PrismaService,
     private readonly activity: ActivityService,
     private readonly barcodes: BarcodeService,
+    private readonly storage: StorageService,
   ) {}
 
   async barcode(
@@ -79,6 +83,7 @@ export class ProductsService {
       ...p,
       costPrice: p.costPrice.toFixed(2),
       sellingPrice: p.sellingPrice.toFixed(2),
+      imageUrl: this.storage.getUrl(p.imageKey),
     };
   }
 
@@ -172,6 +177,76 @@ export class ProductsService {
       summary: `Archived product ${archived.sku}`,
     });
     return this.toDto(archived);
+  }
+
+  async uploadImage(
+    userId: string,
+    id: string,
+    file: Express.Multer.File,
+  ): Promise<ProductDto> {
+    const product = await this.prisma.product.findUnique({
+      where: { id },
+      select: { ...productSelect },
+    });
+    if (!product) throw new NotFoundException('Product not found');
+
+    // Replace old image atomically: save new first, then delete the old one.
+    const { key } = await this.storage.save(
+      {
+        buffer: file.buffer,
+        originalName: file.originalname,
+        mimeType: file.mimetype,
+      },
+      'products',
+    );
+
+    if (product.imageKey) {
+      await this.storage.delete(product.imageKey);
+    }
+
+    const updated = await this.prisma.product.update({
+      where: { id },
+      data: { imageKey: key },
+      select: productSelect,
+    });
+
+    await this.activity.record({
+      userId,
+      action: 'PRODUCT_UPDATE',
+      entityType: 'Product',
+      entityId: id,
+      summary: `Uploaded image for product ${updated.sku}`,
+    });
+
+    return this.toDto(updated);
+  }
+
+  async deleteImage(userId: string, id: string): Promise<ProductDto> {
+    const product = await this.prisma.product.findUnique({
+      where: { id },
+      select: { ...productSelect },
+    });
+    if (!product) throw new NotFoundException('Product not found');
+
+    if (product.imageKey) {
+      await this.storage.delete(product.imageKey);
+    }
+
+    const updated = await this.prisma.product.update({
+      where: { id },
+      data: { imageKey: null },
+      select: productSelect,
+    });
+
+    await this.activity.record({
+      userId,
+      action: 'PRODUCT_UPDATE',
+      entityType: 'Product',
+      entityId: id,
+      summary: `Removed image for product ${updated.sku}`,
+    });
+
+    return this.toDto(updated);
   }
 
   private async ensureExists(id: string): Promise<void> {
