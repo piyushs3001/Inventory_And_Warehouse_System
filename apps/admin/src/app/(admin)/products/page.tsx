@@ -11,8 +11,8 @@ import {
 } from '@iws/api-client';
 import { ProductStatus } from '@iws/api-client';
 import type { ProductDto } from '@iws/api-client';
+import { toast } from 'sonner';
 import {
-  Button,
   buttonVariants,
   PageHead,
   StatusBadge,
@@ -20,12 +20,15 @@ import {
   EntityAvatar,
   DataTable,
   SimpleCombobox,
-  Checkbox,
+  Switch,
   Label,
+  RowActions,
+  useConfirm,
   type DataTableColumn,
 } from '@iws/ui';
 
 export default function ProductsPage() {
+  const confirm = useConfirm();
   const [categoryId, setCategoryId] = useState('');
   const [includeArchived, setIncludeArchived] = useState(false);
 
@@ -48,10 +51,21 @@ export default function ProductsPage() {
     });
   };
 
-  const onArchive = async (id: string): Promise<void> => {
-    if (!confirm('Archive this product?')) return;
-    await archive.mutateAsync({ id });
-    await invalidateList();
+  const onArchive = async (id: string, name: string): Promise<void> => {
+    const ok = await confirm({
+      title: 'Archive product?',
+      description: `"${name}" will be hidden from the active catalog. You can re-enable it later.`,
+      confirmLabel: 'Archive',
+      tone: 'danger',
+    });
+    if (!ok) return;
+    try {
+      await archive.mutateAsync({ id });
+      await invalidateList();
+      toast.success('Product archived');
+    } catch {
+      toast.error('Could not archive product');
+    }
   };
 
   const columns: DataTableColumn<ProductDto>[] = [
@@ -112,13 +126,12 @@ export default function ProductsPage() {
       header: 'Actions',
       align: 'right',
       cell: (p) => (
-        <div className="flex justify-end gap-2">
-          <Link className={buttonVariants({ variant: 'outline', size: 'sm' })} href={`/products/${p.id}`}>View</Link>
-          <Link className={buttonVariants({ variant: 'outline', size: 'sm' })} href={`/products/${p.id}/edit`}>Edit</Link>
-          {p.status === ProductStatus.ACTIVE && (
-            <Button variant="outline" size="sm" onClick={() => onArchive(p.id)}>Archive</Button>
-          )}
-        </div>
+        <RowActions
+          viewHref={`/products/${p.id}`}
+          editHref={`/products/${p.id}/edit`}
+          onDelete={p.status === ProductStatus.ACTIVE ? () => onArchive(p.id, p.name) : undefined}
+          labels={{ delete: 'Archive' }}
+        />
       ),
     },
   ];
@@ -155,7 +168,8 @@ export default function ProductsPage() {
               ]}
             />
             <Label className="flex items-center gap-2 text-sm font-normal text-muted-foreground">
-              <Checkbox
+              <Switch
+                aria-label="Include archived"
                 checked={includeArchived}
                 onCheckedChange={(v) => setIncludeArchived(v === true)}
               />

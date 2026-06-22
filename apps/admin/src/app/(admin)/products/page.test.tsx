@@ -4,6 +4,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import MockAdapter from 'axios-mock-adapter';
 import { AXIOS_INSTANCE } from '@iws/api-client';
+import { ConfirmProvider } from '@iws/ui';
 import ProductsPage from './page';
 
 let mock: MockAdapter;
@@ -24,9 +25,11 @@ const ARCHIVED = {
 
 const renderPage = () =>
   render(
-    <QueryClientProvider client={new QueryClient()}>
-      <ProductsPage />
-    </QueryClientProvider>,
+    <ConfirmProvider>
+      <QueryClientProvider client={new QueryClient()}>
+        <ProductsPage />
+      </QueryClientProvider>
+    </ConfirmProvider>,
   );
 
 describe('ProductsPage', () => {
