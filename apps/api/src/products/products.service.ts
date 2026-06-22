@@ -186,11 +186,16 @@ export class ProductsService {
   ): Promise<ProductDto> {
     const product = await this.prisma.product.findUnique({
       where: { id },
-      select: { ...productSelect },
+      select: { id: true, imageKey: true },
     });
     if (!product) throw new NotFoundException('Product not found');
 
-    // Replace old image atomically: save new first, then delete the old one.
+    // Atomic replacement order:
+    //   1. Save the new file (orphan on later failure is a dangling file, not
+    //      a broken DB reference — acceptable trade-off without a 2PC store).
+    //   2. Update the DB; if this fails, roll back by deleting the new file.
+    //   3. Only after the DB commit, delete the old file (DB never points at
+    //      a missing file even if the old-file delete fails later).
     const { key } = await this.storage.save(
       {
         buffer: file.buffer,
@@ -200,15 +205,23 @@ export class ProductsService {
       'products',
     );
 
-    if (product.imageKey) {
-      await this.storage.delete(product.imageKey);
+    let updated: ProductRow;
+    try {
+      updated = await this.prisma.product.update({
+        where: { id },
+        data: { imageKey: key },
+        select: productSelect,
+      });
+    } catch (err) {
+      // DB update failed — remove the newly saved file to avoid an orphan.
+      await this.storage.delete(key).catch(() => undefined);
+      throw err;
     }
 
-    const updated = await this.prisma.product.update({
-      where: { id },
-      data: { imageKey: key },
-      select: productSelect,
-    });
+    // DB is now pointing at the new file; safe to remove the old one.
+    if (product.imageKey) {
+      await this.storage.delete(product.imageKey).catch(() => undefined);
+    }
 
     await this.activity.record({
       userId,
@@ -224,7 +237,7 @@ export class ProductsService {
   async deleteImage(userId: string, id: string): Promise<ProductDto> {
     const product = await this.prisma.product.findUnique({
       where: { id },
-      select: { ...productSelect },
+      select: { id: true, imageKey: true },
     });
     if (!product) throw new NotFoundException('Product not found');
 

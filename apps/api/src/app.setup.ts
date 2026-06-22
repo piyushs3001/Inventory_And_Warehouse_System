@@ -42,5 +42,19 @@ export function configureApp(
     path.resolve(process.cwd(), '../../var/uploads');
 
   fs.mkdirSync(uploadsDir, { recursive: true });
-  app.use('/uploads', express.static(uploadsDir));
+  // Set security headers on every served file:
+  //   X-Content-Type-Options: nosniff — prevents browsers from MIME-sniffing away
+  //     from the declared content type (defence against content-confusion attacks).
+  //   Content-Disposition: inline — tells browsers to display, not download, but
+  //     combined with nosniff ensures the declared type is honoured, blocking any
+  //     SVG that slipped through upload validation from executing scripts inline.
+  app.use(
+    '/uploads',
+    express.static(uploadsDir, {
+      setHeaders: (res) => {
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+        res.setHeader('Content-Disposition', 'inline');
+      },
+    }),
+  );
 }

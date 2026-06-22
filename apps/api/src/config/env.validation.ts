@@ -23,10 +23,7 @@ export interface EnvVars {
   PUBLIC_FILES_BASE_URL?: string;
 }
 
-// Using a looser object type so that `Joi.when()` alternatives (which return
-// `AlternativesSchema`, not `StringSchema`) don't break strict type checking
-// while still validating against the `EnvVars` interface at runtime.
-export const envSchema = Joi.object<EnvVars>({
+export const envSchema = Joi.object<EnvVars, true>({
   NODE_ENV: Joi.string()
     .valid('development', 'test', 'production')
     .default('development'),
@@ -44,22 +41,22 @@ export const envSchema = Joi.object<EnvVars>({
     is: Joi.valid('local').required(),
     then: Joi.string().optional(),
     otherwise: Joi.string().required(),
-  }),
+  }) as unknown as Joi.StringSchema,
   S3_ACCESS_KEY: Joi.when('STORAGE_DRIVER', {
     is: Joi.valid('local').required(),
     then: Joi.string().optional(),
     otherwise: Joi.string().required(),
-  }),
+  }) as unknown as Joi.StringSchema,
   S3_SECRET_KEY: Joi.when('STORAGE_DRIVER', {
     is: Joi.valid('local').required(),
     then: Joi.string().optional(),
     otherwise: Joi.string().required(),
-  }),
+  }) as unknown as Joi.StringSchema,
   S3_BUCKET: Joi.when('STORAGE_DRIVER', {
     is: Joi.valid('local').required(),
     then: Joi.string().optional(),
     otherwise: Joi.string().required(),
-  }),
+  }) as unknown as Joi.StringSchema,
   OPENAI_API_KEY: Joi.string().optional(),
   GEMINI_API_KEY: Joi.string().optional(),
   // Storage — all optional; defaults live in LocalStorageService

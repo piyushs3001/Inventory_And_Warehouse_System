@@ -204,6 +204,20 @@ describe('Product & Variant Image Upload/Delete (e2e)', () => {
         .expect(400);
     });
 
+    it('SVG upload → 400 (stored-XSS prevention)', async () => {
+      const svgContent = Buffer.from(
+        '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>',
+      );
+      await request(http)
+        .post(`/api/v1/products/${productId}/image`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .attach('file', svgContent, {
+          filename: 'malicious.svg',
+          contentType: 'image/svg+xml',
+        })
+        .expect(400);
+    });
+
     it('missing file → 400', async () => {
       await request(http)
         .post(`/api/v1/products/${productId}/image`)
@@ -329,6 +343,20 @@ describe('Product & Variant Image Upload/Delete (e2e)', () => {
         .attach('file', makeOversizeBuffer(), {
           filename: 'big.jpg',
           contentType: 'image/jpeg',
+        })
+        .expect(400);
+    });
+
+    it('SVG upload for variant → 400 (stored-XSS prevention)', async () => {
+      const svgContent = Buffer.from(
+        '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>',
+      );
+      await request(http)
+        .post(`/api/v1/products/${productId}/variants/${variantId}/image`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .attach('file', svgContent, {
+          filename: 'malicious.svg',
+          contentType: 'image/svg+xml',
         })
         .expect(400);
     });

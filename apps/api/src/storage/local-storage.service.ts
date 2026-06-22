@@ -5,7 +5,13 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { StorageService } from './storage.service';
 
-/** Known image mime-types mapped to their canonical file extension. */
+/**
+ * Known image mime-types mapped to their canonical file extension.
+ * NOTE: image/svg+xml is intentionally excluded — SVG can embed <script> tags
+ * (stored-XSS). Full magic-byte validation is deferred (no-new-deps constraint);
+ * rejecting SVG + nosniff headers removes the script-execution vector for the
+ * remaining raster types.
+ */
 const MIME_TO_EXT: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/jpg': 'jpg',
@@ -13,7 +19,6 @@ const MIME_TO_EXT: Record<string, string> = {
   'image/gif': 'gif',
   'image/webp': 'webp',
   'image/avif': 'avif',
-  'image/svg+xml': 'svg',
   'image/bmp': 'bmp',
   'image/tiff': 'tiff',
 };
@@ -36,6 +41,12 @@ export class LocalStorageService extends StorageService {
     if (!mimeType.startsWith('image/')) {
       throw new BadRequestException(
         `Unsupported file type "${mimeType}". Only image/* files are accepted.`,
+      );
+    }
+    // SVG is explicitly rejected: it can carry embedded <script> tags (stored-XSS).
+    if (mimeType.toLowerCase() === 'image/svg+xml') {
+      throw new BadRequestException(
+        'SVG uploads are not allowed for security reasons.',
       );
     }
 
@@ -66,6 +77,20 @@ export class LocalStorageService extends StorageService {
     return this.config.get<string>('PUBLIC_FILES_BASE_URL') ?? DEFAULT_BASE_URL;
   }
 
+  /**
+   * Guard against path-traversal: ensure the resolved target stays inside
+   * storageDir. A key like `../../etc/passwd` would otherwise escape.
+   */
+  private assertContained(resolvedTarget: string): void {
+    const base = path.resolve(this.storageDir);
+    if (
+      resolvedTarget !== base &&
+      !resolvedTarget.startsWith(base + path.sep)
+    ) {
+      throw new BadRequestException('Invalid storage key.');
+    }
+  }
+
   override async save(
     file: { buffer: Buffer; originalName: string; mimeType: string },
     prefix: string,
@@ -73,17 +98,23 @@ export class LocalStorageService extends StorageService {
     const ext = this.resolveExt(file.mimeType, file.originalName);
     const filename = `${randomUUID()}.${ext}`;
     const key = `${prefix}/${filename}`;
-    const destDir = path.join(this.storageDir, prefix);
+    const destPath = path.resolve(this.storageDir, key);
 
-    await fs.mkdir(destDir, { recursive: true });
-    await fs.writeFile(path.join(this.storageDir, key), file.buffer);
+    // Defence-in-depth: the key is UUID-based so traversal is impossible in
+    // practice, but we guard here to keep the invariant explicit.
+    this.assertContained(destPath);
+
+    await fs.mkdir(path.dirname(destPath), { recursive: true });
+    await fs.writeFile(destPath, file.buffer);
 
     return { key };
   }
 
   override async delete(key: string): Promise<void> {
+    const target = path.resolve(this.storageDir, key);
+    this.assertContained(target);
     try {
-      await fs.unlink(path.join(this.storageDir, key));
+      await fs.unlink(target);
     } catch (err: unknown) {
       const code = (err as NodeJS.ErrnoException).code;
       if (code !== 'ENOENT') throw err;

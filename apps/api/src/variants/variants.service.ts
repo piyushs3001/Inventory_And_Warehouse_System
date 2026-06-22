@@ -185,9 +185,19 @@ export class VariantsService {
     id: string,
     file: Express.Multer.File,
   ): Promise<VariantDto> {
-    const variant = await this.findVariant(productId, id);
+    // Fetch only the fields needed for the pre-flight check.
+    const existing = await this.prisma.productVariant.findUnique({
+      where: { id },
+      select: { id: true, productId: true, imageKey: true },
+    });
+    if (!existing || existing.productId !== productId) {
+      throw new NotFoundException('Variant not found');
+    }
 
-    // Replace old image atomically: save new first, then delete the old one.
+    // Atomic replacement order:
+    //   1. Save the new file.
+    //   2. Update the DB; if this fails, delete the new file (roll back).
+    //   3. Only after commit, delete the old file.
     const { key } = await this.storage.save(
       {
         buffer: file.buffer,
@@ -197,15 +207,23 @@ export class VariantsService {
       'product-variants',
     );
 
-    if (variant.imageKey) {
-      await this.storage.delete(variant.imageKey);
+    let updated: VariantRow;
+    try {
+      updated = await this.prisma.productVariant.update({
+        where: { id },
+        data: { imageKey: key },
+        select: variantSelect,
+      });
+    } catch (err) {
+      // DB update failed — remove the newly saved file to avoid an orphan.
+      await this.storage.delete(key).catch(() => undefined);
+      throw err;
     }
 
-    const updated = await this.prisma.productVariant.update({
-      where: { id },
-      data: { imageKey: key },
-      select: variantSelect,
-    });
+    // DB is now pointing at the new file; safe to remove the old one.
+    if (existing.imageKey) {
+      await this.storage.delete(existing.imageKey).catch(() => undefined);
+    }
 
     await this.activity.record({
       userId,
@@ -223,7 +241,16 @@ export class VariantsService {
     productId: string,
     id: string,
   ): Promise<VariantDto> {
-    const variant = await this.findVariant(productId, id);
+    // Fetch only the fields needed; full row is fetched after the update via variantSelect.
+    const existing = await this.prisma.productVariant.findUnique({
+      where: { id },
+      select: { id: true, productId: true, imageKey: true },
+    });
+    if (!existing || existing.productId !== productId) {
+      throw new NotFoundException('Variant not found');
+    }
+    // Alias so the rest of the method is unchanged.
+    const variant = existing;
 
     if (variant.imageKey) {
       await this.storage.delete(variant.imageKey);
