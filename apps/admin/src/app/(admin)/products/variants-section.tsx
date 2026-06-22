@@ -7,6 +7,8 @@ import {
   useVariantsControllerCreate,
   useVariantsControllerUpdate,
   useVariantsControllerArchive,
+  useVariantsControllerUploadImage,
+  useVariantsControllerDeleteImage,
   getVariantsControllerListQueryKey,
 } from '@iws/api-client';
 import type { VariantDto } from '@iws/api-client';
@@ -157,6 +159,11 @@ export function VariantsSection({ productId }: { productId: string }) {
                   </Button>
                 </div>
               </div>
+              <VariantImageControl
+                productId={productId}
+                variant={v}
+                onRefetch={invalidate}
+              />
               {barcodeFor === v.id && (
                 <VariantBarcode productId={productId} variantId={v.id} />
               )}
@@ -185,6 +192,90 @@ export function VariantsSection({ productId }: { productId: string }) {
           }}
         />
       )}
+    </div>
+  );
+}
+
+function VariantImageControl({
+  productId,
+  variant,
+  onRefetch,
+}: {
+  productId: string;
+  variant: VariantDto;
+  onRefetch: () => Promise<void>;
+}) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const uploadImage = useVariantsControllerUploadImage();
+  const deleteImage = useVariantsControllerDeleteImage();
+  const isPending = uploadImage.isPending || deleteImage.isPending;
+
+  const onUpload = async (file: File): Promise<void> => {
+    try {
+      await uploadImage.mutateAsync({ productId, id: variant.id, data: { file } });
+      await onRefetch();
+      toast.success('Image uploaded');
+    } catch {
+      toast.error('Could not upload image');
+    }
+  };
+
+  const onRemove = async (): Promise<void> => {
+    try {
+      await deleteImage.mutateAsync({ productId, id: variant.id });
+      await onRefetch();
+      toast.success('Image removed');
+    } catch {
+      toast.error('Could not remove image');
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      {variant.imageUrl ? (
+        <img
+          src={variant.imageUrl}
+          alt="Variant image"
+          className="size-8 rounded object-cover ring-1 ring-foreground/10"
+        />
+      ) : (
+        <div className="flex size-8 shrink-0 items-center justify-center rounded bg-muted text-[9px] text-muted-foreground ring-1 ring-foreground/10">
+          Img
+        </div>
+      )}
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        disabled={isPending}
+        onClick={() => fileInputRef.current?.click()}
+      >
+        {variant.imageUrl ? 'Replace' : 'Image'}
+      </Button>
+      {variant.imageUrl && (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={isPending}
+          onClick={onRemove}
+        >
+          Remove
+        </Button>
+      )}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) {
+            void onUpload(file);
+            e.target.value = '';
+          }
+        }}
+      />
     </div>
   );
 }

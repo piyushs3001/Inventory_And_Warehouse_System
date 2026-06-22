@@ -16,6 +16,7 @@ import {
   Skeleton,
   ErrorState,
   Button,
+  EntityAvatar,
 } from '@iws/ui';
 import { VariantBarcode } from '../variant-barcode';
 
@@ -49,7 +50,10 @@ export default function CatalogDetailPage() {
   return (
     <div className="flex flex-col gap-5">
       <Link href="/catalog" className={buttonVariants({ variant: 'ghost', size: 'sm' }) + ' self-start'}>← Back</Link>
-      <PageHead title={product.name} />
+      <div className="flex items-center gap-3">
+        <EntityAvatar name={product.name} imageUrl={product.imageUrl} className="size-12 text-base" />
+        <PageHead title={product.name} />
+      </div>
 
       <div className="grid grid-cols-2 gap-x-8 gap-y-3 rounded-xl bg-card p-4 ring-1 ring-foreground/10 sm:grid-cols-4">
         <Field label="SKU"><span className="font-mono text-xs">{product.sku}</span></Field>
@@ -95,6 +99,7 @@ function VariantsList({ productId }: { productId: string }) {
           className="flex flex-col gap-2 rounded-lg bg-muted/30 p-3"
         >
           <div className="flex flex-wrap items-center gap-2">
+            <EntityAvatar name={v.sku} imageUrl={v.imageUrl} className="size-7 text-[10px]" />
             <span className="font-mono text-xs">{v.sku}</span>
             {Object.entries(v.attributes).map(([k, val]) => (
               <span

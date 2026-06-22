@@ -30,7 +30,7 @@ export default function CatalogPage() {
       header: 'Name',
       cell: (p) => (
         <div className="flex items-center gap-2.5">
-          <EntityAvatar name={p.name} />
+          <EntityAvatar name={p.name} imageUrl={p.imageUrl} />
           <span className="text-[13px] font-semibold">{p.name}</span>
         </div>
       ),

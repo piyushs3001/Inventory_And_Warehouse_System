@@ -1,14 +1,19 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import {
   useProductsControllerCreate,
   useProductsControllerUpdate,
+  useProductsControllerUploadImage,
+  useProductsControllerDeleteImage,
+  getProductsControllerFindOneQueryKey,
   useCategoriesControllerList,
 } from '@iws/api-client';
 import type { ProductDto } from '@iws/api-client';
 import { Button, FormActions, FormField, FormGrid, Input, SimpleCombobox } from '@iws/ui';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 function errorMessage(err: unknown): string {
   const message = (err as { response?: { data?: { message?: string } } })
@@ -29,9 +34,13 @@ export function ProductForm({
 }) {
   const isEdit = Boolean(product);
   const router = useRouter();
+  const queryClient = useQueryClient();
   const create = useProductsControllerCreate();
   const update = useProductsControllerUpdate();
+  const uploadImage = useProductsControllerUploadImage();
+  const deleteImage = useProductsControllerDeleteImage();
   const { data: categories } = useCategoriesControllerList();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [name, setName] = useState(product?.name ?? '');
   const [sku, setSku] = useState(product?.sku ?? '');
@@ -46,6 +55,37 @@ export function ProductForm({
   const [error, setError] = useState<string | null>(null);
 
   const isPending = create.isPending || update.isPending;
+  const isImagePending = uploadImage.isPending || deleteImage.isPending;
+
+  const refetchProduct = async (): Promise<void> => {
+    if (product?.id) {
+      await queryClient.invalidateQueries({
+        queryKey: getProductsControllerFindOneQueryKey(product.id),
+      });
+    }
+  };
+
+  const onUpload = async (file: File): Promise<void> => {
+    if (!product?.id) return;
+    try {
+      await uploadImage.mutateAsync({ id: product.id, data: { file } });
+      await refetchProduct();
+      toast.success('Image uploaded');
+    } catch {
+      toast.error('Could not upload image');
+    }
+  };
+
+  const onRemoveImage = async (): Promise<void> => {
+    if (!product?.id) return;
+    try {
+      await deleteImage.mutateAsync({ id: product.id });
+      await refetchProduct();
+      toast.success('Image removed');
+    } catch {
+      toast.error('Could not remove image');
+    }
+  };
 
   const onSubmit = async (e: FormEvent): Promise<void> => {
     e.preventDefault();
@@ -117,6 +157,62 @@ export function ProductForm({
           {error}
         </p>
       )}
+
+      {isEdit ? (
+        <FormField label="Image">
+          <div className="flex items-center gap-3">
+            {product?.imageUrl ? (
+              <img
+                src={product.imageUrl}
+                alt="Product image"
+                className="size-16 rounded-md object-cover ring-1 ring-foreground/10"
+              />
+            ) : (
+              <div className="flex size-16 shrink-0 items-center justify-center rounded-md bg-muted text-xs text-muted-foreground ring-1 ring-foreground/10">
+                None
+              </div>
+            )}
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={isImagePending}
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {product?.imageUrl ? 'Replace' : 'Upload'}
+              </Button>
+              {product?.imageUrl && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={isImagePending}
+                  onClick={onRemoveImage}
+                >
+                  Remove
+                </Button>
+              )}
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  void onUpload(file);
+                  e.target.value = '';
+                }
+              }}
+            />
+          </div>
+        </FormField>
+      ) : (
+        <p className="text-sm text-muted-foreground">Save the product first to add an image.</p>
+      )}
+
       <FormActions>
         <Button type="button" variant="outline" onClick={() => router.push('/products')}>
           Cancel

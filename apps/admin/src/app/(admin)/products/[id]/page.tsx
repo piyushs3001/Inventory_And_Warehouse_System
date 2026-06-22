@@ -44,6 +44,16 @@ export default function ProductDetailPage() {
         }
       />
 
+      {product.imageUrl && (
+        <div className="overflow-hidden rounded-xl ring-1 ring-foreground/10">
+          <img
+            src={product.imageUrl}
+            alt={product.name}
+            className="max-h-64 w-full object-contain bg-muted"
+          />
+        </div>
+      )}
+
       <div className="grid grid-cols-2 gap-x-8 gap-y-3 rounded-xl bg-card p-4 ring-1 ring-foreground/10 sm:grid-cols-4">
         <Field label="SKU"><span className="font-mono text-xs">{product.sku}</span></Field>
         <Field label="Category">{categoryName}</Field>
