@@ -1,3 +1,6 @@
+'use client';
+
+import { useState } from 'react';
 import { cn, initials } from '../../utils';
 
 export interface EntityAvatarProps {
@@ -8,12 +11,15 @@ export interface EntityAvatarProps {
 }
 
 export function EntityAvatar({ name, imageUrl, className }: EntityAvatarProps) {
+  // Falls back to initials if the image URL is broken / fails to load.
+  const [imgError, setImgError] = useState(false);
+
   const base = cn(
     'flex size-8 shrink-0 items-center justify-center rounded-full bg-primary-tint text-[11px] font-semibold text-primary overflow-hidden',
     className,
   );
 
-  if (imageUrl) {
+  if (imageUrl && !imgError) {
     return (
       // eslint-disable-next-line @next/next/no-img-element
       <img
@@ -23,6 +29,7 @@ export function EntityAvatar({ name, imageUrl, className }: EntityAvatarProps) {
           'size-8 shrink-0 rounded-full object-cover',
           className,
         )}
+        onError={() => setImgError(true)}
       />
     );
   }

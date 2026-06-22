@@ -79,11 +79,14 @@ export class ProductsService {
   // precision to a float, and the money format stays consistent (e.g. "1.20",
   // not Decimal's canonical "1.2") to match the Decimal(12,2) column.
   private toDto(p: ProductRow): ProductDto {
+    // Destructure imageKey out so the internal storage key never leaks into
+    // the API response — only the derived public URL is exposed.
+    const { imageKey, ...rest } = p;
     return {
-      ...p,
+      ...rest,
       costPrice: p.costPrice.toFixed(2),
       sellingPrice: p.sellingPrice.toFixed(2),
-      imageUrl: this.storage.getUrl(p.imageKey),
+      imageUrl: this.storage.getUrl(imageKey),
     };
   }
 

@@ -188,7 +188,11 @@ export class VariantsController {
   @Post(':id/image')
   @HttpCode(200)
   @Roles(Role.SUPER_ADMIN, Role.WAREHOUSE_MANAGER)
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 5 * 1024 * 1024, files: 1 },
+    }),
+  )
   @ApiOperation({
     summary: 'Upload or replace the variant image',
     description:

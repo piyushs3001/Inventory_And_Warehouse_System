@@ -130,7 +130,7 @@ describe('Product & Variant Image Upload/Delete (e2e)', () => {
   // ── PRODUCT IMAGE ──────────────────────────────────────────────────────────
 
   describe('POST /products/:id/image', () => {
-    it('admin uploads an image → 200, imageUrl is set (non-null, /uploads/ path)', async () => {
+    it('admin uploads an image → 200, imageUrl is set (non-null, /uploads/ path), imageKey NOT in response', async () => {
       const res = await request(http)
         .post(`/api/v1/products/${productId}/image`)
         .set('Authorization', `Bearer ${adminToken}`)
@@ -142,6 +142,28 @@ describe('Product & Variant Image Upload/Delete (e2e)', () => {
       const body = res.body as { imageUrl: string | null };
       expect(body.imageUrl).not.toBeNull();
       expect(body.imageUrl).toMatch(/\/uploads\/products\//);
+      // I-1: internal storage key must never leak into the API response
+      expect(res.body).not.toHaveProperty('imageKey');
+    });
+
+    it('plain GET /products/:id does not expose imageKey', async () => {
+      // Upload first so the product has an imageKey stored
+      await request(http)
+        .post(`/api/v1/products/${productId}/image`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .attach('file', makeImageBuffer(), {
+          filename: 'test.jpg',
+          contentType: 'image/jpeg',
+        })
+        .expect(200);
+
+      const res = await request(http)
+        .get(`/api/v1/products/${productId}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
+      // imageUrl must be present; imageKey must not
+      expect(res.body).toHaveProperty('imageUrl');
+      expect(res.body).not.toHaveProperty('imageKey');
     });
 
     it('manager uploads an image → 200', async () => {
@@ -206,7 +228,11 @@ describe('Product & Variant Image Upload/Delete (e2e)', () => {
         .expect(400);
     });
 
-    it('oversize file (>5 MB) → 400', async () => {
+    // Multer's fileSize limit aborts mid-stream and NestJS maps LIMIT_FILE_SIZE
+    // → PayloadTooLargeException (413). The controller's own 5 MB check is kept
+    // as defence-in-depth for any upload that slips past multer (e.g. mocked
+    // requests in unit tests). Both result in a 4xx client error.
+    it('oversize file (>5 MB) → 413 (multer fileSize limit)', async () => {
       await request(http)
         .post(`/api/v1/products/${productId}/image`)
         .set('Authorization', `Bearer ${adminToken}`)
@@ -214,7 +240,7 @@ describe('Product & Variant Image Upload/Delete (e2e)', () => {
           filename: 'big.jpg',
           contentType: 'image/jpeg',
         })
-        .expect(400);
+        .expect(413);
     });
 
     it('SVG upload → 400 (stored-XSS prevention)', async () => {
@@ -331,7 +357,7 @@ describe('Product & Variant Image Upload/Delete (e2e)', () => {
   // ── VARIANT IMAGE ──────────────────────────────────────────────────────────
 
   describe('POST /products/:productId/variants/:id/image', () => {
-    it('admin uploads a variant image → 200, imageUrl set', async () => {
+    it('admin uploads a variant image → 200, imageUrl set, imageKey NOT in response', async () => {
       const res = await request(http)
         .post(`/api/v1/products/${productId}/variants/${variantId}/image`)
         .set('Authorization', `Bearer ${adminToken}`)
@@ -343,6 +369,27 @@ describe('Product & Variant Image Upload/Delete (e2e)', () => {
       const body = res.body as { imageUrl: string | null };
       expect(body.imageUrl).not.toBeNull();
       expect(body.imageUrl).toMatch(/\/uploads\/product-variants\//);
+      // I-1: internal storage key must never leak into the API response
+      expect(res.body).not.toHaveProperty('imageKey');
+    });
+
+    it('plain GET /products/:productId/variants/:id does not expose imageKey', async () => {
+      // Upload first so the variant has an imageKey stored
+      await request(http)
+        .post(`/api/v1/products/${productId}/variants/${variantId}/image`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .attach('file', makeImageBuffer(), {
+          filename: 'var.jpg',
+          contentType: 'image/jpeg',
+        })
+        .expect(200);
+
+      const res = await request(http)
+        .get(`/api/v1/products/${productId}/variants/${variantId}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(200);
+      expect(res.body).toHaveProperty('imageUrl');
+      expect(res.body).not.toHaveProperty('imageKey');
     });
 
     it('replacing a variant image sets a new imageUrl', async () => {
@@ -391,7 +438,9 @@ describe('Product & Variant Image Upload/Delete (e2e)', () => {
         .expect(400);
     });
 
-    it('oversize variant image → 400', async () => {
+    // Multer's fileSize limit aborts mid-stream and NestJS maps LIMIT_FILE_SIZE
+    // → PayloadTooLargeException (413). See product oversize test for details.
+    it('oversize variant image → 413 (multer fileSize limit)', async () => {
       await request(http)
         .post(`/api/v1/products/${productId}/variants/${variantId}/image`)
         .set('Authorization', `Bearer ${adminToken}`)
@@ -399,7 +448,7 @@ describe('Product & Variant Image Upload/Delete (e2e)', () => {
           filename: 'big.jpg',
           contentType: 'image/jpeg',
         })
-        .expect(400);
+        .expect(413);
     });
 
     it('SVG upload for variant → 400 (stored-XSS prevention)', async () => {

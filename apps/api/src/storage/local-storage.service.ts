@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { StorageService } from './storage.service';
+import { DEFAULT_STORAGE_LOCAL_DIR } from './storage.defaults';
 
 /**
  * Known image mime-types mapped to their canonical file extension.
@@ -170,8 +171,7 @@ export class LocalStorageService extends StorageService {
 
   private get storageDir(): string {
     return (
-      this.config.get<string>('STORAGE_LOCAL_DIR') ??
-      path.resolve(process.cwd(), '../../var/uploads')
+      this.config.get<string>('STORAGE_LOCAL_DIR') ?? DEFAULT_STORAGE_LOCAL_DIR
     );
   }
 

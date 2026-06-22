@@ -64,10 +64,13 @@ export class VariantsService {
   }
 
   private toDto(v: VariantRow): VariantDto {
+    // Destructure imageKey out so the internal storage key never leaks into
+    // the API response — only the derived public URL is exposed.
+    const { imageKey, ...rest } = v;
     return {
-      ...v,
+      ...rest,
       attributes: (v.attributes ?? {}) as Record<string, string>,
-      imageUrl: this.storage.getUrl(v.imageKey),
+      imageUrl: this.storage.getUrl(imageKey),
     };
   }
 

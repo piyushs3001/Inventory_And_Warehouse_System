@@ -1,8 +1,8 @@
 import * as fs from 'node:fs';
-import * as path from 'node:path';
 import * as express from 'express';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { DEFAULT_STORAGE_LOCAL_DIR } from './storage/storage.defaults';
 
 export interface AppSetupOptions {
   /** Allowed browser origin(s) for CORS. A single origin or a list. */
@@ -38,8 +38,7 @@ export function configureApp(
   // first image is uploaded. Files are public and read-only — no auth guard.
   const config = app.get(ConfigService);
   const uploadsDir =
-    config.get<string>('STORAGE_LOCAL_DIR') ??
-    path.resolve(process.cwd(), '../../var/uploads');
+    config.get<string>('STORAGE_LOCAL_DIR') ?? DEFAULT_STORAGE_LOCAL_DIR;
 
   fs.mkdirSync(uploadsDir, { recursive: true });
   // Set security headers on every served file:
