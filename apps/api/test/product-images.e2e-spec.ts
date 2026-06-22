@@ -10,6 +10,19 @@ import { configureApp } from '../src/app.setup';
 import { ConfigService } from '@nestjs/config';
 
 /**
+ * A minimal valid PNG buffer (1×1 transparent pixel).
+ * Magic bytes: 89 50 4E 47 0D 0A 1A 0A, followed by a valid IHDR + IDAT + IEND.
+ * Used to verify the happy path when the buffer is validated by magic bytes.
+ */
+function makeMinimalPngBuffer(): Buffer {
+  // Minimal 1×1 transparent PNG, base64-encoded.
+  return Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+    'base64',
+  );
+}
+
+/**
  * A minimal 1×1 JPEG image buffer (valid JPEG header).
  * Kept tiny to avoid disk overhead; only the MIME type + size constraints matter.
  */
@@ -216,6 +229,48 @@ describe('Product & Variant Image Upload/Delete (e2e)', () => {
           contentType: 'image/svg+xml',
         })
         .expect(400);
+    });
+
+    // BUG-01 regression: MIME-spoofed SVG (sent as image/png) must be rejected
+    // by magic-byte inspection, not the declared-MIME check.
+    it('BUG-01: SVG content sent as image/png → 400 (MIME-spoofing blocked)', async () => {
+      const svgAsPng = Buffer.from(
+        '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>',
+      );
+      await request(http)
+        .post(`/api/v1/products/${productId}/image`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .attach('file', svgAsPng, {
+          filename: 'spoofed.png',
+          contentType: 'image/png',
+        })
+        .expect(400);
+    });
+
+    it('non-image buffer (text content) sent as image/png → 400 (magic-byte mismatch)', async () => {
+      const fakeBuffer = Buffer.from('This is not an image, just plain text.');
+      await request(http)
+        .post(`/api/v1/products/${productId}/image`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .attach('file', fakeBuffer, {
+          filename: 'fake.png',
+          contentType: 'image/png',
+        })
+        .expect(400);
+    });
+
+    it('valid PNG buffer (correct magic bytes) → 200', async () => {
+      const res = await request(http)
+        .post(`/api/v1/products/${productId}/image`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .attach('file', makeMinimalPngBuffer(), {
+          filename: 'valid.png',
+          contentType: 'image/png',
+        })
+        .expect(200);
+      const body = res.body as { imageUrl: string | null };
+      expect(body.imageUrl).not.toBeNull();
+      expect(body.imageUrl).toMatch(/\/uploads\/products\//);
     });
 
     it('missing file → 400', async () => {
