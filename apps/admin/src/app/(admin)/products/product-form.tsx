@@ -7,10 +7,8 @@ import {
   useCategoriesControllerList,
 } from '@iws/api-client';
 import type { ProductDto } from '@iws/api-client';
-import { Button } from '@iws/ui';
-import { Input } from '@iws/ui';
-import { Label } from '@iws/ui';
-import { SimpleCombobox } from '@iws/ui';
+import { Button, FormActions, FormField, FormGrid, Input, SimpleCombobox } from '@iws/ui';
+import { useRouter } from 'next/navigation';
 
 function errorMessage(err: unknown): string {
   const message = (err as { response?: { data?: { message?: string } } })
@@ -30,6 +28,7 @@ export function ProductForm({
   onDone: () => void;
 }) {
   const isEdit = Boolean(product);
+  const router = useRouter();
   const create = useProductsControllerCreate();
   const update = useProductsControllerUpdate();
   const { data: categories } = useCategoriesControllerList();
@@ -75,58 +74,57 @@ export function ProductForm({
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4">
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="prod-name">Name</Label>
+      <FormField label="Name" htmlFor="prod-name" required>
         <Input id="prod-name" value={name} onChange={(e) => setName(e.target.value)} required />
-      </div>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="prod-sku">SKU</Label>
-        <Input id="prod-sku" value={sku} onChange={(e) => setSku(e.target.value)} required />
-      </div>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="prod-category">Category</Label>
-        <SimpleCombobox
-          aria-label="Category"
-          className="w-full"
-          value={categoryId}
-          onValueChange={setCategoryId}
-          searchPlaceholder="Search categories…"
-          options={[
-            { value: '', label: 'None' },
-            ...(categories ?? []).map((c) => ({ value: c.id, label: c.name })),
-          ]}
-        />
-      </div>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="prod-unit">Unit</Label>
+      </FormField>
+      <FormGrid cols={2}>
+        <FormField label="SKU" htmlFor="prod-sku" required>
+          <Input id="prod-sku" value={sku} onChange={(e) => setSku(e.target.value)} required />
+        </FormField>
+        <FormField label="Category" htmlFor="prod-category">
+          <SimpleCombobox
+            aria-label="Category"
+            className="w-full"
+            value={categoryId}
+            onValueChange={setCategoryId}
+            searchPlaceholder="Search categories…"
+            options={[
+              { value: '', label: 'None' },
+              ...(categories ?? []).map((c) => ({ value: c.id, label: c.name })),
+            ]}
+          />
+        </FormField>
+      </FormGrid>
+      <FormField label="Unit" htmlFor="prod-unit">
         <Input id="prod-unit" value={unit} onChange={(e) => setUnit(e.target.value)} placeholder="e.g. piece, box, kg" />
-      </div>
-      <div className="grid grid-cols-3 gap-3">
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="prod-cost">Cost price</Label>
+      </FormField>
+      <FormGrid cols={3}>
+        <FormField label="Cost price" htmlFor="prod-cost">
           <Input id="prod-cost" type="number" min={0} step="0.01" value={costPrice} onChange={(e) => setCostPrice(e.target.value)} />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="prod-sell">Selling price</Label>
+        </FormField>
+        <FormField label="Selling price" htmlFor="prod-sell">
           <Input id="prod-sell" type="number" min={0} step="0.01" value={sellingPrice} onChange={(e) => setSellingPrice(e.target.value)} />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="prod-reorder">Reorder level</Label>
+        </FormField>
+        <FormField label="Reorder level" htmlFor="prod-reorder">
           <Input id="prod-reorder" type="number" min={0} value={reorderLevel} onChange={(e) => setReorderLevel(e.target.value)} />
-        </div>
-      </div>
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="prod-desc">Description</Label>
+        </FormField>
+      </FormGrid>
+      <FormField label="Description" htmlFor="prod-desc">
         <Input id="prod-desc" value={description} onChange={(e) => setDescription(e.target.value)} />
-      </div>
+      </FormField>
       {error && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="text-sm text-destructive">
           {error}
         </p>
       )}
-      <div className="flex justify-end gap-2">
-        <Button type="submit" disabled={isPending}>{isEdit ? 'Save' : 'Create'}</Button>
-      </div>
+      <FormActions>
+        <Button type="button" variant="outline" onClick={() => router.push('/products')}>
+          Cancel
+        </Button>
+        <Button type="submit" disabled={isPending}>
+          {isEdit ? 'Save' : 'Create'}
+        </Button>
+      </FormActions>
     </form>
   );
 }
