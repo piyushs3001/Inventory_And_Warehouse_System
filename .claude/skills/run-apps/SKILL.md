@@ -19,13 +19,19 @@ Launch the three services for local work/QA. Ports and commands are fixed by thi
    ```bash
    for p in 5000 5001 5002; do printf 'port %s: ' "$p"; lsof -ti tcp:"$p" || echo free; done
    ```
-2. **Launch detached so the harness teardown (SIGTERM / exit 143) doesn't kill them.** Use `setsid` + `nohup` and redirect output to a log; never leave them attached to the tool shell:
+2. **Launch detached so the harness teardown (SIGTERM / exit 143) doesn't kill them.** Use `setsid` + `nohup` and redirect output to `./logs/<service>.log` (the dev log viewer tails these); never leave them attached to the tool shell:
    ```bash
-   setsid nohup npm run dev:api   >/tmp/iws-api.log   2>&1 &
-   setsid nohup npm run dev:staff >/tmp/iws-staff.log 2>&1 &
-   setsid nohup npm run dev:admin >/tmp/iws-admin.log 2>&1 &
+   mkdir -p logs
+   setsid nohup npm run dev:api   >logs/api.log   2>&1 &
+   setsid nohup npm run dev:staff >logs/staff.log 2>&1 &
+   setsid nohup npm run dev:admin >logs/admin.log 2>&1 &
    ```
    (Run each in the repo root via the background-capable shell.)
+
+   **One URL for all logs:** start the dev log viewer too — it tails `logs/{api,staff,admin}.log` together with per-source/level/text filters at `http://localhost:5009`:
+   ```bash
+   setsid nohup npm run dev:logs >logs/viewer.log 2>&1 &
+   ```
 3. **NEVER use a broad `pkill`/`killall` pattern** — `pkill -f node` (and similar) has self-killed Claude's own shell here, twice. Kill by **port** or **exact PID** only:
    ```bash
    # kill exactly what's on a port:

@@ -10,6 +10,7 @@
     "dev:api": "npm run start:dev -w api",
     "dev:staff": "npm run dev -w staff",
     "dev:admin": "npm run dev -w admin",
+    "dev:logs": "node tools/log-viewer.mjs",
     "build": "npm run build -w api && npm run build -w staff && npm run build -w admin",
     "lint": "npm run lint -w api && npm run lint -w staff && npm run lint -w admin",
     "typecheck": "npm run typecheck -w @iws/api-client && npm run typecheck -w @iws/ui && npm run typecheck -w @iws/auth && npm run typecheck -w api && npm run typecheck -w staff && npm run typecheck -w admin",
