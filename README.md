@@ -28,12 +28,12 @@ Monorepo via **npm workspaces**: two Next.js apps (`apps/staff`, `apps/admin`) a
 - **Stock operations** — transfers (`Request → Approve → Receive`) and stock counts (variance → adjustment).
 - **Catalog** — warehouses, categories, products & variants (own SKU/barcode), barcode/QR generation.
 - **Insights** — reports + export, dashboard, notifications.
-- **AI (drafts/suggestions only)** — forecasting, reorder assistant, chat (RAG over inventory), report summarizer, PO generator. AI never acts autonomously; a human approves every output.
+- **AI (drafts/suggestions only)** — forecasting, reorder assistant, chat assistant (keyword lookup over inventory — full LLM/RAG not configured, no provider key), report summarizer, PO generator. AI never acts autonomously; a human approves every output.
 
 ## Prerequisites
 
 - **Node 20+** and **npm**.
-- **PostgreSQL 16** running natively on the local machine (no Docker). The `pgvector` extension must be available for the AI features.
+- **PostgreSQL 16** running natively on the local machine (no Docker). *(`pgvector` is provisioned in the stack for a possible future AI/RAG upgrade but isn't currently required — the chat assistant runs as a keyword lookup.)*
 
 ## Local setup
 
@@ -64,6 +64,20 @@ Monorepo via **npm workspaces**: two Next.js apps (`apps/staff`, `apps/admin`) a
 
 > **Ports:** API `:5002`, Staff `:5000`, Admin `:5001`. The web apps auto-target the API on `:5002`; set `NEXT_PUBLIC_API_URL` only for prod/remote.
 
+### Watching all logs in one place
+
+A zero-dependency dev log viewer tails the API, Staff, and Admin logs **together** at **http://localhost:5009** — per-source / level / text filters, live tail, color-coded levels. Start the apps with their output redirected into `./logs/`, then run the viewer:
+
+```bash
+mkdir -p logs
+setsid nohup npm run dev:api   >logs/api.log   2>&1 &
+setsid nohup npm run dev:staff >logs/staff.log 2>&1 &
+setsid nohup npm run dev:admin >logs/admin.log 2>&1 &
+npm run dev:logs     # → http://localhost:5009
+```
+
+`logs/` is git-ignored. Override the port with `LOG_VIEWER_PORT=5010`. It parses structured (pino-style JSON) lines and plain console output alike.
+
 ## Useful commands
 
 | Action | Command |
@@ -71,6 +85,7 @@ Monorepo via **npm workspaces**: two Next.js apps (`apps/staff`, `apps/admin`) a
 | API dev (→ `:5002/api/v1`) | `npm run dev:api` |
 | Staff dev (→ `:5000`) | `npm run dev:staff` |
 | Admin dev (→ `:5001`) | `npm run dev:admin` |
+| Dev log viewer — tails API+Staff+Admin (→ `:5009`) | `npm run dev:logs` |
 | Migrate (dev) / deploy (prod) | `npm run db:migrate` / `npm run db:deploy` |
 | Re-seed dev data | `npm run db:seed -w api` |
 | Prisma Studio | `npm run db:studio` |
@@ -93,6 +108,9 @@ packages/
   ui          @iws/ui          design tokens + shared shadcn/ui components
   api-client  @iws/api-client  Orval-generated client + axios mutator + token store
   auth        @iws/auth        AuthProvider / useRequireAuth
+tools/
+  log-viewer.mjs   zero-dependency dev log viewer — tails logs/*.log → :5009
+.claude/           Claude Code config — rules, agents, hooks, skills (git-tracked)
 docs/
   PRD.md       full spec (source of truth)
   ROADMAP.md   build status dashboard

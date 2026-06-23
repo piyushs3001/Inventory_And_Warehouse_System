@@ -92,7 +92,7 @@ Detailed, enforceable rules live outside this file so they don't bloat it — do
 - **`prisma-schema-and-migrations`** — `**/prisma/**`, `**/*.prisma`: db:migrate flow, `@@map`, no `Float`, soft-delete, indexes.
 - **`api-contract-and-orval-client`** — api controllers/DTOs + web `lib/api/**`, `orval.config.ts`: Swagger→Orval, `npm run api:gen`, generated-client-only.
 
-(`.claude/skills/` now holds only the **`qa-guard`** plugin — the QA-before-commit gate, not a rule.)
+(`.claude/skills/` holds the **`qa-guard`** plugin — the QA-before-commit gate — and the **`run-apps`** skill: launch API/Staff/Admin **+ the dev log viewer** with port-conflict checks, `setsid`/`nohup` detach, and scoped (never broad `pkill`) shutdown.)
 
 ## Agents (`.claude/agents/` — dispatched on demand)
 
