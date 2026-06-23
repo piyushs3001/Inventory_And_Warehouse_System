@@ -13,8 +13,11 @@ import {
 import {
   Button,
   buttonVariants,
+  Field,
   Input,
+  PageContainer,
   PageHead,
+  Section,
   StatusBadge,
   Skeleton,
   ErrorState,
@@ -69,9 +72,14 @@ export default function StaffCountDetailPage() {
   const varianceTone = (v: number): 'ok' | 'warn' | 'danger' => (v === 0 ? 'ok' : v > 0 ? 'warn' : 'danger');
 
   return (
-    <div className="flex flex-col gap-5">
+    <PageContainer>
       <PageHead
-        title={count.code}
+        title={
+          <span className="flex items-center gap-3">
+            {count.code}
+            <StatusBadge tone={COUNT_STATUS_TONE[count.status]}>{count.status}</StatusBadge>
+          </span>
+        }
         actions={
           <div className="flex items-center gap-2">
             <Link href="/counting" className={buttonVariants({ variant: 'outline', size: 'sm' })}>Back</Link>
@@ -80,10 +88,11 @@ export default function StaffCountDetailPage() {
         }
       />
 
-      <div className="grid grid-cols-2 gap-x-8 gap-y-3 rounded-xl bg-card p-4 ring-1 ring-foreground/10 sm:grid-cols-4">
-        <Field label="Status"><StatusBadge tone={COUNT_STATUS_TONE[count.status]}>{count.status}</StatusBadge></Field>
-        <Field label="Warehouse">{count.warehouseName}</Field>
-      </div>
+      <Section title="Details">
+        <div className="grid grid-cols-2 gap-x-8 gap-y-3 sm:grid-cols-4">
+          <Field label="Warehouse">{count.warehouseName}</Field>
+        </div>
+      </Section>
 
       {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
 
@@ -128,15 +137,6 @@ export default function StaffCountDetailPage() {
           </TableBody>
         </Table>
       </div>
-    </div>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex flex-col gap-0.5">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <span className="text-sm font-medium">{children}</span>
-    </div>
+    </PageContainer>
   );
 }

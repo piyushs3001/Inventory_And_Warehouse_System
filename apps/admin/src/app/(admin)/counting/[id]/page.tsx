@@ -14,8 +14,11 @@ import {
 import {
   Button,
   buttonVariants,
+  Field,
   Input,
+  PageContainer,
   PageHead,
+  Section,
   StatusBadge,
   Skeleton,
   ErrorState,
@@ -97,9 +100,14 @@ export default function CountDetailPage() {
   const varianceTone = (v: number): 'ok' | 'warn' | 'danger' => (v === 0 ? 'ok' : v > 0 ? 'warn' : 'danger');
 
   return (
-    <div className="flex flex-col gap-5">
+    <PageContainer>
       <PageHead
-        title={count.code}
+        title={
+          <span className="flex items-center gap-3">
+            {count.code}
+            <StatusBadge tone={COUNT_STATUS_TONE[count.status]}>{count.status}</StatusBadge>
+          </span>
+        }
         actions={
           <div className="flex items-center gap-2">
             <Link href="/counting" className={buttonVariants({ variant: 'outline', size: 'sm' })}>Back</Link>
@@ -109,12 +117,13 @@ export default function CountDetailPage() {
         }
       />
 
-      <div className="grid grid-cols-2 gap-x-8 gap-y-3 rounded-xl bg-card p-4 ring-1 ring-foreground/10 sm:grid-cols-4">
-        <Field label="Status"><StatusBadge tone={COUNT_STATUS_TONE[count.status]}>{count.status}</StatusBadge></Field>
-        <Field label="Warehouse">{count.warehouseName}</Field>
-        <Field label="Created by">{count.createdByName ?? '—'}</Field>
-        <Field label="Reconciled by">{count.reconciledByName ?? '—'}</Field>
-      </div>
+      <Section title="Details">
+        <div className="grid grid-cols-2 gap-x-8 gap-y-3 sm:grid-cols-4">
+          <Field label="Warehouse">{count.warehouseName}</Field>
+          <Field label="Created by">{count.createdByName ?? '—'}</Field>
+          <Field label="Reconciled by">{count.reconciledByName ?? '—'}</Field>
+        </div>
+      </Section>
 
       {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
 
@@ -160,15 +169,6 @@ export default function CountDetailPage() {
         </Table>
       </div>
       {!isOpen && <p className="text-sm text-muted-foreground">Variance report — reconciliation wrote Adjustment movements for non-zero variances.</p>}
-    </div>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex flex-col gap-0.5">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <span className="text-sm font-medium">{children}</span>
-    </div>
+    </PageContainer>
   );
 }

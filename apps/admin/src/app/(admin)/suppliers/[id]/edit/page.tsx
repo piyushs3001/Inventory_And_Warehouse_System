@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useSuppliersControllerFindOne } from '@iws/api-client';
-import { buttonVariants, ErrorState, PageHead, Skeleton } from '@iws/ui';
+import { buttonVariants, ErrorState, PageContainer, PageHead, Section, Skeleton } from '@iws/ui';
 import { SupplierForm } from '../../supplier-form';
 
 export default function EditSupplierPage() {
@@ -13,7 +13,7 @@ export default function EditSupplierPage() {
   const { data: supplier, isLoading, isError } = useSuppliersControllerFindOne(id);
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
+    <PageContainer>
       <Link
         href="/suppliers"
         className={buttonVariants({ variant: 'ghost', size: 'sm' }) + ' self-start'}
@@ -21,7 +21,7 @@ export default function EditSupplierPage() {
         ← Back
       </Link>
       <PageHead title="Edit supplier" />
-      <div className="rounded-xl bg-card p-6 ring-1 ring-foreground/10">
+      <Section>
         {isLoading ? (
           <div className="flex flex-col gap-4">
             {Array.from({ length: 5 }).map((_, i) => (
@@ -41,7 +41,7 @@ export default function EditSupplierPage() {
         ) : (
           <SupplierForm supplier={supplier} onDone={() => router.push('/suppliers')} />
         )}
-      </div>
-    </div>
+      </Section>
+    </PageContainer>
   );
 }

@@ -16,7 +16,10 @@ import {
 import {
   Button,
   buttonVariants,
+  Field,
+  PageContainer,
   PageHead,
+  Section,
   StatusBadge,
   Skeleton,
   ErrorState,
@@ -63,9 +66,14 @@ export default function PurchaseOrderDetailPage() {
   const canClose = po.status === PurchaseOrderStatus.PARTIALLY_RECEIVED;
 
   return (
-    <div className="flex flex-col gap-5">
+    <PageContainer>
       <PageHead
-        title={po.code}
+        title={
+          <span className="flex items-center gap-3">
+            {po.code}
+            <StatusBadge tone={PO_STATUS_TONE[po.status]}>{po.status.replace(/_/g, ' ')}</StatusBadge>
+          </span>
+        }
         actions={
           <div className="flex items-center gap-2">
             <Link href="/purchase-orders" className={buttonVariants({ variant: 'outline', size: 'sm' })}>Back</Link>
@@ -77,16 +85,17 @@ export default function PurchaseOrderDetailPage() {
         }
       />
 
-      <div className="grid grid-cols-2 gap-x-8 gap-y-3 rounded-xl bg-card p-4 ring-1 ring-foreground/10 sm:grid-cols-4">
-        <Field label="Status"><StatusBadge tone={PO_STATUS_TONE[po.status]}>{po.status.replace(/_/g, ' ')}</StatusBadge></Field>
-        <Field label="Supplier">{po.supplierName}</Field>
-        <Field label="Warehouse">{po.warehouseName}</Field>
-        <Field label="Total cost"><span className="font-mono tabular-nums">{po.totalCost}</span></Field>
-        <Field label="Expected">{po.expectedDate ? new Date(po.expectedDate).toLocaleDateString() : '—'}</Field>
-        <Field label="Created by">{po.createdByName ?? '—'}</Field>
-        <Field label="Approved by">{po.approvedByName ?? '—'}</Field>
-        <Field label="Notes">{po.notes ?? '—'}</Field>
-      </div>
+      <Section title="Details">
+        <div className="grid grid-cols-2 gap-x-8 gap-y-3 sm:grid-cols-4">
+          <Field label="Supplier">{po.supplierName}</Field>
+          <Field label="Warehouse">{po.warehouseName}</Field>
+          <Field label="Total cost"><span className="font-mono tabular-nums">{po.totalCost}</span></Field>
+          <Field label="Expected">{po.expectedDate ? new Date(po.expectedDate).toLocaleDateString() : '—'}</Field>
+          <Field label="Created by">{po.createdByName ?? '—'}</Field>
+          <Field label="Approved by">{po.approvedByName ?? '—'}</Field>
+          <Field label="Notes">{po.notes ?? '—'}</Field>
+        </div>
+      </Section>
 
       {error && <p role="alert" className="text-sm text-red-600">{error}</p>}
 
@@ -121,17 +130,8 @@ export default function PurchaseOrderDetailPage() {
       </div>
 
       <p className="text-sm text-muted-foreground">
-        Goods are received on the Staff app’s “Receive Stock” screen. This view reflects ordered-vs-received reconciliation.
+        {'Goods are received on the Staff app\'s "Receive Stock" screen. This view reflects ordered-vs-received reconciliation.'}
       </p>
-    </div>
-  );
-}
-
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex flex-col gap-0.5">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <span className="text-sm font-medium">{children}</span>
-    </div>
+    </PageContainer>
   );
 }

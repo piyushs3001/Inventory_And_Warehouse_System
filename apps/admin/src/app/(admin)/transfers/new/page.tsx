@@ -6,7 +6,7 @@ import {
   useWarehousesControllerList,
   useProductsControllerList,
 } from '@iws/api-client';
-import { buttonVariants, PageHead, Skeleton } from '@iws/ui';
+import { buttonVariants, PageContainer, PageHead, Section, Skeleton } from '@iws/ui';
 import { TransferForm } from '../transfer-form';
 
 export default function NewTransferPage() {
@@ -16,10 +16,10 @@ export default function NewTransferPage() {
   const loading = loadingWarehouses || loadingProducts;
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
+    <PageContainer>
       <Link href="/transfers" className={buttonVariants({ variant: 'ghost', size: 'sm' }) + ' self-start'}>← Back</Link>
       <PageHead title="New transfer" />
-      <div className="rounded-xl bg-card p-6 ring-1 ring-foreground/10">
+      <Section>
         {loading ? (
           <div className="flex flex-col gap-3">
             {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-10 w-full" />)}
@@ -31,7 +31,7 @@ export default function NewTransferPage() {
             onDone={() => router.push('/transfers')}
           />
         )}
-      </div>
-    </div>
+      </Section>
+    </PageContainer>
   );
 }

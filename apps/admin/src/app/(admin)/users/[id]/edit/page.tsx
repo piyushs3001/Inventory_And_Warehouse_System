@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useUsersControllerFindOne } from '@iws/api-client';
-import { buttonVariants, ErrorState, PageHead, Skeleton } from '@iws/ui';
+import { buttonVariants, ErrorState, PageContainer, PageHead, Section, Skeleton } from '@iws/ui';
 import { UserForm } from '../../user-form';
 
 export default function EditUserPage() {
@@ -13,7 +13,7 @@ export default function EditUserPage() {
   const { data: user, isLoading, isError } = useUsersControllerFindOne(id);
 
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
+    <PageContainer>
       <Link
         href="/users"
         className={buttonVariants({ variant: 'ghost', size: 'sm' }) + ' self-start'}
@@ -21,7 +21,7 @@ export default function EditUserPage() {
         ← Back
       </Link>
       <PageHead title="Edit user" />
-      <div className="rounded-xl bg-card p-6 ring-1 ring-foreground/10">
+      <Section>
         {isLoading ? (
           <div className="flex flex-col gap-4">
             <Skeleton className="h-10 w-full" />
@@ -36,7 +36,7 @@ export default function EditUserPage() {
         ) : (
           <UserForm user={user} onDone={() => router.push('/users')} />
         )}
-      </div>
-    </div>
+      </Section>
+    </PageContainer>
   );
 }

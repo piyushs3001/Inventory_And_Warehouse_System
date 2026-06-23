@@ -1,6 +1,5 @@
 'use client';
 
-import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import {
@@ -10,7 +9,10 @@ import {
 } from '@iws/api-client';
 import {
   buttonVariants,
+  Field,
+  PageContainer,
   PageHead,
+  Section,
   StatusBadge,
   Skeleton,
   ErrorState,
@@ -33,10 +35,17 @@ export default function ProductDetailPage() {
     : '—';
 
   return (
-    <div className="flex flex-col gap-5">
+    <PageContainer>
       <Link href="/products" className={buttonVariants({ variant: 'ghost', size: 'sm' }) + ' self-start'}>← Back</Link>
       <PageHead
-        title={product.name}
+        title={
+          <span className="flex items-center gap-3">
+            {product.name}
+            <StatusBadge tone={product.status === ProductStatus.ACTIVE ? 'ok' : 'muted'}>
+              {product.status}
+            </StatusBadge>
+          </span>
+        }
         actions={
           <Link href={`/products/${product.id}/edit`} className={buttonVariants({ size: 'sm' })}>
             Edit
@@ -54,38 +63,25 @@ export default function ProductDetailPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-x-8 gap-y-3 rounded-xl bg-card p-4 ring-1 ring-foreground/10 sm:grid-cols-4">
-        <Field label="SKU"><span className="font-mono text-xs">{product.sku}</span></Field>
-        <Field label="Category">{categoryName}</Field>
-        <Field label="Unit">{product.unit ?? '—'}</Field>
-        <Field label="Status">
-          <StatusBadge tone={product.status === ProductStatus.ACTIVE ? 'ok' : 'muted'}>
-            {product.status}
-          </StatusBadge>
-        </Field>
-        <Field label="Cost price"><span className="font-mono tabular-nums">{product.costPrice}</span></Field>
-        <Field label="Selling price"><span className="font-mono tabular-nums">{product.sellingPrice}</span></Field>
-        <Field label="Reorder level"><span className="font-mono tabular-nums">{product.reorderLevel}</span></Field>
-        <Field label="Description">{product.description ?? '—'}</Field>
-      </div>
+      <Section title="Details">
+        <div className="grid grid-cols-2 gap-x-8 gap-y-3 sm:grid-cols-4">
+          <Field label="SKU"><span className="font-mono text-xs">{product.sku}</span></Field>
+          <Field label="Category">{categoryName}</Field>
+          <Field label="Unit">{product.unit ?? '—'}</Field>
+          <Field label="Cost price"><span className="font-mono tabular-nums">{product.costPrice}</span></Field>
+          <Field label="Selling price"><span className="font-mono tabular-nums">{product.sellingPrice}</span></Field>
+          <Field label="Reorder level"><span className="font-mono tabular-nums">{product.reorderLevel}</span></Field>
+          <Field label="Description">{product.description ?? '—'}</Field>
+        </div>
+      </Section>
 
-      <section className="rounded-xl bg-card p-4 ring-1 ring-foreground/10">
+      <Section>
         <VariantsSection productId={product.id} />
-      </section>
+      </Section>
 
-      <section className="flex flex-col gap-3 rounded-xl bg-card p-4 ring-1 ring-foreground/10">
-        <h3 className="text-sm font-semibold">Product barcode</h3>
+      <Section title="Product barcode">
         <ProductBarcode productId={product.id} />
-      </section>
-    </div>
-  );
-}
-
-function Field({ label, children }: { label: string; children: ReactNode }) {
-  return (
-    <div className="flex flex-col gap-0.5">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <span className="text-sm font-medium">{children}</span>
-    </div>
+      </Section>
+    </PageContainer>
   );
 }
