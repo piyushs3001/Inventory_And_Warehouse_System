@@ -162,6 +162,8 @@ export function ProductForm({
         <FormField label="Image">
           <div className="flex items-center gap-3">
             {product?.imageUrl ? (
+              // Signed MinIO/S3 URL — next/image optimizer is not used for short-lived signed assets
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={product.imageUrl}
                 alt="Product image"

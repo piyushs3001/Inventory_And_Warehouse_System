@@ -55,6 +55,8 @@ export default function ProductDetailPage() {
 
       {product.imageUrl && (
         <div className="overflow-hidden rounded-xl ring-1 ring-foreground/10">
+          {/* Signed MinIO/S3 URL — next/image optimizer is not used for short-lived signed assets */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={product.imageUrl}
             alt={product.name}

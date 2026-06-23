@@ -233,6 +233,8 @@ function VariantImageControl({
   return (
     <div className="flex items-center gap-2">
       {variant.imageUrl ? (
+        // Signed MinIO/S3 URL — next/image optimizer is not used for short-lived signed assets
+        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={variant.imageUrl}
           alt="Variant image"

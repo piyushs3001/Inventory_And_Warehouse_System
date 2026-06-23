@@ -1,6 +1,6 @@
 'use client';
 
-import { Truck, ArrowRightLeft, ClipboardList, Boxes, AlertTriangle, Package } from 'lucide-react';
+import { Truck, ArrowRightLeft, ClipboardList, Boxes, AlertTriangle } from 'lucide-react';
 import { useAuth } from '@iws/auth';
 import { useDashboardControllerGet } from '@iws/api-client';
 import {
