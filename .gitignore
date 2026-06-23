@@ -80,9 +80,13 @@ tmp/
 temp/
 
 # ---- Claude Code ----
-.claude/
+# Track adoption config (rules, agents, hooks, settings.json) + CLAUDE.md so the
+# project's Claude Code setup is visible in the repo. Keep machine-local overrides,
+# lock files, and transient tool caches out.
+.claude/settings.local.json
+.claude/*.lock
 .playwright-mcp/
-CLAUDE.md
+.superpowers/
 
 # ---- Project docs (PRD / internal blueprint) ----
 # Ignore ALL docs/ contents — PRD, plans, and QA reports/screenshots are kept

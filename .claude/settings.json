@@ -1,0 +1,55 @@
+{
+  "enabledPlugins": {
+    "qa-guard@skills-dir": true
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "bash ~/.claude/statusline.sh",
+    "padding": 0
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "timeout": 15,
+            "statusMessage": "Checking Orval-only API rule…",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/orval-only.sh\""
+          },
+          {
+            "type": "command",
+            "timeout": 120,
+            "statusMessage": "Advisory typecheck…",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/typecheck.sh\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "timeout": 15,
+            "statusMessage": "Checking QA / Definition of Done…",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/qa-gate.sh\""
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "timeout": 15,
+            "statusMessage": "Loading design system…",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/load-design-system.sh\""
+          }
+        ]
+      }
+    ]
+  }
+}

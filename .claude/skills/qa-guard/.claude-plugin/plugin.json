@@ -1,0 +1,7 @@
+{
+  "name": "qa-guard",
+  "description": "QA-before-commit guard: drives writing positive + negative test cases and gates commits on a clean QA run.",
+  "version": "0.1.0",
+  "author": { "name": "Inventory & Warehouse System" },
+  "keywords": ["qa", "testing", "pre-commit", "hooks"]
+}
