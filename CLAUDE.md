@@ -34,7 +34,7 @@ Authorization is **two layers, both server-side**: (1) **role** = what kinds of 
 | ORM | Prisma | | Storage | MinIO (local) / AWS S3 (prod) |
 | Auth | JWT (access + refresh) | | | |
 
-Lock is deliberate: a JS/TS learning project, so Nest/Prisma over faster-to-ship Laravel. pgvector is required by the AI Chat Assistant (embeddings beside inventory). Don't relitigate mid-build — surface conflicts.
+Lock is deliberate: a JS/TS learning project, so Nest/Prisma over faster-to-ship Laravel. *(pgvector was included for an LLM/RAG Chat Assistant; that path isn't pursued — no provider key — so it's currently unused. Revisit whether to keep it in the lock.)* Don't relitigate mid-build — surface conflicts.
 
 ## Architecture Rules
 
@@ -109,7 +109,7 @@ Delegate the relevant Definition-of-Done step to a focused subagent when work ma
 
 ## AI Features (drafts/suggestions only)
 
-LangChain over OpenAI/Gemini, Postgres + pgvector retrieval, all scope-respecting: Forecasting, Reorder Assistant, Chat Assistant (RAG over inventory), Report Summarizer, PO Generator (Reorder + Forecasting → **Draft** POs for review).
+Postgres-backed, all scope-respecting: Forecasting, Reorder Assistant, Chat Assistant (keyword lookup over inventory — full LLM/RAG not pursued, no provider key), Report Summarizer, PO Generator (Reorder + Forecasting → **Draft** POs for review). *(LangChain/OpenAI/Gemini + pgvector RAG are not active — no provider key; forecasts/reorder/summaries are statistical/templated.)*
 
 ## Build Order (PRD §12)
 
